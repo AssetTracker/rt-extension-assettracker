@@ -1,0 +1,144 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Elements/Header, Title => $title, Refresh => $session{'assets_refresh_interval'} &>
+<& /AssetTracker/Elements/Tabs, 
+    current_tab => "AssetTracker/Search/Results.html".$QueryString, 
+    Title => $title,
+    Format => $Format,
+    Query => $Query,
+    Rows => $Rows,
+    OrderBy => $OrderBy,
+    Order => $Order &>
+<& /AssetTracker/Elements/AssetList, 
+    Query => $Query,
+    AllowSorting => 1,
+    OrderBy => $OrderBy,
+    Order => $Order,
+    Rows => $Rows,
+    Page => $Page,
+    Format => $Format,
+    BaseURL => $RT::WebPath."/AssetTracker/Search/Results.html?"
+
+   &>
+<div align=right>
+<form method=get action="<%$RT::WebPath%>/AssetTracker/Search/Results.html">
+<input type="hidden" name="Query" value="<%$Query%>" />
+<input type="hidden" name="Format" value="<%$Format%>" />
+<input type="hidden" name="HideResults" value="<%$HideResults%>" />
+<input type="hidden" name="Rows" value="<%$Rows%>" />
+<input type="hidden" name="Page" value="<%$Page%>" />
+<input type="hidden" name="OrderBy" value="<%$OrderBy%>" />
+<input type="hidden" name="Order" value="<%$Order%>" />
+<& /Elements/Refresh, Name => 'AssetsRefreshInterval', Default => $session {'assets_refresh_interval'} &>
+<input type=submit value="<&|/l&>Go!</&>">
+</form>
+</div>
+<div align=right>
+<a href="<%$RT::WebPath%>/AssetTracker/Search/Bulk.html<%$QueryString%>"><&|/l&>Batch Update multiple assets</&></a><br>
+<a href="<%$RT::WebPath%>/AssetTracker/Search/Grid.html<%$QueryString%>"><&|/l&>Grid Update multiple assets</&></a><br>
+<a href="<%$RT::WebPath%>/AssetTracker/Search/Results.html<%$QueryString%>"><&|/l&>Bookmarkable link</&></a><br>
+<a href="<%$RT::WebPath%>/AssetTracker/Search/Results.tsv<%$QueryString%>"><&|/l&>Spreadsheet</&></a><br>
+<a href="<%$RT::WebPath%>/AssetTracker/Search/Results.rdf<%$QueryString%>"><&|/l&>RSS Feed</&></a>
+%# | <a href="<%$RT::WebPath%>/AssetTracker/Tools/Offline.html<%$QueryString%>"><&|/l&>Work offline</&></a><br>
+<& /Elements/Callback, _CallbackName => 'SearchActions', QueryString => $QueryString&>
+</div>
+<%INIT>
+my ($title, $assetcount);
+$session{'i'}++;
+$session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'}) ;
+$session{'assets'}->FromSQL($Query) if ($Query);
+$session{'assets'}->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
+
+
+$session{'CurrentAssetSearchHash'} = {
+    Format      => $Format,
+    Query       => $Query,
+    Order       => $Order,
+    OrderBy     => $OrderBy,
+    RowsPerPage => $Rows,
+    AutoForwardSingleResult => 0,
+    } unless ($session{'CurrentAssetSearchHash'} && $session{'CurrentAssetSearchHash'}->{Query} eq $Query);
+
+
+
+if ( $session{'assets'}->Query()) {
+    $assetcount = $session{assets}->CountAll();
+    if ($assetcount == 1 and $AutoForwardSingleResult) {
+        $m->comp('/AssetTracker/Asset/Display.html', id => $session{'assets'}->First->Id);
+        return;
+    }
+    $title = loc('Found [quant,_1,asset]', $assetcount);
+} else {
+    $title = loc("Find assets");
+}
+
+my $QueryString = "?".$m->comp('/Elements/QueryString',
+                               Query => $Query,
+                               Format => $Format,
+                               Rows => $Rows,
+                               OrderBy => $OrderBy,
+                               Order => $Order,
+                               Page => $Page);
+
+
+if ($ARGS{'AssetsRefreshInterval'}) {
+	$session{'assets_refresh_interval'} = $ARGS{'AssetsRefreshInterval'};
+}
+
+</%INIT>
+<%CLEANUP>
+$session{'assets'}->PrepForSerialization();
+</%CLEANUP>
+<%ARGS>
+$Query => undef
+$Format => undef 
+$HideResults => 0
+$Rows => 50
+$Page => 1
+$OrderBy => 'id'
+$Order => 'ASC'
+$AutoForwardSingleResult => 0
+</%ARGS>

@@ -1,0 +1,31 @@
+  <tr>
+    <td class="labeltop"><&|/l&><% $Base_name %></&>:</td>
+    <td class="value">
+% while (my $link = $Object->$Base->Next) {
+      <INPUT TYPE=CHECKBOX NAME="DeleteLink--<%$link->Type%>-<%$link->Target%>">
+        <& /Elements/ShowLink, URI => $link->TargetURI &><br>
+% }
+    </td>
+  </tr>
+  <tr>
+    <td class="labeltop"><&|/l&><% $Target_name %></&>:</td>
+    <td class="value">
+% while (my $link = $Object->$Target->Next) {
+      <INPUT TYPE=CHECKBOX NAME="DeleteLink-<%$link->Base%>-<%$link->Type%>-">
+        <& /Elements/ShowLink, URI => $link->BaseURI &><br>
+% }
+    </td>
+  </tr>
+
+<%INIT>
+my ($Target, $Base_name, $Target_name);
+
+$Base_name = $Map->{$Base}{Name};
+$Target = $Map->{$Base}{Mate};
+$Target_name = $Map->{$Target}{Name};
+</%INIT>
+<%ARGS>
+$Object
+$Base
+$Map
+</%ARGS>

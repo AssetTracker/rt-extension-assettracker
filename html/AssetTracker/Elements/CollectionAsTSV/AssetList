@@ -1,0 +1,68 @@
+% if ($ShowHeader) {
+<& /AssetTracker/Elements/CollectionAsTSV/Header, 
+    Format => \@Format, 
+    AllowSorting => $AllowSorting, 
+    Order => $Order, 
+    Query => $Query,
+    Rows => $Rows,
+    Page => $Page,
+    OrderBy => $OrderBy , 
+    BaseURL => $BaseURL,
+    maxitems => $maxitems &>\
+% }
+%   my $i;
+%   while (my $record = $Collection->Next) {
+%   $i++;
+% # Every ten rows, flush the buffer and put something on the page.
+% $m->flush_buffer() unless ($i % 10);
+<&   /AssetTracker/Elements/CollectionAsTSV/Row, Format => \@Format, i => $i, record => $record, maxitems => $maxitems &>\
+%   }
+% $m->abort();
+<%INIT>
+$r->content_type('application/vnd.ms-excel');
+my $maxitems = 0;
+
+$Format ||= $RTx::AssetTracker::DefaultSearchResultFormat;
+# Scrub the html of the format string to remove any potential nasties.
+$Format = $m->comp('/Elements/ScrubHTML', Content => $Format);
+
+
+unless ($Collection) {
+        $Collection = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+        $Collection->FromSQL($Query);
+}
+
+my (@Format) = $m->comp('/Elements/CollectionAsTable/ParseFormat', Format => $Format);
+# Find the maximum number of items in any row, so we can pad the table.
+my $item = 0;
+foreach my $col (@Format) {
+    $item++;
+    if ( $col->{title} eq 'NEWLINE' ) {
+        $item = 0;
+    }
+    else {
+        $maxitems = $item if $item > $maxitems;
+    }
+}
+
+
+$Collection->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
+#$Collection->RowsPerPage($Rows) if ($Rows);
+#$Collection->GotoPage($Page-1); # SB uses page 0 as the first page
+my $TotalFound =  $Collection->CountAll();
+
+</%INIT>
+<%ARGS>
+$Query => undef
+$Rows => 0
+$Page => 1
+$Title => 'Asset Search'
+$Collection => undef
+$AllowSorting => undef
+$Order => undef
+$OrderBy => undef
+$BaseURL => undef
+$Format => $RTx::AssetTracker::DefaultSearchResultFormat
+$ShowNavigation => 1
+$ShowHeader => 1
+</%ARGS>

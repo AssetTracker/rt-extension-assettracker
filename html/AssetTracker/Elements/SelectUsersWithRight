@@ -1,0 +1,91 @@
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+<SELECT MULTIPLE SIZE=<%$Size%> NAME="<%$Name%>">
+%if ($DefaultValue) {
+<OPTION <% !$Default && "SELECTED" %> VALUE=""><%$DefaultLabel%></OPTION>
+%}
+%foreach my $User ( @users)  {
+<OPTION <% ($User->Id == $Default)         && "SELECTED" %> VALUE="Principal-<%$User->Id()%>">
+%if ($Verbose) {
+% if ($SortFriendly) {
+ <%$User->Name()%> (<%$User->RealName()%>)
+% }
+% else {
+ <%$User->RealName()%> (<%$User->Name()%>)
+% }
+%}
+%else {
+<%$User->Name()%>
+%}
+</OPTION>
+%}
+</SELECT>
+
+<%INIT>
+my @objects;
+my @equiv_objects;
+my @users;
+
+if ($AssetObj) {
+        @objects = ($AssetObj);
+        @equiv_objects = $AssetObj->TypeObj;
+}
+elsif ($TypeObj) {
+        @objects = ($TypeObj);
+} 
+elsif ($cftypes) {
+	@objects = keys %{$cftypes};
+}
+else {
+        my $Types = RTx::AssetTracker::Types->new($session{CurrentUser});
+	$Types->UnLimit();
+	while (my $Type = $Types->Next()) {
+	      push( @objects, $Type );
+        }
+}
+
+my %user_uniq_hash;
+foreach my $object (@objects) {
+	my $Users = RT::Users->new($session{CurrentUser});
+        $Users->WhoHaveRight(Right => $Right,
+                     Object => $object,
+                     EquivObjects => [ @equiv_objects, $RTx::AssetTracker::System ],
+                     IncludeSystemRights => $IncludeSystemRights,
+                     IncludeSuperusers => $IncludeSuperusers,
+                      );
+        while (my $User = $Users->Next()) {
+	      $user_uniq_hash{$User->Id()} = $User;
+        }
+}
+@users = sort { uc($a->Name) cmp uc($b->Name) } values %user_uniq_hash;
+</%INIT>
+
+<%ARGS>
+$Name => undef
+$Default => 0
+$TypeObj => undef
+$AssetObj => undef
+$Right
+$DefaultValue => 0
+$DefaultLabel => "-"
+$cftypes => undef
+$IncludeSystemRights => 1
+$IncludeSuperusers => 0
+$Verbose => 0
+$SortFriendly => 0
+$Size => 5
+</%ARGS>

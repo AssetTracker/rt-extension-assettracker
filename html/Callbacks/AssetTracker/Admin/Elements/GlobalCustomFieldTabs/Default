@@ -1,0 +1,12 @@
+<%INIT>
+  $tabs->{'ZZ'} = { 'title' => loc('Assets'),
+                                text => loc('Modify global asset rights'),
+                           path => 'AssetTracker/Admin/Global/CustomFields/Type-Assets.html',
+                         };
+</%INIT>
+
+
+<%ARGS>
+$tabs
+</%ARGS>
+

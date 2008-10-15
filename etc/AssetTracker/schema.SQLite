@@ -1,0 +1,78 @@
+# {{{ AT_Types
+CREATE TABLE AT_Types (
+  id INTEGER PRIMARY KEY ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  DefaultAdmin integer NULL DEFAULT 0  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  Disabled int2 NOT NULL DEFAULT 0 
+
+) ;
+CREATE UNIQUE INDEX AT_Types1 ON AT_Types (Name) ;
+CREATE INDEX AT_Types2 ON AT_Types (Disabled) ;
+
+# }}}
+
+# {{{ Assets
+
+CREATE TABLE AT_Assets (
+  id INTEGER PRIMARY KEY ,
+  Type integer NOT NULL DEFAULT 0  ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Status varchar(20) NULL ,
+  URI varchar(255),
+
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  
+
+) ;
+
+CREATE INDEX AT_Assets1 ON AT_Assets (Type, Status) ;
+CREATE INDEX AT_Assets2 ON AT_Assets (Name, Type, Status) ;
+
+# }}}
+
+# {{{ AT_IPs
+CREATE TABLE AT_IPs (
+  id INTEGER PRIMARY KEY ,
+  IP char(15) NOT NULL  ,
+  MAC char(12) NULL  ,
+  Interface varchar(25) NULL DEFAULT 0  ,
+  Asset integer NOT NULL DEFAULT 0  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  
+
+) ;
+CREATE UNIQUE INDEX AT_IPs1 ON AT_IPs (IP) ;
+CREATE INDEX AT_IPs2 ON AT_IPs (Asset) ;
+
+# }}}
+
+# {{{ AT_Ports
+CREATE TABLE AT_Ports (
+  id INTEGER PRIMARY KEY ,
+  Transport char(15) NOT NULL  ,
+  Port char(12) NULL  ,
+  IP integer NOT NULL DEFAULT 0  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  
+
+) ;
+CREATE INDEX AT_Ports1 ON AT_Ports (Port) ;
+CREATE UNIQUE INDEX AT_Ports2 ON AT_Ports (Transport,Port,IP) ;
+CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
+
+# }}}
+

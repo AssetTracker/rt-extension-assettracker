@@ -1,0 +1,16 @@
+<%init>
+use RTx::AssetTracker;
+use RTx::AssetTracker::Asset;
+use RTx::AssetTracker::Assets;
+use RTx::AssetTracker::Types;
+use RTx::AssetTracker::Type;
+use RTx::AssetTracker::Interface::Web;
+use RT::CustomFields;
+use RT::CustomField;
+use RTx::AssetTracker::Transaction;
+use RTx::AssetTracker::Transactions;
+return(1);
+</%init>
+<%once>
+RTx::AssetTracker::LoadConfig();
+</%once>

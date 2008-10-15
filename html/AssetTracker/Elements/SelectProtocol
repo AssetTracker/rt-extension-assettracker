@@ -1,0 +1,14 @@
+<SELECT NAME ="<%$Name%>">
+%if ($DefaultValue) {
+<OPTION <% !$Default && "SELECTED" %> VALUE=""><%$DefaultLabel%></OPTION>
+%}
+%foreach my $protocol (qw (TCP UDP)) {
+<OPTION <% ($protocol eq $Default) && "SELECTED" %> VALUE="<%$protocol%>"><%loc($protocol)%></OPTION>
+% }
+</SELECT>
+<%ARGS>
+$Name => undef
+$Default => ''
+$DefaultValue => 1
+$DefaultLabel => "-"
+</%ARGS>

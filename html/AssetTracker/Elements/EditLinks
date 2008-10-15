@@ -1,0 +1,29 @@
+<TABLE>
+<TR>
+<TD VALIGN=TOP>
+<h3><&|/l&>New links</&></h3>
+
+% if ($ShowFind) {
+<&|/l&>Find assets whose</&><BR>
+<& /AssetTracker/Elements/SelectAssets &>
+<input type=submit name="OnlySearchForAsset" value="<&|/l&>Go!</&>">
+% }
+
+<& AddLinks, AssetObj => $AssetObj, AssetString => $AssetString,
+        AssetOp => $AssetOp, AssetField => $AssetField, ShowFind => $ShowFind &>
+</TD>
+<TD VALIGN=CENTER>
+% if (ref $AssetObj) {
+<& DeleteLinks, Object => $AssetObj &>
+% }
+</TD>
+</TR>
+</TABLE>
+
+<%ARGS>
+$AssetField => undef
+$AssetOp => undef
+$AssetString => undef
+$AssetObj => undef
+$ShowFind => 1
+</%ARGS>

@@ -1,0 +1,13 @@
+  <tr>
+    <td class="labeltop"><&|/l&>Assets</&>:</td>
+    <td class="value">
+% while (my $link = $Object->Assets->Next) {
+      <INPUT TYPE=CHECKBOX NAME="DeleteLink-<%$link->Base%>-<%$link->Type%>-">
+        <& ShowLink, URI => $link->BaseURI &><br>
+% }
+    </td>
+  </tr>
+
+<%ARGS>
+$Object
+</%ARGS>

@@ -1,0 +1,226 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<%ARGS>
+$Name => undef
+$Attr => undef
+</%ARGS>
+
+
+<%ONCE>
+our ( $ASSET_COLUMN_MAP );
+
+sub AssetColumnMap {
+    my $name = shift;
+    my $attr = shift;
+
+    # First deal with the simple things from the map
+    if ( $ASSET_COLUMN_MAP->{$name} ) {
+        return ( $ASSET_COLUMN_MAP->{$name}->{$attr} );
+    }
+
+    # now, let's deal with harder things, like Custom Fields
+
+    elsif ( $name =~ /^(?:CF|CustomField)\.\{(.+)\}$/ ) {
+        my $field = $1;
+
+        if ( $attr eq 'attribute' ) {
+            return (undef);
+        }
+        elsif ( $attr eq 'title' ) {
+            return ( $field );
+        }
+        elsif ( $attr eq 'value' ) {
+	    # Display custom field contents, separated by newlines.
+            # For Image custom fields we also show a thumbnail here.
+            return sub {
+                my $values = $_[0]->CustomFieldValues($field);
+                return map {
+                    (
+                        ($_->CustomFieldObj->Type eq 'Image')
+                            ? \($m->scomp( '/Elements/ShowCustomFieldImage', Object => $_ ))
+                            : $_->Content
+                    ),
+                    \'<br>',
+                } @{ $values->ItemsArrayRef }
+	    };
+        }
+    }
+}
+
+sub AssetLinkCallback {
+    my $method = shift;
+
+    my $mode            = $RTx::AssetTracker::Asset::LINKTYPEMAP{$method}{Mode};
+    my $mode_uri        = $mode.'URI';
+    my $mode_is_local   = $mode.'IsLocal';
+    my $local_type      = 'Local'.$mode;
+
+    return sub {
+        map {
+            \'<A HREF="',
+            $_->$mode_uri->Resolver->HREF,
+            \'">',
+            ( $_->$mode_uri->IsLocal ?
+              $_->$mode_uri->Resolver->AsString
+             :
+              $_->$mode
+            ),
+            \'</A><BR>',
+        } @{ $_[0]->$method->ItemsArrayRef }
+    }
+}
+
+$ASSET_COLUMN_MAP = {
+    IP => {
+        attribute => 'IP',
+        title     => 'IP Address',
+        value     => sub { return map { ($_, \'<br>') } $_[0]->IPsAsList }
+    },
+    TypeName => {
+        attribute => 'AssetType',
+        title     => 'Type',
+        value     => sub { return $_[0]->TypeObj->Name }
+    },
+    id => {
+        attribute => 'id',
+        align     => 'right',
+        value     => sub { return $_[0]->id }
+    },
+    Name => {
+        attribute => 'Name',
+        title     => 'Name',
+        value     => sub { return $_[0]->Name }
+    },
+    Status => {
+        attribute => 'Status',
+        value     => sub { return loc($_[0]->Status) }
+    },
+    Description => {
+        attribute => 'Description',
+        value => sub { return $_[0]->Description || "(" . loc('No description') . ")" }
+    },
+    ExtendedStatus => {
+        title     => 'Status',
+        attribute => 'Status',
+        value     => sub {
+            my $Asset = shift;
+
+            if ( $Asset->HasUnresolvedDependencies ) {
+                if (   $Asset->HasUnresolvedDependencies( Type => 'approval' )
+                    or $Asset->HasUnresolvedDependencies( Type => 'code' ) )
+                {
+                    return \'<em>', loc('(pending approval)'), \'</em>';
+                }
+                else {
+                    return \'<em>', loc('(pending other Collection)'), \'</em>';
+                }
+            }
+            else {
+                return loc( $Asset->Status );
+            }
+
+          }
+    },
+    CreatedRelative => {
+        title     => 'Created',
+        attribute => 'Created',
+        value     => sub { return $_[0]->CreatedObj->AgeAsString }
+    },
+    LastUpdatedRelative => {
+        title     => 'Last Updated',
+        attribute => 'LastUpdated',
+        value     => sub { return $_[0]->LastUpdatedObj->AgeAsString }
+    },
+    Created => {
+        attribute => 'Created',
+        value     => sub { return $_[0]->CreatedObj->AsString }
+    },
+    CreatedBy => {
+        attribute => 'CreatedBy',
+        title => 'Created By',
+        value     => sub { return $_[0]->CreatorObj->Name }
+    },
+    LastUpdated => {
+        attribute => 'LastUpdated',
+        title     => 'Last Updated',
+        value     => sub { return $_[0]->LastUpdatedObj->AsString }
+    },
+    LastUpdatedBy => {
+        attribute => 'LastUpdatedBy',
+        title     => 'Last Updated By',
+        value     => sub { return $_[0]->LastUpdatedByObj->Name }
+    },
+    LastTransaction => {
+        attribute => 'LastTransaction',
+        title     => 'Last Transaction',
+        value     => sub { return $_[0]->Transactions->Last->BriefDescription }
+    },
+
+    # Everything from LINKTYPEMAP
+    (map {
+        $_ => { value => AssetLinkCallback( $_ ) }
+    } keys %RTx::AssetTracker::Asset::LINKTYPEMAP),
+
+    '_CLASS' => {
+        value => sub { return $_[1] % 2 ? 'oddline' : 'evenline' }
+    },
+
+};
+
+for my $role ( ActiveRoleArray() ) {
+    my $group_method = $role . 'RoleGroup';
+    $ASSET_COLUMN_MAP->{$role} = {
+        value => sub { return $_[0]->$group_method->MemberEmailAddressesAsString }
+    };
+}
+
+
+# }}}
+</%ONCE>
+<%init>
+$m->comp( '/Elements/Callback', COLUMN_MAP    => $ASSET_COLUMN_MAP, _CallbackName => 'ColumnMap');
+return AssetColumnMap($Name, $Attr);
+</%init>

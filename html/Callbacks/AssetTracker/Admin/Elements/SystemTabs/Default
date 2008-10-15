@@ -1,0 +1,16 @@
+<%INIT>
+                $tabs->{'K'} = { title => loc('AT Group Rights'),
+                                path => 'AssetTracker/Admin/Global/GroupRights.html',
+                      };
+                $tabs->{'L'} = { title => loc('AT User Rights'),
+                                path => 'AssetTracker/Admin/Global/UserRights.html',
+                      };
+
+
+</%INIT>
+
+
+<%ARGS>
+$tabs
+</%ARGS>
+

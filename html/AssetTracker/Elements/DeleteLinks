@@ -1,0 +1,33 @@
+<TABLE width=100%>
+  <TR>
+    <TD VALIGN=TOP WIDTH=50%>
+      <h3><&|/l&>Current Links</&></h3>
+
+<table>
+  <tr>
+    <td></td>
+    <td><i><&|/l&>(Check box to delete)</&></i></td>
+  </tr>
+% for my $link ( keys %$link_dir ) {
+    <& DeleteLinkPair, Object => $Object, Base => $link, Map => $link_types &>
+% }
+</table>
+
+</TD>
+</TR>
+</TABLE>
+
+<%INIT>
+my $id;
+if ($Object && $Object->Id) {
+    $id = $Object->Id;
+} else {
+    $id = 'new';
+}
+my $link_types = RTx::AssetTracker::Asset::LINKTYPEMAP();
+my $link_dir   = RTx::AssetTracker::Asset::LINKDIRMAP();
+</%INIT>
+
+<%ARGS>
+$Object => undef
+</%ARGS>

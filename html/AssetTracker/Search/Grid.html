@@ -1,0 +1,285 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2005 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Elements/Header, Title => loc("Grid asset update") &>
+%#<& /Elements/Tabs, Title => loc("Grid asset update") &>
+<& /AssetTracker/Elements/Tabs,
+    current_tab => "AssetTracker/Search/Grid.html" &>
+
+
+<& /Elements/ListActions, actions => \@results &>
+<& /Elements/TitleBoxStart, title => loc('Update selected assets') &>
+<FORM METHOD="POST" ACTION="<%$RT::WebPath%>/AssetTracker/Search/Grid.html" >
+<input type="hidden" name="Query" value="<%$ARGS{'Query'}%>">
+<input type="hidden" name="Format" value="<%$ARGS{'Format'}%>">
+<TABLE WIDTH=100% border=0 cellpadding=3 CELLSPACING=0>
+<TR>
+<TH><&|/l&>Update</&></TH>
+%foreach my $col (@cols) {
+% my $colalias = $col;
+% $colalias =~ s/(Obj\-\>)(Name|AsString)//;
+% $colalias =~ s/TypeName/Type/;
+% $colalias =~ s/OwnerName/Owner/;
+% $colalias =~ s/AdminCc/Admin/;
+% $colalias =~ s/CustomField\.\{(.+)\}/$1/;
+
+<TH><% loc($colalias) %>&nbsp;</TH>
+%}
+</TR>
+
+<%PERL>
+
+my $i;
+
+$Assets->RedoSearch();
+while (my $Asset = $Assets->Next) {
+ $i++;
+ if ($i % 2) {
+     $bgcolor = "#dddddd";
+ }
+ else {
+     $bgcolor = "#ffffff";
+ }
+      </%PERL>
+<TR bgcolor="<%$bgcolor%>">
+<TD><input type=checkbox name="UpdateAsset<%$Asset->Id%>" ></TD>
+%foreach my $col (@cols) {
+<TD>
+% if ($col eq 'id') {
+<A HREF="<% $RT::WebPath%>/AssetTracker/Asset/Display.html?id=<%$Asset->Id%>"><%$Asset->Id()%></A>
+% }
+%elsif ($col eq 'Name') {
+<input name="<%"Asset-".$Asset->Id."-Name"%>" size=20 value="<%$Asset->Name%>">
+% }
+%elsif ($col eq 'Description') {
+<input name="<%"Asset-".$Asset->Id."-Description"%>" size=40 value="<%$Asset->Description%>">
+% }
+%elsif ($col eq 'Status') {
+<& /AssetTracker/Elements/SelectStatus, Name => "Asset-".$Asset->Id."-Status", Default => $Asset->Status &>
+% }
+%elsif ($col eq 'TypeName') {
+<& /AssetTracker/Elements/SelectType, Name => "Asset-".$Asset->Id."-Type", Default => $Asset->Type &>
+% }
+%elsif (grep { $col eq $_ } RTx::AssetTracker::Type->ActiveRoleArrray()) {
+<textarea cols=30 rows=3 name="<%"Asset-".$Asset->Id."-$col"%>">
+%  my $method = $col . 'RoleGroup';
+%  my $members = $Asset->$method->MembersObj;
+%  while (my $member = $members->Next) {
+%      if ($member->MemberObj->IsGroup) {
+Group:<% $member->MemberObj->Object->Name %>
+%      }
+%      else {
+<% $member->MemberObj->Object->EmailAddress ? $member->MemberObj->Object->EmailAddress : $member->MemberObj->Object->Name %>
+%      }
+%  }
+</textarea>
+% }
+%elsif ($col =~ /^CustomField\.\{(.+)\}$/) {
+%    my $cfname = $1;
+%# See if it is a CF for this Asset type
+%    if($TypeCFs{$Asset->Type}{$cfname}) {
+%        my $CustomField = RT::CustomField->new($session{CurrentUser});
+%        my ($rv, $msg) = $CustomField->LoadByName(Name => $cfname );
+%        if ($CustomField->CurrentUserHasRight("ModifyCustomField")) {
+    <& /AssetTracker/Elements/EditCustomField, Object => $Asset, CustomField => $CustomField &>
+%        }
+%        elsif ($CustomField->CurrentUserHasRight("SeeCustomField")) {
+    <& /AssetTracker/Elements/ShowCustomField, Object => $Asset, CustomField => $CustomField &>
+%        }
+%        else {
+    (no right)
+%        }
+%    }
+%    else {
+  n/a
+%    }
+% }
+%else {
+
+<% eval "\$Asset->$col()" %>&nbsp;
+%}
+</TD>
+%}
+</TR>
+%}
+
+
+
+</TABLE>
+<& /Elements/TitleBoxEnd &>
+<& /Elements/Submit, Label => loc('Update All') &>
+
+
+</FORM>
+<%INIT>
+
+unless ($session{'CurrentUser'}->HasRight( Object => $RTx::AssetTracker::System, Right => 'BulkUpdate')) {
+    Abort(loc("No permission to perform bulk updates of assets."));
+}
+
+my ($bgcolor, @results);
+
+# Process the updates
+my @UpdateIDs;
+foreach my $arg (keys %ARGS) {
+    if ($arg =~ /^UpdateAsset(\d+)$/) {
+        push @UpdateIDs, $1; 
+        delete $ARGS{$arg};
+    }
+}
+foreach my $id (@UpdateIDs) {
+
+    my $Asset = RTx::AssetTracker::Asset->new( $session{CurrentUser} );
+    my ($rv, $msg) = $Asset->Load($id);
+    unless ($Asset->Id) {
+        push @results, "Unable to load asset: $msg";
+        next;
+    }
+
+    # update the Asset basics
+    my %basics;
+    $basics{id} = $id;
+    foreach my $arg (keys %ARGS) {
+        next unless $arg =~ /^Asset-$id-(.*)$/;
+        $basics{$1} = $ARGS{$arg};
+        #delete $ARGS{$arg};
+    }
+    push @results, ProcessAssetBasics( AssetObj => $Asset, ARGSRef => \%basics);
+    
+    # update watchers?
+    push @results, ProcessAssetWatchers(AssetObj => $Asset, ARGSRef => \%ARGS);    
+
+    # update the Assets custom fields
+    my %cfs;
+    $cfs{id} = $id;
+    foreach my $arg (keys %ARGS) {
+        next unless $arg =~ /Asset-$id-CustomField-/;
+        $cfs{$arg} = $ARGS{$arg};
+        delete $ARGS{$arg};
+    }
+    push @results, ProcessObjectCustomFieldUpdates( AssetObj => $Asset, ARGSRef => \%cfs);
+
+}
+
+# Iterate through the ARGS hash and remove anything with a null value.
+# map ($ARGS{$_} =~ /^$/ && (delete $ARGS{$_}), keys %ARGS);
+
+$Format ||= $RTx::AssetTracker::DefaultSearchResultFormat;
+# Scrub the html of the format string to remove any potential nasties.
+$Format = $m->comp('/Elements/ScrubHTML', Content => $Format);
+my (@Format) = $m->comp('/Elements/CollectionAsTable/ParseFormat', Format => $Format);
+
+#my @cols = qw(id Name Status Description TypeObj->Name );
+my @cols;
+push @cols, $_->{title} for @Format;
+
+
+my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+$Assets->FromSQL($ARGS{'Query'});
+
+Abort(loc("No search to operate on.")) unless ($Assets);
+
+my %allcfs;
+my %cfqnames;
+my %cfqs;
+my %TypeCFs;
+my $count = 0;
+while (my $Asset = $Assets->Next) {
+    my $cfq = $Asset->TypeObj;
+    my $cfqid = $cfq->Id;
+    my $cfqn = $cfq->Name;
+    unless ( exists $cfqs{$cfqid} ) {
+	$cfqs{$cfqid} = 1;
+	$count++;
+	my $cfs = $cfq->AssetCustomFields;
+	while (my $cf = $cfs->Next) {
+	    $allcfs{$cf->Id} = $cf;
+	    $cfqnames{$cf->Id}{$cfqn} = 1;
+            $TypeCFs{$cfqn}{$cf->Name} = 1;
+            $TypeCFs{$cfqid}{$cf->Name} = 1;
+	}
+    }
+}
+
+my %globalcfs;
+my $CFs = RT::CustomFields->new($RT::SystemUser);
+$CFs->LimitToGlobalAsset;
+while (my $cf = $CFs->Next) {
+    $globalcfs{$cf->Id} = 1;
+}
+
+
+#Iterate through each asset we've been handed
+my (@linkresults,@cfresults);
+my %queues;
+
+$Assets->RedoSearch();
+while (my $Asset = $Assets->Next) {
+    $queues{$Asset->TypeObj->Id}++;
+    $RT::Logger->debug( "Checking Asset ".$Asset->Id ."\n");
+    next unless ($ARGS{"UpdateAsset".$Asset->Id});
+    $RT::Logger->debug ("Matched\n");
+    my @updateresults; 
+
+    #Update the basics.
+    my @basicresults = ProcessAssetBasics(AssetObj => $Asset, ARGSRef => \%ARGS);
+    my @cfresults = ProcessBulkCustomFieldUpdates(Object => $Asset, ARGSRef => \%ARGS);
+    #Update the watchers
+$RT::Logger->debug( "About to update watchers");
+    my @watchresults = ProcessAssetWatchers(AssetObj => $Asset, ARGSRef => \%ARGS);    
+    push @results, @watchresults;
+
+
+    $ARGS{'id'} = $Asset;
+    my @tempresults = ( @basicresults, @cfresults, @updateresults);
+    @tempresults = map { loc("Asset #[_1] [_2]: [_3]",$Asset->Id,$Asset->Name,$_) } @tempresults;
+
+    push @results, @tempresults;
+}
+
+</%INIT>
+<%ARGS>
+$Format => $RTx::AssetTracker::DefaultSearchResultFormat
+</%ARGS>

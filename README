@@ -1,0 +1,106 @@
+LICENSE
+
+The work is released under the GPL
+
+PREREQUISITES
+
+A working RT 3.4 installation.
+
+WARNING
+
+Only mysql and SQLite are tested by the author. Feel free to send me a
+schema file for other databases supported by RT 3.4
+
+Oracle schema provided by Joop van de Wege.
+Postgres schema provided by Rolf Schaufelberger.
+
+INSTALLATION
+
+Please make a backup of your RT installation and database!
+
+If you are proficient in the world of autoconf and want to help
+make installation easier, please let me know.
+
+$ tar -xzvf at.tgz
+$ cd at
+$ ./configure --with-rt-home=/opt/rt3 --with-rt-local=/opt/rt3 --with-rt-localhtml=/opt/rt3/share/html --with-db-admin=root
+# or: ./configure --with-rt-home=/opt/rt3 --with-rt-local=/opt/rt3/local --with-rt-localhtml=/opt/rt3/local/html --with-db-admin=root
+# but then overlays and callbacks will be difficult
+
+$ cd /opt/rt3
+# Now patch for your version of RT if you want asset history to record tickets properly
+$ patch -p0 < at/etc/upgrade/RT-3.4.x.patch
+$ cd -
+$ make install
+
+UPGRADE
+
+Please make a backup of your RT installation and database!
+
+$ tar -xzvf at.tgz
+$ cd at
+$ ./configure --with-rt-home=/opt/rt3 --with-rt-local=/opt/rt3 --with-rt-localhtml=/opt/rt3/share/html --with-db-admin=root
+# or: ./configure --with-rt-home=/opt/rt3 --with-rt-local=/opt/rt3/local --with-rt-localhtml=/opt/rt3/local/html --with-db-admin=root
+# but then overlays and callbacks will be difficult (see the wiki for installing in local and using overlays)
+
+$ cd /opt/rt3
+# Now patch for your version of RT if you want asset history to record tickets properly (among other things)
+# If there is no patch for your exact RT version then patching should not be necessary.
+$ patch -p0 < at/etc/upgrade/RT-3.4.x.patch
+$ cd -
+$ make upgrade
+
+     You may also need to update RT's database.  To find out, type:
+
+       ls etc/AssetTracker/upgrade
+
+     For each item in that directory whose name is greater than
+     your previously installed RT version, run:
+
+       /opt/rt3/local/sbin/at-setup-database --action schema \
+           --datadir etc/AssetTracker/upgrade/<version>
+       /opt/rt3/local/sbin/at-setup-database --action acl \
+           --datadir etc/AssetTracker/upgrade/<version>
+       /opt/rt3/local/sbin/at-setup-database --action insert \
+            --datadir etc/AssetTracker/upgrade/<version>
+
+
+
+Now if you are upgrading from AT 1.0.x to 1.2.x and you have been using the Parent field,
+you will need to run a script that converts the Parents to links. Skip this step if you
+never used the Parent field. Not sure? Running this script won't hurt anything.
+
+$ perl $RTLOCAL/etc/AssetTracker/upgrade/1.2.0/AT-1.0.x-to-1.2.0.pl
+
+If you are upgrading to 1.2.3 there has been a schema change, so you have
+to run the schema upgrade (above) and then run a script to populate the new field.
+
+$ perl $RTLOCAL/etc/AssetTracker/upgrade/1.2.3/AT-1.2.0-to-1.2.3.pl
+
+* Please ask if you have any questions about upgrading! *
+
+
+WARNING!!!
+
+If you upgrade RT you will need to re-apply the patches. Also you will
+probably need to chmod 755 $RTHOME/$LOCAL/etc/AssetTracker
+It's best not to upgrade RT until a version of Asset Tracker has been
+released that has been tested against that version of RT.
+
+NOTE
+
+See http://atwiki.chaka.net/
+
+MISSING FEATURES
+
+* There is no Scrips system for AT, yet.
+* There is no RPC system, yet.
+
+AUTHOR
+
+Todd Chapman
+todd@chaka.net
+
+PROPS
+
+Thanks to Jesse and Best Practical for giving me something to stand on.

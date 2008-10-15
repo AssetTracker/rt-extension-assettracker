@@ -1,0 +1,22 @@
+
+<%$Asset->TypeObj->Name%>: 
+<a href="<%$RT::WebPath%>/AssetTracker/Asset/Display.html?id=<%$Asset->Id%>">
+<%$Asset->Name%> 
+</a>
+[<%$Asset->Status%>]
+
+<%INIT>
+unless ($Asset) {
+    Abort("No asset specified!") unless $id;
+    Abort("Bad id: $id") unless ($id =~ /\d+/);
+
+    $Asset = RTx::AssetTracker::Asset->new($session{CurrentUser});
+    $Asset->Load($id);
+    Abort("Asset could not be loaded!") unless $Asset->Id;
+}
+Abort("No permission to view asset!") unless $Asset->CurrentUserHasRight('ShowAsset');
+</%INIT>
+<%ARGS>
+$Asset => undef
+$id => undef
+</%ARGS>

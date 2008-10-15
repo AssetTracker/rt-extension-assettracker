@@ -1,0 +1,21 @@
+<& /AssetTracker/Elements/CollectionAsTSV/AssetList, 
+    Query => $Query,
+    AllowSorting => 1,
+    OrderBy => $OrderBy,
+    Order => $Order,
+    Rows => $Rows,
+    Page => $Page,
+    Format => $Format,
+    BaseURL => $RT::WebPath."/AssetTracker/Search/Results.html?"
+
+&>
+<%ARGS>
+$Query => undef
+$Format => undef
+$HideResults => 0
+$Rows => 50
+$Page => 1
+$OrderBy => 'id'
+$Order => 'ASC'
+$AutoForwardSingleResult => 0
+</%ARGS>

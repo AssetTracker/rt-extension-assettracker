@@ -1,0 +1,53 @@
+% for ( \%Base, \%Target ) {
+%     no strict 'refs';
+  <tr>
+    <td class="labeltop"><&|/l&><% $_->{Name} %></&>:</td>
+    <td class="value">
+    <ul>
+% my $method = $_->{Method};
+% while (my $Link = $Asset->$method->Next) {
+%     my $uri_method = $_->{Mode} . 'URI';
+%     if ( ( $SkipTickets || $ShowOnlyTickets ) && $Link->$uri_method->IsLocal ) {
+%         my $object = $_->{Mode} eq 'Base' ? $Link->TargetObj : $Link->BaseObj;
+%         if ( $SkipTickets && ref( $object ) eq 'RT::Ticket' ) { next; }
+%         if ( $ShowOnlyTickets && ref( $object ) ne 'RT::Ticket' ) { next; }
+%         if ( $SkipResolvedTickets && ref( $object ) eq 'RT::Ticket' && $closed->($object)  ) { next; }
+%     }
+<li><& /Elements/ShowLink, URI => $_->{Mode} eq 'Base' ? $Link->TargetURI : $Link->BaseURI &>
+% }
+</ul>
+    </td>
+  </tr>
+% }
+
+<%INIT>
+my ($Target, $Base_name, $Target_name);
+
+$Base_name = $Map->{$Base}{Name};
+$Target = $Map->{$Base}{Mate};
+$Target_name = $Map->{$Target}{Name};
+
+my %Base   = ( Name => $Base_name,   Method => $Base,   Mode => 'Base' );
+my %Target = ( Name => $Target_name, Method => $Target, Mode => 'Target' );
+</%INIT>
+
+<%ARGS>
+$Asset
+$Base
+$Map
+$SkipTickets => 1
+$SkipResolvedTickets => 1
+$ShowOnlyTickets => 0
+</%ARGS>
+
+<%ONCE>
+my $closed = sub {
+    my $ticket = shift;
+
+    return 1 if    $ticket->Status eq 'rejected'
+                or $ticket->Status eq 'resolved'
+                or $ticket->Status eq 'deleted';
+
+0;
+};
+</%ONCE>

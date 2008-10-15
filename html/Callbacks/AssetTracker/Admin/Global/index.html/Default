@@ -1,0 +1,18 @@
+<%INIT>
+  $tabs->{'K'} = { title => loc('AT Group Rights'),
+                                text => loc('Modify Asset Tracker global group rights'),
+                                path => $RT::WebPath.'/AssetTracker/Admin/Global/GroupRights.html',
+                      };
+  $tabs->{'L'} = { title => loc('AT User Rights'),
+                                text => loc('Modify Asset Tracker global user rights'),
+                                path => $RT::WebPath.'/AssetTracker/Admin/Global/UserRights.html',
+                      };
+
+
+</%INIT>
+
+
+<%ARGS>
+$tabs
+</%ARGS>
+

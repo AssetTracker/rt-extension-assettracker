@@ -1,0 +1,8 @@
+<%init>
+$toptabs->{'BA-AT'} = { title =>loc("Assets"),
+                          path  => "AssetTracker/index.html" };
+</%init>
+<%args>
+$toptabs =>undef
+</%args>
+

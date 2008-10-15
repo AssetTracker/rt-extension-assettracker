@@ -1,0 +1,154 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Admin/Elements/Header, Title => $title &>
+<& /AssetTracker/Admin/Elements/TypeTabs, id => $TypeObj->id, 
+    TypeObj => $TypeObj,
+    current_tab => $current_tab, 
+    Title => $title &>
+<& /Elements/ListActions, actions => \@results &>
+
+
+
+<FORM ACTION="<%$RT::WebPath%>/AssetTracker/Admin/Types/Modify.html" METHOD=POST>
+%if ($Create ) { 
+<INPUT TYPE=HIDDEN NAME=id VALUE="new">
+% } else {
+<INPUT TYPE=HIDDEN NAME=id VALUE="<%$TypeObj->Id%>">
+% }
+
+<TABLE>
+<TR><TD ALIGN=RIGHT>
+<&|/l&>Type Name</&>: 
+</TD>
+<TD><INPUT name="Name" value="<% ($Create) ? "" : $TypeObj->Name %>"></TD>
+</TR><TR>
+<TD ALIGN=RIGHT>
+<&|/l&>Description</&>:</TD><TD COLSPAN=3><INPUT name="Description" value="<% ($Create) ? "" : $TypeObj->Description %>" size=60></TD></TR>
+<TR>
+<TD>
+</TD>
+<TD COLSPAN=4><INPUT TYPE=HIDDEN NAME="SetEnabled" VALUE="1">
+<INPUT TYPE=CHECKBOX NAME="Enabled" VALUE="1" <%$EnabledChecked%>> <&|/l&>Enabled (Unchecking this box disables this type)</&><BR>
+<& /Elements/Callback, TypeObj => $TypeObj, results => \@results, %ARGS &>
+</TD>
+</TR>
+
+</TABLE>
+<& /Elements/Submit, Label => loc('Save Changes') &>
+</form>
+
+
+
+<%INIT>
+my $current_tab;
+my $TypeObj = new RTx::AssetTracker::Type($session{'CurrentUser'});
+$TypeObj->Load($id);
+my  ($title, @results, $Disabled, $EnabledChecked);
+$EnabledChecked = "CHECKED";
+
+if ($Create) {
+    $current_tab = 'AssetTracker/Admin/Types/Modify.html?Create=1';
+    $title = loc("Create a type");
+} else {
+    if ($id eq 'new') {
+       my ($val, $msg) =  $TypeObj->Create(Name => $Name);
+       delete $session{'create_in_types'};
+       if ($val == 0 ) {
+           Abort("$msg");
+	}
+	else {
+		push @results, $msg;
+	}    
+     }
+     else {
+        $TypeObj->Load($id) || $TypeObj->Load($Name) || Abort("Couldn't load type '$Name'");
+    }
+        $title = loc('Editing Configuration for type [_1]', $TypeObj->Name);
+    
+    $current_tab = 'AssetTracker/Admin/Types/Modify.html?id='.$TypeObj->id;
+}
+if ($TypeObj->Id()) {
+    delete $session{'create_in_types'};
+my @attribs= qw(Description Name );
+
+  @results = UpdateRecordObject( AttributesRef => \@attribs, 
+				    Object => $TypeObj, 
+				    ARGSRef => \%ARGS);
+
+  #we're asking about enabled on the web page but really care about disabled.
+  if ($Enabled == 1) {
+      $Disabled = 0;
+  }	
+  else {
+      $Disabled = 1;
+  }
+  if  ( ($SetEnabled) and ( $Disabled != $TypeObj->Disabled) ) { 
+      my  ($code, $msg) = $TypeObj->SetDisabled($Disabled);
+      push @results, loc('Enabled status: [_1]', loc_fuzzy($msg));
+  }
+  
+  if ($TypeObj->Disabled()) {
+      $EnabledChecked ="";
+  }
+
+#    my @linkresults;
+#    $m->comp('/Elements/Callback', results => \@linkresults, 
+#	     RecordObj => $TypeObj, ARGSRef => \%ARGS, 
+#	     _CallbackName => 'ProcessLinks');
+#    push @results, @linkresults;
+}
+</%INIT>
+
+
+<%ARGS>
+$id => undef
+$result => undef
+$Name => undef
+$Create => undef
+$Description => undef
+$SetEnabled => undef
+$Enabled => undef
+</%ARGS>

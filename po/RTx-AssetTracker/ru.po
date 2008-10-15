@@ -1,0 +1,1750 @@
+# translation of ru.po to Russian
+# FIXME
+# Andrew Kornilov <andy@eva.dp.ua>, 2005.
+msgid ""
+msgstr ""
+"Last-Translator: Andrew Kornilov <andy@eva.dp.ua>\n"
+"PO-Revision-Date: 2005-04-01 15:02+0300\n"
+"Project-Id-Version: ru\n"
+"Language-Team: Russian <ru@li.org>\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.9.1\n"
+"MIME-Version: 1.0\n"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1163 lib/RTx/AssetTracker/Asset_Overlay.pm:1163
+msgid "$addr is no longer an IP for this asset."
+msgstr "$addr больше не является адресом IP для этого ресурса."
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1203 lib/RTx/AssetTracker/Asset_Overlay.pm:1203
+msgid "$args{IP} is now an IP for this asset."
+msgstr "$args{IP} теперь является адресом IP для этого ресурса."
+
+#: lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:146 lib/RTx/AssetTracker/IP_Overlay.pm:146
+msgid "$args{Transport} $args{Port} has been added for this IP."
+msgstr "$args{Transport} $args{Port} был добавлен для этого адреса IP."
+
+#: lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:197 lib/RTx/AssetTracker/IP_Overlay.pm:197
+msgid "$portnum $transport is no longer an port for this IP."
+msgstr "$portnum $transport больше не является портом для этого адреса IP."
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:851 lib/RTx/AssetTracker/Record.pm:851
+#. ($self->id)
+msgid "$prefix %1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:845 lib/RTx/AssetTracker/Record.pm:845
+#. ( . $self->Name, $self->id)
+msgid "$prefix %1 "
+msgstr ""
+
+#: lib/RT/URI/.svn/text-base/at.pm.svn-base:260 lib/RT/URI/at.pm:260
+#. ($self->ObjectType, $self->Object->Id)
+msgid "%1 #%2"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1190 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:900 lib/RTx/AssetTracker/Record.pm:1190 lib/RTx/AssetTracker/Transaction_Overlay.pm:900
+#. ($cf->Name, $new_value->Content)
+#. ($field, $self->NewValue)
+msgid "%1 %2 added"
+msgstr "%1 %2 добавлено"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1197 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:907 lib/RTx/AssetTracker/Record.pm:1197 lib/RTx/AssetTracker/Transaction_Overlay.pm:907
+#. ($cf->Name, $old_content,                $new_value->Content)
+#. ($field, $self->OldValue, $self->NewValue)
+msgid "%1 %2 changed to %3"
+msgstr "%1 %2 изменено на %3"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1194 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:903 lib/RTx/AssetTracker/Record.pm:1194 lib/RTx/AssetTracker/Transaction_Overlay.pm:903
+#. ($cf->Name, $old_value->Content)
+#. ($field, $self->OldValue)
+msgid "%1 %2 deleted"
+msgstr "%1 %2 удалено"
+
+#: html/AssetTracker/Elements/.svn/text-base/RecentAssets.svn-base:47 html/AssetTracker/Elements/RecentAssets:47
+#. ($rows)
+msgid "%1 Most recently updated assets"
+msgstr "%1 Наиболее часто обновляемых ресурсов"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1227 lib/RTx/AssetTracker/Record.pm:1227
+#. ($args{'Value'}, $cf->Name)
+msgid "%1 added as a value for %2"
+msgstr "%1 добавлено как значение для %2"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:520 lib/RTx/AssetTracker/Transaction_Overlay.pm:520
+#. ($self->BriefDescription , $self->CreatorObj->Name)
+msgid "%1 by %2"
+msgstr "%1 пользователем %2"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:576 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:920 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:929 lib/RTx/AssetTracker/Transaction_Overlay.pm:576 lib/RTx/AssetTracker/Transaction_Overlay.pm:920 lib/RTx/AssetTracker/Transaction_Overlay.pm:929
+#. ($self->Field , ( $self->OldValue || $no_value ) ,  $self->NewValue)
+#. ($self->Field , $t1->Name , $t2->Name)
+msgid "%1 changed from %2 to %3"
+msgstr "%1 изменено с %2 на %3"
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:192 html/AssetTracker/Search/Build.html:192
+#. ($Description)
+msgid "%1 copy"
+msgstr "%1 копия"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:857 lib/RTx/AssetTracker/Record.pm:857
+msgid "%1 could not be set to %2."
+msgstr "%1 невозможно быть установлено в %2."
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:561 lib/RTx/AssetTracker/Transaction_Overlay.pm:561
+#. ($obj_type)
+msgid "%1 created"
+msgstr "%1 создано"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:566 lib/RTx/AssetTracker/Transaction_Overlay.pm:566
+#. ($obj_type)
+msgid "%1 deleted"
+msgstr "%1 удалено"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:894 lib/RTx/AssetTracker/Type_Overlay.pm:894
+#. ($principal->Object->Name, $args{'Type'})
+msgid "%1 is no longer a %2 for this type."
+msgstr "%1 больше не явялется %2 для этой категории."
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/SelectSearchesForObjects.svn-base:56 html/AssetTracker/Search/Elements/SelectSearchesForObjects:56
+#. ($object->Name)
+msgid "%1's saved searches"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:470 lib/RTx/AssetTracker/Transaction_Overlay.pm:470
+#. ($self)
+msgid "%1: no attachment specified"
+msgstr "%1: вложения не указаны"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransactionAttachments.svn-base:78 html/AssetTracker/Asset/Elements/ShowTransactionAttachments:78
+#. ($size)
+msgid "%1b"
+msgstr "%1б"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransactionAttachments.svn-base:75 html/AssetTracker/Asset/Elements/ShowTransactionAttachments:75
+#. (int( $size / 102.4 ) / 10)
+msgid "%1k"
+msgstr "%1к"
+
+#: html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:92 html/AssetTracker/Asset/Create.html:92
+msgid "(Administrators)"
+msgstr "(Администраторы)"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditTypeWatchers.abk.svn-base:50 html/AssetTracker/Admin/Elements/.svn/text-base/EditTypeWatchers.svn-base:50 html/AssetTracker/Admin/Elements/EditTypeWatchers.abk:50 html/AssetTracker/Admin/Elements/EditTypeWatchers:50 html/AssetTracker/Asset/Elements/.svn/text-base/EditIPs.svn-base:24 html/AssetTracker/Asset/Elements/EditIPs:24
+msgid "(Check box to delete)"
+msgstr "(Выделите пункты для удаления)"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomFields.svn-base:74 html/AssetTracker/Admin/Elements/EditCustomFields:74
+msgid "(No custom fields)"
+msgstr "(Нет дополнительных полей)"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/EditCustomField.svn-base:88 html/AssetTracker/Asset/Elements/.svn/text-base/EditCustomFields.svn-base:88 html/AssetTracker/Asset/Elements/EditCustomField:88 html/AssetTracker/Asset/Elements/EditCustomFields:88 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:575 lib/RTx/AssetTracker/Transaction_Overlay.pm:575
+msgid "(no value)"
+msgstr "(нет значения)"
+
+#: html/AssetTracker/Elements/RTx__Asset/.svn/text-base/ColumnMap.svn-base:166 html/AssetTracker/Elements/RTx__Asset/ColumnMap:166
+msgid "(pending approval)"
+msgstr "(в ожидании подтверждения)"
+
+#: html/AssetTracker/Elements/RTx__Asset/.svn/text-base/ColumnMap.svn-base:169 html/AssetTracker/Elements/RTx__Asset/ColumnMap:169
+msgid "(pending other Collection)"
+msgstr "(в ожидании решения связанных заявок)"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransactionAttachments.svn-base:82 html/AssetTracker/Asset/Elements/ShowTransactionAttachments:82
+msgid "(untitled)"
+msgstr "(без названия)"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:57 html/AssetTracker/Asset/Elements/ShowBasics:57
+msgid "<% $Asset->Description%>"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:65 html/AssetTracker/Asset/Elements/ShowBasics:65
+msgid "<% $Asset->Location%>"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:61 html/AssetTracker/Asset/Elements/ShowBasics:61
+msgid "<% $Asset->Model%>"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:53 html/AssetTracker/Asset/Elements/ShowBasics:53
+msgid "<% $Asset->Name%>"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:69 html/AssetTracker/Asset/Elements/ShowBasics:69
+msgid "<% $Asset->Status%>"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Quicksearch.orig.svn-base:52 html/AssetTracker/Elements/.svn/text-base/Quicksearch.svn-base:52 html/AssetTracker/Elements/Quicksearch.orig:52 html/AssetTracker/Elements/Quicksearch:52 html/AssetTracker/Search/Elements/.svn/text-base/SelectLinks.svn-base:48 html/AssetTracker/Search/Elements/SelectLinks:48
+msgid "<%$_%>"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/CreateAsset.svn-base:47 html/AssetTracker/Elements/CreateAsset:47
+#. ($m->scomp('/AssetTracker/Elements/SelectNewAssetType'))
+msgid "<input type=\"submit\" value=\"New asset of type\">&nbsp;%1"
+msgstr "<input type=\"submit\" value=\"Создать ресурс в категории\">&nbsp;%1"
+
+#: html/AssetTracker/Elements/.svn/text-base/ShowLinks.svn-base:67 html/AssetTracker/Elements/ShowLinks.andy:67 html/AssetTracker/Elements/ShowLinks.orig:67 html/AssetTracker/Elements/ShowLinks:67
+#. ($m->scomp('/Elements/SelectNewTicketQueue' ))
+msgid "<input type=\"submit\" value=\"New ticket in queue\">&nbsp;%1"
+msgstr "<input type=\"submit\" value=\"Создать заявку в очереди\">&nbsp;%1"
+
+#: html/Callbacks/AssetTracker/Admin/Elements/SystemTabs/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Admin/Elements/SystemTabs/Default:2 html/Callbacks/AssetTracker/Admin/Global/index.html/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Admin/Global/index.html/Default:2
+msgid "AT Group Rights"
+msgstr "Права группы в AT"
+
+#: html/Callbacks/AssetTracker/Admin/Elements/SystemTabs/.svn/text-base/Default.svn-base:5 html/Callbacks/AssetTracker/Admin/Elements/SystemTabs/Default:5 html/Callbacks/AssetTracker/Admin/Global/index.html/.svn/text-base/Default.svn-base:6 html/Callbacks/AssetTracker/Admin/Global/index.html/Default:6
+msgid "AT User Rights"
+msgstr "Права пользователя в AT"
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:65 html/AssetTracker/Search/Build.html:65
+msgid "Add"
+msgstr "Добавить"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:111 html/AssetTracker/Search/Bulk.html:111
+msgid "Add Admin"
+msgstr "Добавить Администратора"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:49 html/AssetTracker/Search/Elements/EditFormat:49
+msgid "Add Columns"
+msgstr "Добавить колонки"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickCriteria.svn-base:46 html/AssetTracker/Search/Elements/PickCriteria:46
+msgid "Add Criteria"
+msgstr "Добавить критерий"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/EditIPs.svn-base:4 html/AssetTracker/Asset/Elements/EditIPs:4
+msgid "Add IPs"
+msgstr "Добавить адреса IP"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:107 html/AssetTracker/Search/Bulk.html:107
+msgid "Add Owner"
+msgstr "Добавить Ответственного"
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:65 html/AssetTracker/Search/Build.html:65
+msgid "Add additional criteria"
+msgstr "Добавить дополнительный критерий"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:137 html/AssetTracker/Search/Bulk.html:137
+msgid "Add comments or replies to selected assets"
+msgstr "Добавить комментарии или ответы на выбранные ресурсы"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:87 html/AssetTracker/Admin/Types/People.html:87
+msgid "Add new watchers"
+msgstr "Добавить новых наблюдателей"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:641 lib/RTx/AssetTracker/Asset_Overlay.pm:641
+#. ($self->loc($args{'Type'}))
+msgid "Added principal as a %1 for this asset"
+msgstr "Принципал добавлен как %1 для этого ресурса"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:795 lib/RTx/AssetTracker/Type_Overlay.pm:795
+#. ($args{'Type'})
+msgid "Added principal as a %1 for this type"
+msgstr "Принципал добавлен как %1 для этой категории"
+
+#: etc/AssetTracker/.svn/text-base/initialdata.svn-base:11 etc/AssetTracker/initialdata:11
+msgid "Admin"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:46 html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:49 html/AssetTracker/Admin/Types/index.html:46 html/AssetTracker/Admin/Types/index.html:49
+msgid "Admin types"
+msgstr "Управление категориями"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:39 lib/RTx/AssetTracker/Type_Overlay.pm:39
+msgid "AdminType"
+msgstr "УправлятьКатегориями"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:69 html/AssetTracker/Admin/Types/People.html:69 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:87 html/AssetTracker/Asset/Create.html:87
+msgid "Administrators"
+msgstr "Администраторы"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/EditPeople.svn-base:56 html/AssetTracker/Asset/Elements/.svn/text-base/ShowPeople.svn-base:52 html/AssetTracker/Asset/Elements/EditPeople:56 html/AssetTracker/Asset/Elements/ShowPeople:52
+msgid "Admins"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:170 html/AssetTracker/Elements/Tabs:170
+msgid "Advanced"
+msgstr "Дополнительно"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickCriteria.svn-base:52 html/AssetTracker/Search/Elements/PickCriteria:52
+msgid "Aggregator"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:74 html/AssetTracker/Admin/Types/index.html:74
+msgid "All Types"
+msgstr "Все категории"
+
+#: lib/RTx/AssetTracker/.svn/text-base/System.pm.svn-base:53 lib/RTx/AssetTracker/System.pm:53
+msgid "Allow educated users to perform bulk updates"
+msgstr ""
+
+#: html/Callbacks/AssetTracker/Admin/Elements/CustomFieldTabs/.svn/text-base/Default.svn-base:8 html/Callbacks/AssetTracker/Admin/Elements/CustomFieldTabs/Default:8
+msgid "Applies to"
+msgstr "Применяется к"
+
+#: html/AssetTracker/Search/.svn/text-base/Edit.html.svn-base:64 html/AssetTracker/Search/Edit.html:64
+msgid "Apply"
+msgstr "Применить"
+
+#: html/AssetTracker/Search/.svn/text-base/Edit.html.svn-base:64 html/AssetTracker/Search/Edit.html:64
+msgid "Apply your changes"
+msgstr "Применить ваши изменения"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/DisplayOptions.svn-base:73 html/AssetTracker/Search/Elements/DisplayOptions:73
+msgid "Ascending"
+msgstr "По возрастанию"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:322 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:267 html/AssetTracker/Search/Bulk.html:322 html/AssetTracker/Search/Grid.html:267
+#. ($Asset->Id,$Asset->Name,$_)
+msgid "Asset #%1 %2: %3"
+msgstr "Ресурс #%1 %2: %3"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:391 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:411 lib/RTx/AssetTracker/Asset_Overlay.pm:391 lib/RTx/AssetTracker/Asset_Overlay.pm:411
+#. ($self->Id, $TypeObj->Name)
+msgid "Asset %1 created of type '%2'"
+msgstr "Ресурс %1 создан в категории '%2'"
+
+#: html/AssetTracker/Asset/.svn/text-base/ModifyAll.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/ModifyAll.html.svn-base:50 html/AssetTracker/Asset/ModifyAll.html:46 html/AssetTracker/Asset/ModifyAll.html:50
+#. ($Action, $Name)
+msgid "Asset %1: %2"
+msgstr "Ресурс %1: %2"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:67 html/AssetTracker/Admin/Elements/TypeTabs:67
+msgid "Asset Custom Fields"
+msgstr "Дополнительные поля ресурса"
+
+#: html/AssetTracker/Asset/.svn/text-base/History.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/History.html.svn-base:49 html/AssetTracker/Asset/History.html:46 html/AssetTracker/Asset/History.html:49
+#. ($Asset->Name)
+msgid "Asset History # %1"
+msgstr "История ресурса # %1"
+
+#: html/AssetTracker/.svn/text-base/index.html.svn-base:6 html/AssetTracker/index.html:6
+msgid "Asset Tracker"
+msgstr "Ресурсы"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:72 html/AssetTracker/Asset/Elements/ShowBasics:72 html/AssetTracker/Elements/.svn/text-base/Quicksearch.svn-base:50 html/AssetTracker/Elements/Quicksearch:50
+msgid "Asset Type"
+msgstr "Категория ресурса"
+
+#: html/Callbacks/AssetTracker/Admin/Elements/Tabs/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Admin/Elements/Tabs/Default:2 html/Callbacks/AssetTracker/Admin/index.html/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Admin/index.html/Default:2
+msgid "Asset Types"
+msgstr "Категории ресурсов"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:287 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:298 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:399 lib/RTx/AssetTracker/Asset_Overlay.pm:287 lib/RTx/AssetTracker/Asset_Overlay.pm:298 lib/RTx/AssetTracker/Asset_Overlay.pm:399
+msgid "Asset could not be created due to an internal error"
+msgstr "Невозможно создать ресурс из-за внутренней ошибки"
+
+#: html/AssetTracker/Asset/.svn/text-base/Display.html.svn-base:55 html/AssetTracker/Asset/Display.html:55
+msgid "Asset metadata"
+msgstr "Метаданные ресурса"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:244 lib/RTx/AssetTracker/Type_Overlay.pm:244
+msgid "Asset type already exists"
+msgstr "Данная категория ресурсов уже существует"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:253 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:259 lib/RTx/AssetTracker/Type_Overlay.pm:253 lib/RTx/AssetTracker/Type_Overlay.pm:259
+msgid "Asset type could not be created"
+msgstr "Невозможно создать категорию ресурсов"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:264 lib/RTx/AssetTracker/Type_Overlay.pm:264
+msgid "Asset type created"
+msgstr "Создана категория ресурсов"
+
+#: html/Callbacks/AssetTracker/Admin/Elements/GlobalCustomFieldTabs/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Admin/Elements/GlobalCustomFieldTabs/Default:2 html/Callbacks/AssetTracker/Admin/Global/CustomFields/index.html/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Admin/Global/CustomFields/index.html/Default:2 html/Callbacks/AssetTracker/Elements/EditLinks/.svn/text-base/DeleteLinks.svn-base:2 html/Callbacks/AssetTracker/Elements/EditLinks/.svn/text-base/NewLinks.svn-base:2 html/Callbacks/AssetTracker/Elements/EditLinks/DeleteLinks:2 html/Callbacks/AssetTracker/Elements/EditLinks/NewLinks:2 html/Callbacks/AssetTracker/Elements/Tabs/.svn/text-base/Default.svn-base:2 html/Callbacks/AssetTracker/Elements/Tabs/Default:2
+msgid "Assets"
+msgstr "Ресурсы"
+
+#: html/AssetTracker/.svn/text-base/index.html.svn-base:2 html/AssetTracker/index.html:2
+msgid "Assets at a glance"
+msgstr "Обзор ресурсов"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:40 lib/RTx/AssetTracker/Type_Overlay.pm:40
+msgid "Assign and remove custom fields"
+msgstr "Назначить или удалить дополнительные поля"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:40 lib/RTx/AssetTracker/Type_Overlay.pm:40
+msgid "AssignCustomFields"
+msgstr "НазначатьДополнительныеПоля"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:155 html/AssetTracker/Search/Bulk.html:155
+msgid "Attach"
+msgstr "Вложить"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:478 lib/RTx/AssetTracker/Transaction_Overlay.pm:478
+msgid "Attachment created"
+msgstr "Вложение создано"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:60 html/AssetTracker/Admin/Elements/TypeTabs:60
+msgid "Basics"
+msgstr "Основное"
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:80 html/AssetTracker/Search/Results.html:80
+msgid "Batch Update multiple assets"
+msgstr "Пакетное изменение множества ресурсов"
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:91 html/AssetTracker/Admin/CustomFields/.svn/text-base/UserRights.html.svn-base:74 html/AssetTracker/Admin/CustomFields/GroupRights.html:91 html/AssetTracker/Admin/CustomFields/UserRights.html:74
+msgid "Be sure to save your changes"
+msgstr "После любых изменений не забудьте сохранить их"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:88 html/AssetTracker/Search/Elements/EditFormat:88
+msgid "Bold"
+msgstr "Жирный"
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:82 html/AssetTracker/Search/Results.html:82
+msgid "Bookmarkable link"
+msgstr "Ссылка на этот запрос для добавления в избранное"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowHistory.svn-base:60 html/AssetTracker/Asset/Elements/.svn/text-base/ShowHistory.svn-base:66 html/AssetTracker/Asset/Elements/ShowHistory:60 html/AssetTracker/Asset/Elements/ShowHistory:66
+msgid "Brief headers"
+msgstr "Краткие заголовки"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:46 html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:47 html/AssetTracker/Search/Bulk.html:46 html/AssetTracker/Search/Bulk.html:47
+msgid "Bulk asset update"
+msgstr "Изменить выбранные ресурсы"
+
+#: lib/RTx/AssetTracker/.svn/text-base/System.pm.svn-base:53 lib/RTx/AssetTracker/System.pm:53
+msgid "BulkUpdate"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:38 lib/RTx/AssetTracker/Type_Overlay.pm:38
+msgid "Can this principal see this asset type"
+msgstr "Может ли данный принципал видеть данную категорию ресурсов"
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:819 html/AssetTracker/Search/Build.html:819
+msgid "Can't find a saved search to work with"
+msgstr "Невозможно найти сохраненный запрос для работы с ним"
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:824 html/AssetTracker/Search/Build.html:824
+msgid "Can't save this search"
+msgstr "Невозможно сохранить данный запрос"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1560 lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1638 lib/RTx/AssetTracker/Record.pm:1560 lib/RTx/AssetTracker/Record.pm:1638
+msgid "Can't specifiy both base and target"
+msgstr "Невозможно указывать одновременно и источник и адрес назначения"
+
+#: NOT FOUND IN SOURCE
+msgid "Check box to revoke right"
+msgstr "Выделите права, которые хотите отозвать"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransaction.svn-base:193 html/AssetTracker/Asset/Elements/ShowTransaction:193
+msgid "Comment"
+msgstr "Комментировать"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:141 html/AssetTracker/Search/Bulk.html:141
+msgid "Comments (not sent to requestors)"
+msgstr "Комментарии (не отправляются авторам заявок)"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:76 html/AssetTracker/Asset/Elements/ShowSummary:76
+msgid "Components"
+msgstr "Компоненты"
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectAttachmentField.svn-base:49 html/AssetTracker/Elements/SelectAttachmentField:49
+msgid "Content"
+msgstr "Содержание"
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectAttachmentField.svn-base:50 html/AssetTracker/Elements/SelectAttachmentField:50
+msgid "Content-Type"
+msgstr "Тип содержания"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:64 html/AssetTracker/Search/Elements/EditSearches:64
+msgid "Copy"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1212 lib/RTx/AssetTracker/Record.pm:1212
+msgid "Could not add new custom field value. "
+msgstr "Невозможно добавить новое значение дополнительного поля. "
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1165 lib/RTx/AssetTracker/Record.pm:1165
+#. (, $value_msg)
+msgid "Could not add new custom field value. %1 "
+msgstr "Невозможно добавить новое значение дополнительного поля. %1 "
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:113 html/AssetTracker/Admin/Elements/EditCustomField:113
+#. ($msg)
+msgid "Could not create CustomField: %1"
+msgstr "Невозможно создать дополнительное поле: %1"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:182 lib/RTx/AssetTracker/Asset_Overlay.pm:182
+msgid "Could not create asset. Type not set"
+msgstr "Невозможно создать ресурс. Не указана категория"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:774 lib/RTx/AssetTracker/Type_Overlay.pm:774
+msgid "Could not find or create that user"
+msgstr "Невозможно найти или создать данного пользователя"
+
+#: lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:186 lib/RTx/AssetTracker/IP_Overlay.pm:186
+msgid "Could not find that $args{Transport} Port"
+msgstr "Невозможно найти данный $args{Transport} Port"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1147 lib/RTx/AssetTracker/Asset_Overlay.pm:1147
+msgid "Could not find that IP"
+msgstr "Невозможно найти данный адрес IP"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:689 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:834 lib/RTx/AssetTracker/Asset_Overlay.pm:689 lib/RTx/AssetTracker/Type_Overlay.pm:834
+msgid "Could not find that principal"
+msgstr "Невозможно найти данного принципала"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:610 lib/RTx/AssetTracker/Asset_Overlay.pm:610
+msgid "Could not find that user"
+msgstr "Невозможно найти данного пользователя"
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/Objects.html.svn-base:69 html/AssetTracker/Admin/CustomFields/Objects.html:69
+msgid "Could not load CustomField %1"
+msgstr "Невозможно загрузить дополнительное поле %1"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:630 lib/RTx/AssetTracker/Asset_Overlay.pm:630
+#. ($self->loc($args{'Type'}))
+msgid "Could not make that principal a %1 for this asset"
+msgstr "Невозможно установить данного принципала как %1 для данного ресурса"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:793 lib/RTx/AssetTracker/Type_Overlay.pm:793
+#. ($args{'Type'})
+msgid "Could not make that principal a %1 for this type"
+msgstr "Невозможно установить данного принципала как %1 для данной категории"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:891 lib/RTx/AssetTracker/Type_Overlay.pm:891
+#. ($args{'Type'})
+msgid "Could not remove that principal as a %1 for this type"
+msgstr "Невозможно удалить данного принципала как %1 для данной категории"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1224 lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1283 lib/RTx/AssetTracker/Record.pm:1224 lib/RTx/AssetTracker/Record.pm:1283
+#. ($Msg)
+msgid "Couldn't create a transaction: %1"
+msgstr "Невозможно создать транзакцию: %1"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:866 lib/RTx/AssetTracker/Record.pm:866
+msgid "Couldn't find row"
+msgstr "Невозможно найти строку"
+
+#: NOT FOUND IN SOURCE
+msgid "Couldn't load %1 from the users database.\\n"
+msgstr "Невозможно загрузить %1 из базы данных пользователей. \\n"
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/UserRights.html.svn-base:149 html/AssetTracker/Admin/CustomFields/UserRights.html:149
+#. ($id)
+msgid "Couldn't load Class %1"
+msgstr "Невозможно загрузить категорию %1"
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:107 html/AssetTracker/Admin/CustomFields/GroupRights.html:107
+#. ($id)
+msgid "Couldn't load CustomField %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/ObjectCustomFields.svn-base:90 html/AssetTracker/Admin/Elements/ObjectCustomFields:90
+#. ($id)
+msgid "Couldn't load object %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:142 html/AssetTracker/Admin/Types/People.html:142
+#. ($id)
+msgid "Couldn't load type"
+msgstr "Невомзожно загрузить категорию"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:121 html/AssetTracker/Admin/Types/.svn/text-base/UserRights.html.svn-base:93 html/AssetTracker/Admin/Types/GroupRights.html:121 html/AssetTracker/Admin/Types/UserRights.html:93
+#. ($id)
+msgid "Couldn't load type %1"
+msgstr "Невозможно загрузить категорию %1"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:84 html/AssetTracker/Admin/Elements/EditCustomField:84 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:130 html/AssetTracker/Asset/Create.html:130
+msgid "Create"
+msgstr "Создать"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:96 html/AssetTracker/Admin/Elements/EditCustomField:96
+msgid "Create a CustomField"
+msgstr "Новое дополнительное поле"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/CustomField.html.svn-base:69 html/AssetTracker/Admin/Types/CustomField.html:69
+#. ($TypeObj->Name())
+msgid "Create a CustomField for type %1"
+msgstr "Создание дополнительного поля для категории %1"
+
+#: html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:49 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:55 html/AssetTracker/Asset/Create.html:46 html/AssetTracker/Asset/Create.html:49 html/AssetTracker/Asset/Create.html:55
+msgid "Create a new asset"
+msgstr "Создание нового ресурса"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:94 html/AssetTracker/Admin/Types/Modify.html:94
+msgid "Create a type"
+msgstr "Создание категории"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:44 lib/RTx/AssetTracker/Type_Overlay.pm:44
+msgid "Create assets of this type"
+msgstr "Создать ресурсы в данной категории"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:39 lib/RTx/AssetTracker/Type_Overlay.pm:39
+msgid "Create, delete and modify asset types"
+msgstr "Создать, удалить или изменить категории ресурсов"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:44 lib/RTx/AssetTracker/Type_Overlay.pm:44
+msgid "CreateAsset"
+msgstr "СоздаватьРесурс"
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectDateType.svn-base:47 html/AssetTracker/Elements/SelectDateType:47
+msgid "Created"
+msgstr "Создано"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:117 html/AssetTracker/Admin/Elements/EditCustomField:117
+#. ($CustomFieldObj->Name())
+msgid "Created CustomField %1"
+msgstr "Создано дополнительное поле %1"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/EditIPs.svn-base:23 html/AssetTracker/Asset/Elements/EditIPs:23
+msgid "Current IPs"
+msgstr "Текущие адреса IP"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:62 html/AssetTracker/Admin/Types/People.html:62 html/AssetTracker/Asset/Elements/.svn/text-base/EditPeople.svn-base:50 html/AssetTracker/Asset/Elements/EditPeople:50
+msgid "Current watchers"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:99 html/AssetTracker/Asset/Elements/ShowSummary:99
+msgid "Custom Fields"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1097 lib/RTx/AssetTracker/Record.pm:1097
+#. ($args{'Field'})
+msgid "Custom field %1 not found"
+msgstr ""
+
+#: lib/RT/.svn/text-base/CustomField_Vendor.pm.svn-base:70 lib/RT/CustomField_Vendor.pm:70 lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1265 lib/RTx/AssetTracker/Record.pm:1265
+msgid "Custom field not found"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:891 lib/RTx/AssetTracker/Transaction_Overlay.pm:891
+msgid "CustomField"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:109 html/AssetTracker/Asset/Elements/ShowSummary:109 html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:119 html/AssetTracker/Elements/Tabs:119
+msgid "Dates"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:583 lib/RTx/AssetTracker/Transaction_Overlay.pm:583
+#. ($type, $self->Field, $self->OldValue, $self->NewValue)
+msgid "Default: %1/%2 changed from %3 to %4"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:111 html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:63 html/AssetTracker/Search/Elements/EditFormat:111 html/AssetTracker/Search/Elements/EditSearches:63
+msgid "Delete"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:333 lib/RTx/AssetTracker/Type_Overlay.pm:333
+msgid "Deleting this object would break referential integrity"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/DisplayOptions.svn-base:78 html/AssetTracker/Search/Elements/DisplayOptions:78
+msgid "Descending"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:60 html/AssetTracker/Admin/Elements/EditCustomField:60 html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:69 html/AssetTracker/Admin/Types/Modify.html:69 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:97 html/AssetTracker/Asset/Create.html:97 html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:76 html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:56 html/AssetTracker/Asset/Elements/EditBasics:76 html/AssetTracker/Asset/Elements/ShowBasics:56 html/AssetTracker/Elements/.svn/text-base/SelectAttachmentField.svn-base:48 html/AssetTracker/Elements/SelectAttachmentField:48 html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:56 html/AssetTracker/Search/Elements/EditSearches:56
+msgid "Description"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:109 html/AssetTracker/Elements/Tabs:109 html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:76 html/AssetTracker/Search/Elements/EditFormat:76
+msgid "Display"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/DisplayOptions.svn-base:46 html/AssetTracker/Search/Elements/DisplayOptions:46
+msgid "Display Columns"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowHistory.svn-base:56 html/AssetTracker/Asset/Elements/ShowHistory:56
+msgid "Display mode"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/System.pm.svn-base:52 lib/RTx/AssetTracker/System.pm:52
+msgid "Do anything with assets"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:92 html/AssetTracker/Search/Build.html:92
+msgid "Do the Search"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:183 html/AssetTracker/Search/Bulk.html:183
+msgid "Don't update <% $cf->Name %>"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransactionAttachments.svn-base:82 html/AssetTracker/Asset/Elements/ShowTransactionAttachments:82
+msgid "Download"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:125 html/AssetTracker/Elements/Tabs:125
+msgid "Edit All"
+msgstr "Все данные"
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:112 html/AssetTracker/Elements/Tabs:112
+msgid "Edit Basics"
+msgstr "Основное"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/ObjectCustomFields.svn-base:99 html/AssetTracker/Admin/Elements/ObjectCustomFields:99
+#. ($Object->Name)
+msgid "Edit Custom Fields for %1"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:114 html/AssetTracker/Elements/Tabs:114 html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:169 html/AssetTracker/Search/Bulk.html:169
+msgid "Edit Fields"
+msgstr "Дополнительные поля"
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:116 html/AssetTracker/Elements/Tabs:116
+msgid "Edit IPs"
+msgstr "Адреса IP"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:164 html/AssetTracker/Search/Bulk.html:164
+msgid "Edit Links"
+msgstr "Связи"
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:122 html/AssetTracker/Elements/Tabs:122
+msgid "Edit People"
+msgstr "Пользователи"
+
+#: html/AssetTracker/Search/.svn/text-base/Edit.html.svn-base:68 html/AssetTracker/Search/Edit.html:68
+msgid "Edit Query"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:109 html/AssetTracker/Admin/Types/Modify.html:109
+#. ($TypeObj->Name)
+msgid "Editing Configuration for type %1"
+msgstr "Редактирование конфигурации категории %1"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:120 html/AssetTracker/Admin/Elements/EditCustomField:120
+#. ($CustomFieldObj->Name())
+msgid "Editing CustomField %1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1575 lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1652 lib/RTx/AssetTracker/Record.pm:1575 lib/RTx/AssetTracker/Record.pm:1652
+msgid "Either base or target must be specified"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:72 html/AssetTracker/Admin/Elements/EditCustomField:72
+msgid "Enabled (Unchecking this box disables this custom field)"
+msgstr "Используется (снятие отметки отключает использование этого дополнительного поля)"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:74 html/AssetTracker/Admin/Types/Modify.html:74
+msgid "Enabled (Unchecking this box disables this type)"
+msgstr "Используется (снятие отметки отключает использование этой категории)"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:77 html/AssetTracker/Admin/Types/index.html:77
+msgid "Enabled Types"
+msgstr "Используемые категории"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:136 html/AssetTracker/Admin/Elements/EditCustomField:136
+#. (loc_fuzzy($msg))
+msgid "Enabled status %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:130 html/AssetTracker/Admin/Types/Modify.html:130
+#. (loc_fuzzy($msg))
+msgid "Enabled status: %1"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:165 html/AssetTracker/Search/Bulk.html:165
+msgid "Enter assets or URIs to link assets to. Separate multiple entries with spaces."
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:563 lib/RTx/AssetTracker/Asset_Overlay.pm:563
+msgid "Error in parameters to Asset->AddWatcher"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:713 lib/RTx/AssetTracker/Asset_Overlay.pm:713
+msgid "Error in parameters to Asset->DeleteWatcher"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:705 lib/RTx/AssetTracker/Type_Overlay.pm:705
+msgid "Error in parameters to Type->AddWatcher"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:864 lib/RTx/AssetTracker/Type_Overlay.pm:864
+msgid "Error in parameters to Type->DeleteWatcher"
+msgstr ""
+
+#: NOT FOUND IN SOURCE
+msgid "Fields"
+msgstr "Дополнительные поля"
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectAttachmentField.svn-base:51 html/AssetTracker/Elements/SelectAttachmentField:51
+msgid "Filename"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:110 html/AssetTracker/Search/Results.html:110
+msgid "Find assets"
+msgstr "Поиск ресурсов"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:82 html/AssetTracker/Admin/Types/People.html:82
+msgid "Find groups whose"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:78 html/AssetTracker/Admin/Types/People.html:78
+msgid "Find people whose"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:82 html/AssetTracker/Elements/Tabs:82
+msgid "First"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:108 html/AssetTracker/Search/Results.html:108
+#. ($assetcount)
+msgid "Found %quant(%1,asset)"
+msgstr "Найдено %quant(%1,asset)"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:868 lib/RTx/AssetTracker/Record.pm:868
+msgid "Found Object"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowHistory.svn-base:62 html/AssetTracker/Asset/Elements/.svn/text-base/ShowHistory.svn-base:72 html/AssetTracker/Asset/Elements/ShowHistory:62 html/AssetTracker/Asset/Elements/ShowHistory:72
+msgid "Full headers"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomFields.svn-base:55 html/AssetTracker/Admin/Elements/EditCustomFields:55
+msgid "Global Custom Fields"
+msgstr ""
+
+#: html/AssetTracker/.svn/text-base/index.html.svn-base:15 html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:80 html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:84 html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:65 html/AssetTracker/Admin/Types/People.html:80 html/AssetTracker/Admin/Types/People.html:84 html/AssetTracker/Admin/Types/index.html:65 html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:76 html/AssetTracker/Search/Results.html:76 html/AssetTracker/index.html:15
+msgid "Go!"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:81 html/AssetTracker/Search/Results.html:81
+msgid "Grid Update multiple assets"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:46 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:47 html/AssetTracker/Search/Grid.html:46 html/AssetTracker/Search/Grid.html:47
+msgid "Grid asset update"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:71 html/AssetTracker/Admin/Elements/TypeTabs:71 html/Callbacks/AssetTracker/Admin/Elements/CustomFieldTabs/.svn/text-base/Default.svn-base:13 html/Callbacks/AssetTracker/Admin/Elements/CustomFieldTabs/Default:13
+msgid "Group Rights"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:616 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:694 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:780 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:839 lib/RTx/AssetTracker/Asset_Overlay.pm:616 lib/RTx/AssetTracker/Asset_Overlay.pm:694 lib/RTx/AssetTracker/Type_Overlay.pm:780 lib/RTx/AssetTracker/Type_Overlay.pm:839
+msgid "Group not found"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:104 html/AssetTracker/Admin/Types/People.html:104
+msgid "Groups"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowHistory.svn-base:51 html/AssetTracker/Asset/Elements/ShowHistory:51
+msgid "History"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:697 html/AssetTracker/Search/Build.html:697
+msgid "I'm lost"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectIPField.svn-base:47 html/AssetTracker/Elements/SelectIPField:47
+msgid "IP Address"
+msgstr "Адрес IP"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:68 html/AssetTracker/Asset/Elements/ShowSummary:68
+msgid "IP Addresses"
+msgstr "Адреса IP"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:864 lib/RTx/AssetTracker/Transaction_Overlay.pm:864
+#. ($self->NewValue)
+msgid "IP address %1 added"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:869 lib/RTx/AssetTracker/Transaction_Overlay.pm:869
+#. ($self->OldValue)
+msgid "IP address %1 deleted"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1205 lib/RTx/AssetTracker/Asset_Overlay.pm:1205
+msgid "IP address could not be created: $msg"
+msgstr "Невозможно создать адрес IP : $msg"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1165 lib/RTx/AssetTracker/Asset_Overlay.pm:1165
+msgid "IP address could not be deleted"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1191 lib/RTx/AssetTracker/Asset_Overlay.pm:1191
+msgid "IP address or interface must be specified"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/ModifyAll.html.svn-base:71 html/AssetTracker/Asset/ModifyAll.html:71
+msgid "IPs"
+msgstr "Адреса IP"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:48 html/AssetTracker/Asset/Elements/ShowBasics:48 lib/RTx/AssetTracker/.svn/text-base/Assets_Overlay.pm.svn-base:1074 lib/RTx/AssetTracker/.svn/text-base/Assets_Overlay.pm.svn-base:1100 lib/RTx/AssetTracker/Assets_Overlay.pm:1074 lib/RTx/AssetTracker/Assets_Overlay.pm:1100
+msgid "Id"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:126 html/AssetTracker/Admin/Types/People.html:126 html/AssetTracker/Asset/.svn/text-base/Modify.html.svn-base:60 html/AssetTracker/Asset/.svn/text-base/ModifyAll.html.svn-base:84 html/AssetTracker/Asset/.svn/text-base/ModifyFields.html.svn-base:59 html/AssetTracker/Asset/.svn/text-base/ModifyIPs.html.svn-base:59 html/AssetTracker/Asset/.svn/text-base/ModifyPeople.html.svn-base:59 html/AssetTracker/Asset/Modify.html:60 html/AssetTracker/Asset/ModifyAll.html:84 html/AssetTracker/Asset/ModifyFields.html:59 html/AssetTracker/Asset/ModifyIPs.html:59 html/AssetTracker/Asset/ModifyPeople.html:59
+msgid "If you've updated anything above, be sure to"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:860 lib/RTx/AssetTracker/Record.pm:860
+msgid "Illegal value for %1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:863 lib/RTx/AssetTracker/Record.pm:863
+msgid "Immutable field"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:64 html/AssetTracker/Admin/Types/index.html:64
+msgid "Include disabled types in listing."
+msgstr "Показывать неиспользуемые категории"
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:723 html/AssetTracker/Search/Build.html:723
+msgid "Incomplete Query"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:720 html/AssetTracker/Search/Build.html:720
+msgid "Incomplete query"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectIPField.svn-base:49 html/AssetTracker/Elements/SelectIPField:49
+msgid "Interface"
+msgstr "Интерфейс"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1020 lib/RTx/AssetTracker/Asset_Overlay.pm:1020
+msgid "Internal Error"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:278 lib/RTx/AssetTracker/Record.pm:278
+#. ($id->{error_message})
+msgid "Internal Error: %1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:865 lib/RTx/AssetTracker/Record.pm:865
+msgid "Invalid data"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:253 lib/RTx/AssetTracker/Record.pm:253
+#. ($key)
+msgid "Invalid value for %1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1116 lib/RTx/AssetTracker/Record.pm:1116
+msgid "Invalid value for custom field"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:199 lib/RTx/AssetTracker/Asset_Overlay.pm:199
+msgid "Invalid value for status"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:89 html/AssetTracker/Search/Elements/EditFormat:89
+msgid "Italic"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:83 html/AssetTracker/Search/Elements/EditFormat:83
+msgid "Large"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:97 html/AssetTracker/Elements/Tabs:97
+msgid "Last"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectDateType.svn-base:48 html/AssetTracker/Elements/SelectDateType:48
+msgid "Last Updated"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1586 lib/RTx/AssetTracker/Record.pm:1586
+msgid "Link already exists"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1600 lib/RTx/AssetTracker/Record.pm:1600
+msgid "Link could not be created"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1606 lib/RTx/AssetTracker/Record.pm:1606
+#. ($TransString)
+msgid "Link created (%1)"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1667 lib/RTx/AssetTracker/Record.pm:1667
+#. ($TransString)
+msgid "Link deleted (%1)"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1673 lib/RTx/AssetTracker/Record.pm:1673
+msgid "Link not found"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:116 html/AssetTracker/Asset/Elements/ShowSummary:116 html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:123 html/AssetTracker/Elements/Tabs:123
+msgid "Links"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:76 html/AssetTracker/Search/Elements/EditSearches:76
+msgid "Load"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:74 html/AssetTracker/Search/Elements/EditSearches:74
+msgid "Load saved search:"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:113 html/AssetTracker/Asset/Create.html:113 html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:92 html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:64 html/AssetTracker/Asset/Elements/EditBasics:92 html/AssetTracker/Asset/Elements/ShowBasics:64
+msgid "Location"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/SelectIPField.svn-base:48 html/AssetTracker/Elements/SelectIPField:48
+msgid "MAC Address"
+msgstr "Адрес MAC"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:122 html/AssetTracker/Search/Bulk.html:122
+msgid "Make Description"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:128 html/AssetTracker/Search/Bulk.html:128
+msgid "Make Parent"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:126 html/AssetTracker/Search/Bulk.html:126
+msgid "Make Status"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:124 html/AssetTracker/Search/Bulk.html:124
+msgid "Make Type"
+msgstr ""
+
+#: html/Callbacks/AssetTracker/Admin/index.html/.svn/text-base/Default.svn-base:3 html/Callbacks/AssetTracker/Admin/index.html/Default:3
+msgid "Manage asset types and asset-specific properties"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:156 html/AssetTracker/Search/Bulk.html:156
+msgid "Message"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:727 html/AssetTracker/Search/Build.html:727
+msgid "Mismatched parentheses"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:867 lib/RTx/AssetTracker/Record.pm:867
+msgid "Missing a primary key?: %1"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:105 html/AssetTracker/Asset/Create.html:105 html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:84 html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:60 html/AssetTracker/Asset/Elements/EditBasics:84 html/AssetTracker/Asset/Elements/ShowBasics:60
+msgid "Model"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:49 html/AssetTracker/Admin/Global/GroupRights.html:49 html/Callbacks/AssetTracker/Admin/Global/index.html/.svn/text-base/Default.svn-base:3 html/Callbacks/AssetTracker/Admin/Global/index.html/Default:3
+msgid "Modify Asset Tracker global group rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:54 html/AssetTracker/Admin/Global/GroupRights.html:54
+msgid "Modify Asset Tracker global group rights."
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/UserRights.html.svn-base:46 html/AssetTracker/Admin/Global/UserRights.html:46 html/Callbacks/AssetTracker/Admin/Global/index.html/.svn/text-base/Default.svn-base:7 html/Callbacks/AssetTracker/Admin/Global/index.html/Default:7
+msgid "Modify Asset Tracker global user rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/UserRights.html.svn-base:54 html/AssetTracker/Admin/Global/UserRights.html:54
+msgid "Modify Asset Tracker global user rights."
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/ObjectCustomFields.svn-base:102 html/AssetTracker/Admin/Elements/ObjectCustomFields:102
+#. (loc(lc($FriendlySubTypes)), loc(lc($Types)))
+msgid "Modify Custom Fields which apply to %1 for all %2"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/ObjectCustomFields.svn-base:104 html/AssetTracker/Admin/Elements/ObjectCustomFields:104
+#. (loc(lc($Types)))
+msgid "Modify Custom Fields which apply to all %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:106 html/AssetTracker/Admin/Global/GroupRights.html:106 html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:106 html/AssetTracker/Admin/Types/GroupRights.html:106
+msgid "Modify Group Rights"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/ModifyIPs.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/ModifyIPs.html.svn-base:50 html/AssetTracker/Asset/.svn/text-base/ModifyIPs.html.svn-base:56 html/AssetTracker/Asset/ModifyIPs.html:46 html/AssetTracker/Asset/ModifyIPs.html:50 html/AssetTracker/Asset/ModifyIPs.html:56
+#. ($Asset->id)
+#. ($Asset->Id)
+msgid "Modify IP addresses related to asset #%1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/UserRights.html.svn-base:75 html/AssetTracker/Admin/Global/UserRights.html:75 html/AssetTracker/Admin/Types/.svn/text-base/UserRights.html.svn-base:75 html/AssetTracker/Admin/Types/UserRights.html:75
+msgid "Modify User Rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/CustomField.html.svn-base:66 html/AssetTracker/Admin/Types/CustomField.html:66
+#. ($TypeObj->Name())
+msgid "Modify a CustomField for type %1"
+msgstr "Изменение дополнительного поля для категории %1"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:42 lib/RTx/AssetTracker/Type_Overlay.pm:42
+msgid "Modify administrators for type"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/Modify.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/Modify.html.svn-base:50 html/AssetTracker/Asset/.svn/text-base/Modify.html.svn-base:56 html/AssetTracker/Asset/Modify.html:46 html/AssetTracker/Asset/Modify.html:50 html/AssetTracker/Asset/Modify.html:56
+#. ($Asset->id)
+#. ($Asset->Id)
+msgid "Modify asset #%1"
+msgstr "Изменить ресурс #%1"
+
+#: html/AssetTracker/Asset/.svn/text-base/ModifyFields.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/ModifyFields.html.svn-base:50 html/AssetTracker/Asset/.svn/text-base/ModifyFields.html.svn-base:56 html/AssetTracker/Asset/ModifyFields.html:46 html/AssetTracker/Asset/ModifyFields.html:50 html/AssetTracker/Asset/ModifyFields.html:56
+#. ($Asset->id)
+#. ($Asset->Id)
+msgid "Modify asset custom fields#%1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:45 lib/RTx/AssetTracker/Type_Overlay.pm:45
+msgid "Modify assets of this type"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/Objects.html.svn-base:78 html/AssetTracker/Admin/CustomFields/Objects.html:78
+#. ($CF->Name)
+msgid "Modify associated objects for %1"
+msgstr ""
+
+#: html/Callbacks/AssetTracker/Admin/Elements/GlobalCustomFieldTabs/.svn/text-base/Default.svn-base:3 html/Callbacks/AssetTracker/Admin/Elements/GlobalCustomFieldTabs/Default:3 html/Callbacks/AssetTracker/Admin/Global/CustomFields/index.html/.svn/text-base/Default.svn-base:3 html/Callbacks/AssetTracker/Admin/Global/CustomFields/index.html/Default:3
+msgid "Modify global asset rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:46 html/AssetTracker/Admin/Global/GroupRights.html:46
+msgid "Modify global group rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/UserRights.html.svn-base:49 html/AssetTracker/Admin/Global/UserRights.html:49
+msgid "Modify global user rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:164 html/AssetTracker/Admin/CustomFields/GroupRights.html:164
+#. ($CustomFieldObj->Name)
+msgid "Modify group rights for custom field %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:46 html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:50 html/AssetTracker/Admin/Types/GroupRights.html:46 html/AssetTracker/Admin/Types/GroupRights.html:50
+#. ($TypeObj->Name)
+msgid "Modify group rights for type %1"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/ModifyPeople.html.svn-base:46 html/AssetTracker/Asset/.svn/text-base/ModifyPeople.html.svn-base:50 html/AssetTracker/Asset/.svn/text-base/ModifyPeople.html.svn-base:56 html/AssetTracker/Asset/ModifyPeople.html:46 html/AssetTracker/Asset/ModifyPeople.html:50 html/AssetTracker/Asset/ModifyPeople.html:56
+#. ($Asset->id)
+#. ($Asset->Id)
+msgid "Modify people related to asset #%1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:46 html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:50 html/AssetTracker/Admin/Types/People.html:46 html/AssetTracker/Admin/Types/People.html:50
+#. ($TypeObj->Name)
+msgid "Modify people related to type %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/UserRights.html.svn-base:157 html/AssetTracker/Admin/CustomFields/UserRights.html:157
+#. ($CustomFieldObj->Name)
+msgid "Modify user rights for custom field %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/UserRights.html.svn-base:46 html/AssetTracker/Admin/Types/.svn/text-base/UserRights.html.svn-base:50 html/AssetTracker/Admin/Types/UserRights.html:46 html/AssetTracker/Admin/Types/UserRights.html:50
+#. ($TypeObj->Name)
+msgid "Modify user rights for type %1"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:45 lib/RTx/AssetTracker/Type_Overlay.pm:45
+msgid "ModifyAsset"
+msgstr "ИзменятьРесурс"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:42 lib/RTx/AssetTracker/Type_Overlay.pm:42
+msgid "ModifyTypeAdmins"
+msgstr "ИзменятьАдминистраторовКатегории"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/SelectSearchesForObjects.svn-base:53 html/AssetTracker/Search/Elements/SelectSearchesForObjects:53
+msgid "My saved searches"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:55 html/AssetTracker/Admin/Elements/EditCustomField:55 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:63 html/AssetTracker/Asset/Create.html:63 html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:49 html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:52 html/AssetTracker/Asset/Elements/EditBasics:49 html/AssetTracker/Asset/Elements/ShowBasics:52 html/AssetTracker/Elements/.svn/text-base/SelectAttachmentField.svn-base:47 html/AssetTracker/Elements/SelectAttachmentField:47
+msgid "Name"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:166 html/AssetTracker/Elements/Tabs:166
+msgid "New Query"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/CustomField.html.svn-base:73 html/AssetTracker/Admin/Types/CustomField.html:73
+msgid "New custom field"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:84 html/AssetTracker/Admin/Elements/TypeTabs:84
+msgid "New type"
+msgstr "Новая категория"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:76 html/AssetTracker/Admin/Types/People.html:76
+msgid "New watchers"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:93 html/AssetTracker/Elements/Tabs:93
+msgid "Next"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/AssetList.svn-base:99 html/AssetTracker/Elements/AssetList:99
+msgid "Next Page"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/UserRights.html.svn-base:145 html/AssetTracker/Admin/CustomFields/UserRights.html:145
+msgid "No Class defined"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:119 html/AssetTracker/Admin/Elements/EditCustomField:119
+msgid "No CustomField"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:103 html/AssetTracker/Admin/CustomFields/GroupRights.html:103
+msgid "No CustomField defined"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Assets_Overlay_SQL.pm.svn-base:470 lib/RTx/AssetTracker/Assets_Overlay_SQL.pm:470
+msgid "No Query"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:117 html/AssetTracker/Admin/Types/.svn/text-base/UserRights.html.svn-base:89 html/AssetTracker/Admin/Types/GroupRights.html:117 html/AssetTracker/Admin/Types/UserRights.html:89
+msgid "No Type defined"
+msgstr "Не указана категория"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:862 lib/RTx/AssetTracker/Record.pm:862
+msgid "No column specified"
+msgstr ""
+
+#: html/AssetTracker/Elements/RTx__Asset/.svn/text-base/ColumnMap.svn-base:154 html/AssetTracker/Elements/RTx__Asset/ColumnMap:154
+msgid "No description"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:240 lib/RTx/AssetTracker/Type_Overlay.pm:240
+msgid "No permission to create asset types"
+msgstr "Отсутствуют права для создания категорий ресурсов"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:195 lib/RTx/AssetTracker/Asset_Overlay.pm:195
+#. ($TypeObj->Name)
+msgid "No permission to create assets of this type '%1'"
+msgstr "Отсутствуют права для создания ресурсов в данной категории '%1'"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:221 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:152 html/AssetTracker/Search/Bulk.html:221 html/AssetTracker/Search/Grid.html:152
+msgid "No permission to perform bulk updates of assets."
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:674 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:827 lib/RTx/AssetTracker/Asset_Overlay.pm:674 lib/RTx/AssetTracker/Type_Overlay.pm:827
+msgid "No principal specified"
+msgstr "Не указан принципал"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:175 html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:185 html/AssetTracker/Admin/Types/People.html:175 html/AssetTracker/Admin/Types/People.html:185
+msgid "No principals selected."
+msgstr "Не выбран приницпал."
+
+#: NOT FOUND IN SOURCE
+msgid "No rights found"
+msgstr "Права не найдены"
+
+#: NOT FOUND IN SOURCE
+msgid "No rights granted."
+msgstr "Права не выданы"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:234 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:214 html/AssetTracker/Search/Bulk.html:234 html/AssetTracker/Search/Grid.html:214
+msgid "No search to operate on."
+msgstr "Нет запроса для выполнения"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:517 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:555 lib/RTx/AssetTracker/Transaction_Overlay.pm:517 lib/RTx/AssetTracker/Transaction_Overlay.pm:555
+msgid "No transaction type specified"
+msgstr "Не указан тип транзакции"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/index.html.svn-base:56 html/AssetTracker/Admin/Types/index.html:56
+msgid "No types matching search criteria found."
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:859 lib/RTx/AssetTracker/Record.pm:859
+msgid "No value sent to _Set!\\n"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:864 lib/RTx/AssetTracker/Record.pm:864
+msgid "Nonexistant field?"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:292 lib/RTx/AssetTracker/Record.pm:292
+msgid "Object could not be created"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:124 lib/RTx/AssetTracker/Record.pm:124
+msgid "Object could not be deleted"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:311 lib/RTx/AssetTracker/Record.pm:311
+msgid "Object created"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:121 lib/RTx/AssetTracker/Record.pm:121
+msgid "Object deleted"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/Objects.html.svn-base:72 html/AssetTracker/Admin/CustomFields/Objects.html:72 html/AssetTracker/Admin/Elements/.svn/text-base/ObjectCustomFields.svn-base:63 html/AssetTracker/Admin/Elements/ObjectCustomFields:63
+#. ($ObjectType)
+#. ($LookupType)
+msgid "Object of type %1 cannot take custom fields"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/DisplayOptions.svn-base:56 html/AssetTracker/Search/Elements/DisplayOptions:56
+msgid "Order by"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:47 lib/RTx/AssetTracker/Type_Overlay.pm:47
+msgid "Own assets of this type"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:47 lib/RTx/AssetTracker/Type_Overlay.pm:47
+msgid "OwnAsset"
+msgstr "БытьОтветственнымЗаРесурс"
+
+#: etc/AssetTracker/.svn/text-base/initialdata.svn-base:5 etc/AssetTracker/initialdata:5 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:78 html/AssetTracker/Asset/Create.html:78
+msgid "Owner"
+msgstr "Ответственный"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:221 lib/RTx/AssetTracker/Asset_Overlay.pm:221
+msgid "Owner could not be set."
+msgstr "Невозможно назначить ответственного"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:65 html/AssetTracker/Admin/Types/People.html:65 html/AssetTracker/Asset/Elements/.svn/text-base/EditPeople.svn-base:52 html/AssetTracker/Asset/Elements/.svn/text-base/ShowPeople.svn-base:48 html/AssetTracker/Asset/Elements/EditPeople:52 html/AssetTracker/Asset/Elements/ShowPeople:48
+msgid "Owners"
+msgstr "Ответственные"
+
+#: html/AssetTracker/Elements/.svn/text-base/AssetList.svn-base:73 html/AssetTracker/Elements/AssetList:73
+#. ($Page, int($TotalFound/$Rows)+1)
+msgid "Page %1 of %2"
+msgstr "Страница %1 из %2"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:100 html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:76 html/AssetTracker/Asset/Elements/EditBasics:100 html/AssetTracker/Asset/Elements/ShowBasics:76
+msgid "Parent"
+msgstr "Предок"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:63 html/AssetTracker/Admin/Elements/TypeTabs:63 html/AssetTracker/Asset/.svn/text-base/ModifyAll.html.svn-base:64 html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:57 html/AssetTracker/Asset/Elements/ShowSummary:57 html/AssetTracker/Asset/ModifyAll.html:64
+msgid "People"
+msgstr "Пользователи"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1014 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1138 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1183 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1299 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1308 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1395 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1458 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1498 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:550 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:557 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:572 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:706 lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:721 lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:133 lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:176 lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:1072 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:505 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:512 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:541 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:548 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:362 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:690 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:700 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:714 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:850 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:859 lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:872 lib/RTx/AssetTracker/Asset_Overlay.pm:1014 lib/RTx/AssetTracker/Asset_Overlay.pm:1138 lib/RTx/AssetTracker/Asset_Overlay.pm:1183 lib/RTx/AssetTracker/Asset_Overlay.pm:1299 lib/RTx/AssetTracker/Asset_Overlay.pm:1308 lib/RTx/AssetTracker/Asset_Overlay.pm:1395 lib/RTx/AssetTracker/Asset_Overlay.pm:1458 lib/RTx/AssetTracker/Asset_Overlay.pm:1498 lib/RTx/AssetTracker/Asset_Overlay.pm:550 lib/RTx/AssetTracker/Asset_Overlay.pm:557 lib/RTx/AssetTracker/Asset_Overlay.pm:572 lib/RTx/AssetTracker/Asset_Overlay.pm:706 lib/RTx/AssetTracker/Asset_Overlay.pm:721 lib/RTx/AssetTracker/IP_Overlay.pm:133 lib/RTx/AssetTracker/IP_Overlay.pm:176 lib/RTx/AssetTracker/Record.pm:1072 lib/RTx/AssetTracker/Transaction_Overlay.pm:505 lib/RTx/AssetTracker/Transaction_Overlay.pm:512 lib/RTx/AssetTracker/Transaction_Overlay.pm:541 lib/RTx/AssetTracker/Transaction_Overlay.pm:548 lib/RTx/AssetTracker/Type_Overlay.pm:362 lib/RTx/AssetTracker/Type_Overlay.pm:690 lib/RTx/AssetTracker/Type_Overlay.pm:700 lib/RTx/AssetTracker/Type_Overlay.pm:714 lib/RTx/AssetTracker/Type_Overlay.pm:850 lib/RTx/AssetTracker/Type_Overlay.pm:859 lib/RTx/AssetTracker/Type_Overlay.pm:872
+msgid "Permission Denied"
+msgstr "Доступ запрещен"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:155 html/AssetTracker/Search/Elements/PickBasics:155
+msgid "Port"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:874 lib/RTx/AssetTracker/Transaction_Overlay.pm:874
+#. ($self->NewValue)
+msgid "Port %1 added"
+msgstr "Порт %1 добавлен"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:879 lib/RTx/AssetTracker/Transaction_Overlay.pm:879
+#. ($self->OldValue)
+msgid "Port %1 deleted"
+msgstr "Порт %1 удален"
+
+#: lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:148 lib/RTx/AssetTracker/IP_Overlay.pm:148
+msgid "Port could not be added"
+msgstr "Невозможно добавить порт"
+
+#: lib/RTx/AssetTracker/.svn/text-base/IP_Overlay.pm.svn-base:199 lib/RTx/AssetTracker/IP_Overlay.pm:199
+msgid "Port could not be deleted"
+msgstr "Невозможно удалить порт"
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:85 html/AssetTracker/Elements/Tabs:85
+msgid "Prev"
+msgstr "Пред"
+
+#: html/AssetTracker/Elements/.svn/text-base/AssetList.svn-base:96 html/AssetTracker/Elements/AssetList:96
+msgid "Previous Page"
+msgstr "Предыдущая страница"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:50 html/AssetTracker/Search/Elements/EditSearches:50
+msgid "Privacy:"
+msgstr ""
+
+#: html/AssetTracker/Elements/ShowLinks.andy:66 html/AssetTracker/Elements/ShowLinks:66
+msgid "Problem with "
+msgstr "Проблема с "
+
+#: etc/AssetTracker/.svn/text-base/initialdata.svn-base:14 etc/AssetTracker/initialdata:14
+msgid "Pseudogroup for internal use"
+msgstr "Псевдогруппа для внутреннего использования"
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:168 html/AssetTracker/Elements/Tabs:168 html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:103 html/AssetTracker/Search/Build.html:103
+msgid "Query Builder"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Quicksearch.orig.svn-base:46 html/AssetTracker/Elements/.svn/text-base/Quicksearch.svn-base:46 html/AssetTracker/Elements/Quicksearch.orig:46 html/AssetTracker/Elements/Quicksearch:46
+msgid "Quick search"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:84 html/AssetTracker/Search/Results.html:84
+msgid "RSS Feed"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/ShowLinks.svn-base:48 html/AssetTracker/Elements/ShowLinks.andy:48 html/AssetTracker/Elements/ShowLinks.orig:48 html/AssetTracker/Elements/ShowLinks:48
+msgid "Referred to by"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:113 html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:114 html/AssetTracker/Search/Bulk.html:113 html/AssetTracker/Search/Bulk.html:114
+msgid "Remove Admin"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:109 html/AssetTracker/Search/Bulk.html:109
+msgid "Remove Owner"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransaction.svn-base:182 html/AssetTracker/Asset/Elements/ShowTransaction:182 html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:149 html/AssetTracker/Elements/Tabs:149
+msgid "Reply"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:142 html/AssetTracker/Search/Bulk.html:142
+msgid "Reply to requestors"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:46 lib/RTx/AssetTracker/Type_Overlay.pm:46
+msgid "Retire assets of this type"
+msgstr "Списать ресурсы в данной категории"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:46 lib/RTx/AssetTracker/Type_Overlay.pm:46
+msgid "RetireAsset"
+msgstr "СписыватьРесурс"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1187 lib/RTx/AssetTracker/Asset_Overlay.pm:1187
+msgid "Retired assets cannot have IP addresses"
+msgstr "Списанные ресурсы не могу иметь адреса IP"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:61 html/AssetTracker/Search/Elements/EditSearches:61
+msgid "Revert"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:129 html/AssetTracker/Admin/CustomFields/GroupRights.html:129
+#. ($object_type)
+msgid "Rights could not be granted for %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:156 html/AssetTracker/Admin/CustomFields/GroupRights.html:156
+#. ($object_type)
+msgid "Rights could not be revoked for %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:72 html/AssetTracker/Admin/Global/GroupRights.html:72 html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:74 html/AssetTracker/Admin/Types/GroupRights.html:74
+msgid "Roles"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/DisplayOptions.svn-base:83 html/AssetTracker/Search/Elements/DisplayOptions:83
+msgid "Rows per page"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:70 html/AssetTracker/Search/Elements/EditSearches:70
+msgid "Save"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:80 html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:126 html/AssetTracker/Admin/Types/Modify.html:80 html/AssetTracker/Admin/Types/People.html:126 html/AssetTracker/Asset/.svn/text-base/Modify.html.svn-base:60 html/AssetTracker/Asset/.svn/text-base/ModifyAll.html.svn-base:84 html/AssetTracker/Asset/.svn/text-base/ModifyFields.html.svn-base:59 html/AssetTracker/Asset/.svn/text-base/ModifyIPs.html.svn-base:59 html/AssetTracker/Asset/.svn/text-base/ModifyPeople.html.svn-base:59 html/AssetTracker/Asset/Modify.html:60 html/AssetTracker/Asset/ModifyAll.html:84 html/AssetTracker/Asset/ModifyFields.html:59 html/AssetTracker/Asset/ModifyIPs.html:59 html/AssetTracker/Asset/ModifyPeople.html:59
+msgid "Save Changes"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditSearches.svn-base:46 html/AssetTracker/Search/Elements/EditSearches:46
+msgid "Saved searches"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/GotoAsset.svn-base:20 html/AssetTracker/Elements/.svn/text-base/SimpleSearch.svn-base:48 html/AssetTracker/Elements/GotoAsset:20 html/AssetTracker/Elements/SimpleSearch:48 html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:92 html/AssetTracker/Search/Build.html:92
+msgid "Search"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:43 lib/RTx/AssetTracker/Type_Overlay.pm:43
+msgid "See asset details"
+msgstr "Дополнительная информация о ресурсе"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:38 lib/RTx/AssetTracker/Type_Overlay.pm:38
+msgid "SeeType"
+msgstr "ВидетьКатегорию"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:81 html/AssetTracker/Admin/Elements/TypeTabs:81
+msgid "Select type"
+msgstr "Выберите категорию"
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomFields.svn-base:58 html/AssetTracker/Admin/Elements/EditCustomFields:58
+msgid "Selected Custom Fields"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/Objects.html.svn-base:59 html/AssetTracker/Admin/CustomFields/Objects.html:59
+msgid "Selected objects"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransaction.svn-base:149 html/AssetTracker/Asset/Elements/.svn/text-base/ShowTransaction.svn-base:162 html/AssetTracker/Asset/Elements/ShowTransaction:149 html/AssetTracker/Asset/Elements/ShowTransaction:162
+msgid "Show"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:56 html/AssetTracker/Search/Elements/EditFormat:56
+msgid "Show Columns"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:174 html/AssetTracker/Elements/Tabs:174
+msgid "Show Results"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:43 lib/RTx/AssetTracker/Type_Overlay.pm:43
+msgid "ShowAsset"
+msgstr "ВидетьРесурс"
+
+#: lib/RTx/AssetTracker/.svn/text-base/System.pm.svn-base:54 lib/RTx/AssetTracker/System.pm:54
+msgid "ShowConfigTab"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/EditFormat.svn-base:82 html/AssetTracker/Search/Elements/EditFormat:82
+msgid "Small"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:83 html/AssetTracker/Search/Results.html:83
+msgid "Spreadsheet"
+msgstr ""
+
+#: html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:70 html/AssetTracker/Asset/Create.html:70 html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:56 html/AssetTracker/Asset/Elements/.svn/text-base/ShowBasics.svn-base:68 html/AssetTracker/Asset/Elements/EditBasics:56 html/AssetTracker/Asset/Elements/ShowBasics:68 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:87 html/AssetTracker/Search/Elements/PickBasics:87 lib/RTx/AssetTracker/.svn/text-base/Assets_Overlay.pm.svn-base:1046 lib/RTx/AssetTracker/Assets_Overlay.pm:1046
+msgid "Status"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:569 lib/RTx/AssetTracker/Transaction_Overlay.pm:569
+#. ($self->loc($self->OldValue), $self->loc($self->NewValue))
+msgid "Status changed from %1 to %2"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:145 html/AssetTracker/Search/Bulk.html:145
+msgid "Subject"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/System.pm.svn-base:52 lib/RTx/AssetTracker/System.pm:52
+msgid "SuperUser"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:128 html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:155 html/AssetTracker/Admin/CustomFields/.svn/text-base/UserRights.html.svn-base:128 html/AssetTracker/Admin/CustomFields/.svn/text-base/UserRights.html.svn-base:98 html/AssetTracker/Admin/CustomFields/GroupRights.html:128 html/AssetTracker/Admin/CustomFields/GroupRights.html:155 html/AssetTracker/Admin/CustomFields/UserRights.html:128 html/AssetTracker/Admin/CustomFields/UserRights.html:98
+msgid "System Error"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:215 lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:221 lib/RTx/AssetTracker/Transaction_Overlay.pm:215 lib/RTx/AssetTracker/Transaction_Overlay.pm:221
+#. ($msg)
+msgid "System Error: %1"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:58 html/AssetTracker/Admin/CustomFields/GroupRights.html:58 html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:56 html/AssetTracker/Admin/Global/GroupRights.html:56 html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:57 html/AssetTracker/Admin/Types/GroupRights.html:57
+msgid "System groups"
+msgstr ""
+
+#: etc/AssetTracker/.svn/text-base/initialdata.svn-base:8 etc/AssetTracker/initialdata:8
+msgid "SystemRolegroup for internal use"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:858 lib/RTx/AssetTracker/Record.pm:858
+msgid "That is already the current value"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:621 lib/RTx/AssetTracker/Asset_Overlay.pm:621
+#. ($self->loc($args{'Type'}))
+msgid "That principal is already a %1 for this asset"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:785 lib/RTx/AssetTracker/Type_Overlay.pm:785
+#. ($args{'Type'})
+msgid "That principal is already a %1 for this type"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Type_Overlay.pm.svn-base:883 lib/RTx/AssetTracker/Type_Overlay.pm:883
+#. ($args{'Type'})
+msgid "That principal is not a %1 for this type"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:1313 lib/RTx/AssetTracker/Asset_Overlay.pm:1313
+msgid "That ticket has unresolved dependencies"
+msgstr ""
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:49 html/AssetTracker/Asset/Elements/ShowSummary:49
+msgid "The Basics"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:861 lib/RTx/AssetTracker/Record.pm:861
+msgid "The new value has been set."
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:288 lib/RTx/AssetTracker/Transaction_Overlay.pm:288
+msgid "This transaction appears to have no content"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:886 lib/RTx/AssetTracker/Transaction_Overlay.pm:886
+#. ($self->NewValue, $ticket->Subject, $ticket->Status)
+msgid "Ticket #%1 : %2 (%3)"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:885 lib/RTx/AssetTracker/Transaction_Overlay.pm:885
+#. ($self->NewValue)
+msgid "Ticket #%1 linked"
+msgstr ""
+
+#: html/Callbacks/AssetTracker/Ticket/Create.html/.svn/text-base/CreateLinks.svn-base:1 html/Callbacks/AssetTracker/Ticket/Create.html/CreateLinks:1
+msgid "Ticket of Asset"
+msgstr "Заявка ресурса"
+
+#: html/AssetTracker/Asset/Elements/.svn/text-base/ShowSummary.svn-base:88 html/AssetTracker/Asset/Elements/ShowSummary:88
+msgid "Tickets"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:174 lib/RTx/AssetTracker/Transaction_Overlay.pm:174
+msgid "Transaction Created"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:123 lib/RTx/AssetTracker/Transaction_Overlay.pm:123
+msgid "Transaction->Create couldn't, as you didn't specify an object type and id"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Transaction_Overlay.pm.svn-base:627 lib/RTx/AssetTracker/Transaction_Overlay.pm:627
+msgid "Transactions are immutable"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:165 html/AssetTracker/Search/Elements/PickBasics:165
+msgid "Transport"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:65 html/AssetTracker/Admin/Elements/EditCustomField:65 html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:57 html/AssetTracker/Asset/Create.html:57 html/AssetTracker/Asset/Elements/.svn/text-base/EditBasics.svn-base:63 html/AssetTracker/Asset/Elements/EditBasics:63 html/AssetTracker/Elements/.svn/text-base/Quicksearch.orig.svn-base:50 html/AssetTracker/Elements/Quicksearch.orig:50 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:71 html/AssetTracker/Search/Elements/PickBasics:71 lib/RTx/AssetTracker/.svn/text-base/Assets_Overlay.pm.svn-base:1018 lib/RTx/AssetTracker/Assets_Overlay.pm:1018
+msgid "Type"
+msgstr "Категория"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/CustomField.html.svn-base:63 html/AssetTracker/Admin/Types/CustomField.html:63
+#. ($Type)
+msgid "Type %1 not found"
+msgstr "Категория %1 не найдена"
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/Modify.html.svn-base:64 html/AssetTracker/Admin/Types/Modify.html:64
+msgid "Type Name"
+msgstr "Наименование категории"
+
+#: html/AssetTracker/Asset/.svn/text-base/Create.html.svn-base:155 html/AssetTracker/Asset/Create.html:155
+msgid "Type could not be loaded."
+msgstr "Невозможно загрузить категорию"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Record.pm.svn-base:783 lib/RTx/AssetTracker/Record.pm:783
+#. ($ContentEncoding)
+msgid "Unknown ContentEncoding %1"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:692 html/AssetTracker/Search/Build.html:692
+msgid "Unknown field: $key"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/SelectSearchesForObjects.svn-base:60 html/AssetTracker/Search/Elements/SelectSearchesForObjects:60
+msgid "Unnamed search"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomFields.svn-base:60 html/AssetTracker/Admin/Elements/EditCustomFields:60
+msgid "Unselected Custom Fields"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/Objects.html.svn-base:61 html/AssetTracker/Admin/CustomFields/Objects.html:61
+msgid "Unselected objects"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:57 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:59 html/AssetTracker/Search/Bulk.html:57 html/AssetTracker/Search/Grid.html:59
+msgid "Update"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:214 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:145 html/AssetTracker/Search/Bulk.html:214 html/AssetTracker/Search/Grid.html:145
+msgid "Update All"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:139 html/AssetTracker/Search/Bulk.html:139
+msgid "Update Type"
+msgstr "Обновить категорию"
+
+#: html/AssetTracker/Search/.svn/text-base/Bulk.html.svn-base:102 html/AssetTracker/Search/.svn/text-base/Grid.html.svn-base:53 html/AssetTracker/Search/Bulk.html:102 html/AssetTracker/Search/Grid.html:53
+msgid "Update selected assets"
+msgstr "Обновить выбранные ресурсы"
+
+#: lib/RTx/AssetTracker/.svn/text-base/Asset_Overlay.pm.svn-base:222 lib/RTx/AssetTracker/Asset_Overlay.pm:222
+#. ($args{'Owner'})
+msgid "User '%1' could not be found."
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/TypeTabs.svn-base:74 html/AssetTracker/Admin/Elements/TypeTabs:74 html/Callbacks/AssetTracker/Admin/Elements/CustomFieldTabs/.svn/text-base/Default.svn-base:18 html/Callbacks/AssetTracker/Admin/Elements/CustomFieldTabs/Default:18
+msgid "User Rights"
+msgstr ""
+
+#: html/AssetTracker/Admin/CustomFields/.svn/text-base/GroupRights.html.svn-base:74 html/AssetTracker/Admin/CustomFields/GroupRights.html:74 html/AssetTracker/Admin/Global/.svn/text-base/GroupRights.html.svn-base:88 html/AssetTracker/Admin/Global/GroupRights.html:88 html/AssetTracker/Admin/Types/.svn/text-base/GroupRights.html.svn-base:89 html/AssetTracker/Admin/Types/GroupRights.html:89
+msgid "User defined groups"
+msgstr ""
+
+#: html/AssetTracker/Admin/Types/.svn/text-base/People.html.svn-base:89 html/AssetTracker/Admin/Types/People.html:89
+msgid "Users"
+msgstr ""
+
+#: lib/RTx/AssetTracker/.svn/text-base/Assets_Overlay_SQL.pm.svn-base:486 lib/RTx/AssetTracker/Assets_Overlay_SQL.pm:486
+msgid "Valid Query"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditCustomField.svn-base:78 html/AssetTracker/Admin/Elements/EditCustomField:78
+msgid "Values"
+msgstr ""
+
+#: html/AssetTracker/Elements/.svn/text-base/Tabs.svn-base:128 html/AssetTracker/Elements/Tabs:128
+msgid "View History"
+msgstr "История"
+
+#: html/AssetTracker/Search/.svn/text-base/Results.html.svn-base:85 html/AssetTracker/Search/Results.html:85
+msgid "Work offline"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:112 html/AssetTracker/Search/Elements/PickBasics:112
+msgid "belongs to"
+msgstr ""
+
+#: NOT FOUND IN SOURCE
+msgid "development"
+msgstr "в разработке"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:113 html/AssetTracker/Search/Elements/PickBasics:113
+msgid "does not belong to"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:61 html/AssetTracker/Search/Elements/PickBasics:61
+msgid "does not match"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:371 html/AssetTracker/Search/Build.html:371
+msgid "error: can't move down"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:393 html/AssetTracker/Search/Build.html:393
+msgid "error: can't move left"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:352 html/AssetTracker/Search/Build.html:352
+msgid "error: can't move up"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:435 html/AssetTracker/Search/Build.html:435
+msgid "error: nothing to delete"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:357 html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:376 html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:398 html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:427 html/AssetTracker/Search/Build.html:357 html/AssetTracker/Search/Build.html:376 html/AssetTracker/Search/Build.html:398 html/AssetTracker/Search/Build.html:427
+msgid "error: nothing to move"
+msgstr ""
+
+#: html/AssetTracker/Search/.svn/text-base/Build.html.svn-base:453 html/AssetTracker/Search/Build.html:453
+msgid "error: nothing to toggle"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:48 html/AssetTracker/Search/Elements/PickBasics:48
+msgid "id"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:136 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:168 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:74 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:90 html/AssetTracker/Search/Elements/.svn/text-base/PickCFs.svn-base:53 html/AssetTracker/Search/Elements/PickBasics:136 html/AssetTracker/Search/Elements/PickBasics:168 html/AssetTracker/Search/Elements/PickBasics:74 html/AssetTracker/Search/Elements/PickBasics:90 html/AssetTracker/Search/Elements/PickCFs:53
+msgid "is"
+msgstr ""
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:137 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:169 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:75 html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:91 html/AssetTracker/Search/Elements/.svn/text-base/PickCFs.svn-base:54 html/AssetTracker/Search/Elements/PickBasics:137 html/AssetTracker/Search/Elements/PickBasics:169 html/AssetTracker/Search/Elements/PickBasics:75 html/AssetTracker/Search/Elements/PickBasics:91 html/AssetTracker/Search/Elements/PickCFs:54
+msgid "isn't"
+msgstr ""
+
+#: NOT FOUND IN SOURCE
+msgid "lost"
+msgstr "утеряно"
+
+#: html/AssetTracker/Search/Elements/.svn/text-base/PickBasics.svn-base:60 html/AssetTracker/Search/Elements/PickBasics:60
+msgid "matches"
+msgstr ""
+
+#: html/AssetTracker/Admin/Elements/.svn/text-base/EditTypeWatchers.abk.svn-base:48 html/AssetTracker/Admin/Elements/.svn/text-base/EditTypeWatchers.svn-base:48 html/AssetTracker/Admin/Elements/EditTypeWatchers.abk:48 html/AssetTracker/Admin/Elements/EditTypeWatchers:48 html/AssetTracker/Asset/Elements/.svn/text-base/EditWatchers.svn-base:7 html/AssetTracker/Asset/Elements/.svn/text-base/ShowComponents.svn-base:3 html/AssetTracker/Asset/Elements/.svn/text-base/ShowTickets.svn-base:3 html/AssetTracker/Asset/Elements/EditWatchers:7 html/AssetTracker/Asset/Elements/ShowComponents:3 html/AssetTracker/Asset/Elements/ShowTickets:3
+msgid "none"
+msgstr ""
+
+#: NOT FOUND IN SOURCE
+msgid "production"
+msgstr "используется"
+
+#: NOT FOUND IN SOURCE
+msgid "retired"
+msgstr "списано"
+
+#: NOT FOUND IN SOURCE
+msgid "saled"
+msgstr "продано"
+
+#: lib/RTx/AssetTracker/.svn/text-base/System.pm.svn-base:54 lib/RTx/AssetTracker/System.pm:54
+msgid "show Configuration tab"
+msgstr ""
+

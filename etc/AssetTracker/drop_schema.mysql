@@ -1,0 +1,6 @@
+DROP TABLE AT_Assets ;
+DROP TABLE AT_Types  ;
+DROP TABLE AT_IPs    ;
+DROP TABLE AT_Ports  ;
+DELETE FROM Transactions where ObjectType LIKE 'RTx::AssetTracker%' ;
+DELETE FROM Groups where Domain LIKE 'RTx::AssetTracker%' ;

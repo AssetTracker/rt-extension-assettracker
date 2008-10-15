@@ -1,0 +1,185 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<tr>
+<td class="label">
+<&|/l&>id</&>
+</td><td>
+<& /Elements/SelectEqualityOperator, Name => "idOp" &>
+</td><td>
+<INPUT Name="ValueOfid" SIZE=5>
+</td>
+</tr>
+
+<tr><td align=right>
+<& /AssetTracker/Elements/SelectAttachmentField, Name => 'AttachmentField' &>
+</td><td>
+<& /Elements/SelectBoolean, Name => "AttachmentOp", 
+			    True => loc("matches"), 
+			    False => loc("does not match"), 
+			    TrueVal => 'LIKE', 
+			    FalseVal => 'NOT LIKE' 
+&> 
+</td><td>
+<Input Name="ValueOfAttachment" Size=20>
+</td>
+</tr>
+<tr>
+<td class="label">
+<&|/l&>Type</&>
+</td><td>
+<& /Elements/SelectBoolean,  Name => "TypeOp" , 
+					True => loc("is"), 
+					False => loc("isn't"), 
+					TrueVal=> '=', 
+					FalseVal => '!=' &>
+</td><td>
+<& /AssetTracker/Elements/SelectType, 
+    Name => "ValueOfType", 
+    NamedValues => 1, 
+    CheckTypeRight => 'ShowAsset' &>
+</td>
+</tr>
+<tr>
+<td class="label">
+<&|/l&>Status</&>
+</td><td>
+<& /Elements/SelectBoolean, Name => "StatusOp", 
+			    True => loc("is"), 
+  			    False => loc("isn't"), 
+			    TrueVal=> '=', 
+			    FalseVal => '!=' 
+&>  
+</td><td>
+<& /AssetTracker/Elements/SelectStatus, Name => "ValueOfStatus", SkipRetired => 0 &>
+</td>
+</tr>
+<tr>
+<td class="label">
+<& SelectPersonType, Name => 'WatcherField', Default => '' &>
+</td><td>
+<& /Elements/SelectMatch, Name => "WatcherOp" &>
+</td><td>
+<Input Name="ValueOfWatcher" Size=20>
+</tr>
+<tr>
+<td class="label">
+<& SelectPersonType, Name => 'WatcherGroupField', Default => 'RequestorGroup', Suffix => 'Group' &>
+</td><td>
+<& /Elements/SelectBoolean, Name => "WatcherGroupOp", 
+					  True=> loc('belongs to'), 
+					  False=> loc('does not belong to'), 
+					  TrueVal=> '=', 
+					  FalseVal => '!='
+&>
+</td><td>
+<& /Search/Elements/SelectGroup, Name => 'ValueOfWatcherGroup' &>
+</td> 
+</tr>
+<tr>
+<td class="label">
+<& /AssetTracker/Elements/SelectDateType, Name=>"DateField" &>
+</td><td>
+<& /Elements/SelectDateRelation, Name=>"DateOp" &>
+</td><td>
+<& /Elements/SelectDate, Name => "ValueOfDate", ShowTime => 0, Default => '' &>
+</td></tr>
+
+%# Why did we want this?
+<tr>
+<td class="label">
+<& /AssetTracker/Search/Elements/SelectLinks, Name=>"LinksField" &>
+</td><td>
+<& /Elements/SelectBoolean, Name => "LinksOp", 
+			    True => loc("is"), 
+  			    False => loc("isn't"), 
+			    TrueVal=> '=', 
+			    FalseVal => '!=' &>  
+</td><td>
+<INPUT Name="ValueOfLinks" value="" SIZE=5>
+</td></tr>
+
+% if ($RTx::AssetTracker::EnableIP) {
+<tr><td align=right>
+<& /AssetTracker/Elements/SelectIPField, Name => 'IPField' &>
+</td><td>
+        <& /Elements/SelectCustomFieldOperator, Name => "IPOp" &>
+</td><td>
+<Input Name="ValueOfIP" Size=20>
+</td>
+</tr>
+
+<tr>
+<td class="label">
+<&|/l&>Port</&>
+</td><td>
+<& /Elements/SelectEqualityOperator, Name => "PortOp" &>
+</td><td>
+<INPUT Name="ValueOfPort" SIZE=5>
+</td>
+</tr>
+
+<tr>
+<td class="label">
+<&|/l&>Transport</&>
+</td><td>
+<& /Elements/SelectBoolean, Name => "TransportOp", 
+			    True => loc("is"), 
+  			    False => loc("isn't"), 
+			    TrueVal=> '=', 
+			    FalseVal => '!=' 
+&>  
+</td><td>
+<& /AssetTracker/Elements/SelectTransport, Name => "ValueOfTransport" &>
+</td>
+</tr>
+% }
+
+<%INIT>
+my @people = ('Actor',
+	      'Watcher',
+	      'WatcherGroup',
+	      );
+</%INIT>

@@ -1,0 +1,166 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Elements/Header, Title => loc("Create a new asset") &>
+<& /AssetTracker/Elements/Tabs, 
+    current_toptab => "AssetTracker/Asset/Create.html", 
+    Title => loc("Create a new asset") &>
+<FORM ACTION="<%$RT::WebPath%>/AssetTracker/Asset/Create.html" METHOD="POST" ENCTYPE="multipart/form-data" NAME="AssetCreate">
+<INPUT TYPE=HIDDEN Name="id" VALUE="new">
+<A NAME="top">
+	
+	
+<& /Elements/TitleBoxStart, contentbg => "#cccccc", title => loc("Create a new asset") &>
+<TABLE border=0 cellpadding=0 cellspacing=0>
+<TR><TD class=label><&|/l&>Type</&>:</TD>
+<TD class=value><% $TypeObj->Name %>
+<INPUT TYPE=HIDDEN NAME=Type Value="<%$TypeObj->Name%>">
+</TD>
+<TR>
+<TD class=labeltop>
+<&|/l&>Name</&>:
+</TD>
+<TD class=value COLSPAN=5>
+<INPUT NAME="Name" SIZE=40 MAXLENGTH=200 VALUE="<% $ARGS{Name} %>">
+</TD>
+</TR>
+<TR>
+<TD class=label><&|/l&>Status</&>:
+</TD>
+<TD class=value>
+<& /AssetTracker/Elements/SelectStatus, Name => "Status", Default => $ARGS{Status}||'new', DefaultValue => 0 &>
+</TD>
+</TR>
+<TR>
+<TD class=label>
+<&|/l&>Owner</&>:
+</TD>
+<TD class=value>
+<& /Elements/SelectOwner, Name => "Owner", TypeObj => $TypeObj, Default => $ARGS{Owner}||$RT::Nobody->Id, DefaultValue => 0 &>
+</TD>
+</TR>
+</TR>
+<TR>
+<TD class=labeltop>
+<&|/l&>Administrators</&>:
+</TD>
+<TD class=value COLSPAN=5>
+<INPUT NAME="Admin" SIZE=40 VALUE="<% $ARGS{Admin} %>"><BR>
+<i><font size=-2>
+<&|/l&>(Administrators)</&></font></i>
+</TD>
+</TR>
+<TR>
+<TD class=label>
+<&|/l&>Description</&>:
+</TD>
+<TD class=value COLSPAN=5>
+<INPUT Name="Description" SIZE=100 MAXLENGTH=255 value="<%$ARGS{Description} || ''%>">
+</TD>
+</TR>
+%#<TR>
+%#<TD class=label>
+%#<&|/l&>Model</&>:
+%#</TD>
+%#<TD class=value COLSPAN=5>
+%#<INPUT Name="Model" SIZE=40 MAXLENGTH=200 value="<%$ARGS{Model} || ''%>">
+%#</TD>
+%#</TR>
+%#<TR>
+%#<TD class=label>
+%#<&|/l&>Location</&>:
+%#</TD>
+%#<TD class=value COLSPAN=5>
+%#<INPUT Name="Location" SIZE=40 MAXLENGTH=200 value="<%$ARGS{Location} || ''%>">
+%#</TD>
+%#</TR>
+<TR>
+<TD COLSPAN=6>
+<& /AssetTracker/Asset/Elements/EditCustomFields, TypeObj => $TypeObj &>
+</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT COLSPAN=2>
+</TD>
+</TR>
+</TABLE>
+<& /Elements/TitleBoxEnd &>
+<& /Elements/Submit, Label => loc("Create")&>
+
+<BR>
+<TABLE WIDTH="100%" BORDER=0>
+<TR>
+<TD WIDTH="50%" VALIGN=TOP>
+
+<br>
+
+<BR>
+</TD>
+
+<TD VALIGN="TOP">
+<BR>
+
+</TD>
+</TR>
+</TABLE>
+</FORM>
+
+<%INIT>
+
+
+
+my $TypeObj = new RTx::AssetTracker::Type($session{'CurrentUser'});
+$TypeObj->Load($Type) || Abort(loc("Type could not be loaded."));
+my $CFs = $TypeObj->AssetCustomFields();
+
+if ($ARGS{'id'} eq 'new') { # new asset?
+    $m->comp('Display.html', %ARGS);
+    return();
+}
+</%INIT>
+
+<%ARGS>
+$Type => undef
+</%ARGS>

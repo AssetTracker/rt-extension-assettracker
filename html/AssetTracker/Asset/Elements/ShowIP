@@ -1,0 +1,22 @@
+<table>
+% while( my $ip = $ips->Next ) {
+<tr>
+<td>
+  <%$ip->Interface%>: <%$ip->IP%> (<%$ip->MAC%>)<br>
+</td>
+<td>
+TCP: <% join(', ', sort {$a<=>$b} $ip->TCPPorts) %>
+<br>
+UDP: <% join(', ', sort {$a<=>$b} $ip->UDPPorts) %>
+</td>
+</tr>
+% }
+</table>
+
+<%INIT>
+my $ips = $Asset->IPs;
+</%INIT>
+
+<%ARGS>
+$Asset
+</%ARGS>

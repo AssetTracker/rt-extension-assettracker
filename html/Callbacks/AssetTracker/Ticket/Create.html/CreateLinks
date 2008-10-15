@@ -1,0 +1,5 @@
+<TR><TD ALIGN=RIGHT><&|/l&>Ticket of Asset</&></TD><TD><input size=10 name="new-TicketOf" value="<% $ARGSRef->{'new-TicketOf'} %>"></TD></TR>
+
+<%ARGS>
+$ARGSRef => undef
+</%ARGS>

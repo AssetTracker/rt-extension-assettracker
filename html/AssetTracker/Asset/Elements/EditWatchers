@@ -1,0 +1,76 @@
+<TABLE>
+<TR>
+<TD>Current Members:<BR>(check to delete)
+<ul>
+%# Print out a placeholder if there are none.
+%if ($Members->Count == 0 ) {
+<li><i><&|/l&>none</&></i>
+% }
+
+
+%while (my $watcher=$Members->Next) {
+<li>
+<INPUT TYPE=CHECKBOX NAME="Asset-DeleteWatcher-Type-<%$Watchers->Type%>-Principal-<%$watcher->MemberId%>" UNCHECKED>
+%if ($watcher->MemberObj->IsUser) {
+<a href="<%$RT::WebPath%>/Admin/Users/Modify.html?id=<%$watcher->MemberObj->Object->id%>">
+<%$watcher->MemberObj->Object->Name%></a>
+%} else {
+<a href="<%$RT::WebPath%>/Admin/Groups/Modify.html?id=<%$watcher->MemberObj->Object->id%>">
+<%$watcher->MemberObj->Object->Name%></a>
+%}
+% }
+</ul>
+</TD>
+<TD>&nbsp;</TD>
+% if (ref $AssetObj) {
+<TD>Add Groups:<BR><&/AssetTracker/Elements/SelectGroupsWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", AssetObj => $AssetObj &><BR>
+Add Users:<BR><&/AssetTracker/Elements/SelectUsersWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", IncludeSuperusers=>1,Verbose => 1, SortFriendly => 1, AssetObj => $AssetObj &></TD>
+% }
+% elsif (ref $TypeObj) {
+<TD>Add Groups:<BR><&/AssetTracker/Elements/SelectGroupsWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", TypeObj => $TypeObj &><BR>
+Add Users:<BR><&/AssetTracker/Elements/SelectUsersWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", IncludeSuperusers=>1,Verbose => 1, SortFriendly => 1, TypeObj => $TypeObj &></TD>
+% }
+</TR>
+</TABLE>
+<%INIT>
+my $Members;
+my $Watchers;
+my $Right;
+
+if ($Asset && !$AssetObj && !ref($Asset)) {
+    $AssetObj = RTx::AssetTracker::Asset->new($session{'CurrentUser'});
+    $AssetObj->Load($Asset);
+    $AssetObj->Id or Abort("Asset: $Asset could not be loaded.");
+}
+
+elsif (ref($Asset) eq 'RTx::AssetTracker::Asset') {
+    $AssetObj = $Asset;
+}
+
+if ($AssetObj) {
+    unless (!$AssetObj->Id || $AssetObj->CurrentUserHasRight('ModifyAsset')) {
+        Abort("No permission to modify asset");
+    }
+    my $group_method = $Role . 'RoleGroup';
+    $Watchers = $AssetObj->$group_method();
+    $Members = $Watchers->MembersObj;
+}
+else {
+    $Watchers = RT::Group->new($session{'CurrentUser'});
+    $Members = RT::GroupMembers->new($session{'CurrentUser'});
+}
+
+$Right = RTx::AssetTracker::Type->RoleRight( $Role );
+
+</%INIT>
+<%ARGS>
+$AssetObj => undef
+$Asset => undef
+$TypeObj => undef
+$Role
+$IncludeUsers => 1
+$IncludeGroups => 1
+</%ARGS>
+
+
+

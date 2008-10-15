@@ -1,0 +1,7 @@
+<%$Text%>: <INPUT Name="<%$Name%>" SIZE="<%$SIZE%>" MAXLENGTH="<%$MAXLENGTH%>">
+<%ARGS>
+$Text => "Change Comment"
+$Name => "ChangeComment"
+$SIZE => 75
+$MAXLENGTH => 255
+</%ARGS>

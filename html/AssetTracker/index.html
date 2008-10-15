@@ -1,0 +1,53 @@
+<& /Elements/Header,
+    Title => loc("Assets at a glance"),
+    Refresh => $session{'home_refresh_interval'} &>
+<& /AssetTracker/Elements/Tabs,
+    current_tab => 'index.html',
+    Title => loc("Asset Tracker") &>
+
+<TABLE BORDER=0 WIDTH=100%>
+<TR>
+<TD class="boxcontainer">
+<& /AssetTracker/Elements/Quicksearch &>
+%#<BR>
+%#<form method=get action="<%$RT::WebPath%>/index.html">
+%#<& /Elements/Refresh, Name => 'HomeRefreshInterval', Default => $session {'home_refresh_interval'} &>
+%#<div align=right><input type=submit value="<&|/l&>Go!</&>"></div>
+%#</form>
+</TD>
+</TR>
+<TR VALIGN=TOP>
+<TD WIDTH=70% class="boxcontainer">
+<& /AssetTracker/Elements/RecentAssets &>
+</TD>
+</TR>
+</TABLE>
+<%init>
+
+if ( $ARGS{'q'} ) {
+    my $query = $ARGS{'q'};
+
+    if ( $query =~ m/^(\d+\.\d+\.\d+\.\d+)$/ ) {
+        $m->comp("/AssetTracker/Search/Results.html", Query => "IP = '$query'", AutoForwardSingleResult => 1);
+        return();
+    }
+    elsif ( $query =~ /^(\d+)$/ ) {
+        Abort("Don't know how to seach for ports (yet)");
+    }
+
+    if ($m->comp('/Elements/Callback', _CallbackName => 'SearchPreFilter',
+                 query => $query, %ARGS)) {
+        return();
+    }
+
+    $m->comp("/AssetTracker/Search/Results.html", Query => "Name LIKE '$query' AND Status != 'retired'", AutoForwardSingleResult => 1);
+    return();
+
+}
+
+
+if ($ARGS{'HomeRefreshInterval'}) {
+	$session{'home_refresh_interval'} = $ARGS{'HomeRefreshInterval'};
+}
+
+</%init>

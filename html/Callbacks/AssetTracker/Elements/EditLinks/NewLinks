@@ -1,0 +1,8 @@
+  <TR>
+    <TD class="label"><&|/l&>Assets</&>:</TD>
+    <TD class="entry"> <input name="TicketOf-<%$id%>"></TD>
+  </TR>
+
+<%ARGS>
+$id
+</%ARGS>

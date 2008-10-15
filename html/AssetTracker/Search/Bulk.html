@@ -1,0 +1,330 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2005 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Elements/Header, Title => loc("Bulk asset update") &>
+%#<& /Elements/Tabs, Title => loc("Bulk asset update") &>
+<& /AssetTracker/Elements/Tabs,
+    current_tab => "AssetTracker/Search/Bulk.html" &>
+
+
+<& /Elements/ListActions, actions => \@results &>
+<FORM METHOD="POST" ACTION="<%$RT::WebPath%>/AssetTracker/Search/Bulk.html" >
+<input type="hidden" name="Query" value="<%$ARGS{'Query'}%>">
+<TABLE WIDTH=100% border=0 cellpadding=3 CELLSPACING=0>
+<TR>
+<TH><&|/l&>Update</&></TH>
+%foreach my $col (@cols) {
+% my $colalias = $col;
+% $colalias =~ s/(Obj\-\>)(Name|AsString)//;
+
+<TH><% loc($colalias) %>&nbsp;</TH>
+%}
+</TR>
+
+<%PERL>
+
+my $i;
+
+$Assets->RedoSearch();
+while (my $Asset = $Assets->Next) {
+ $i++;
+ if ($i % 2) {
+     $bgcolor = "#dddddd";
+ }
+ else {
+     $bgcolor = "#ffffff";
+ }
+      </%PERL>
+<TR bgcolor="<%$bgcolor%>">
+<TD><input type=checkbox name="UpdateAsset<%$Asset->Id%>" CHECKED></TD>
+%foreach my $col (@cols) {
+<TD>
+% if ($col eq 'id') {
+<A HREF="<% $RT::WebPath%>/AssetTracker/Asset/Display.html?id=<%$Asset->Id%>"><%$Asset->Id()%></A>
+% }
+%else {
+<% eval "\$Asset->$col()" %>&nbsp;
+%}
+</TD>
+%}
+</TR>
+%}
+
+
+
+</TABLE>
+
+<HR>
+
+
+<& /Elements/TitleBoxStart, title => loc('Update selected assets') &>
+<TABLE>
+<TR>
+<TD VALIGN=TOP>
+<table>
+% for my $role ( ActiveRoleArray() ) {
+<tr><td class=label> <&|/l&>Add <% $role %></&>: </td>
+<td class=value> <INPUT Name="Add<% $role %>" SIZE=20> </td></tr>
+<tr><td class=label> <&|/l&>Remove <% $role %></&>: </td>
+<td class=value> <INPUT Name="Delete<% $role %>" SIZE=20> </td></tr>
+% }
+<tr><td class=label colspan=2> <i>(Username or Email separated by spaces)</i></td>
+<td class=value> </td></tr>
+</table>
+</TD>
+<TD VALIGN=TOP>
+<table>
+<tr><td class=label> <&|/l&>Make Description</&>: </td>
+<td class=value> <INPUT Name="Subject" SIZE=50> </td></tr>
+<tr><td class=label> <&|/l&>Make Type</&>: </td>
+<td class=value> <& /AssetTracker/Elements/SelectType, Name => "Type" &> </td></tr>
+<tr><td class=label> <&|/l&>Make Status</&>: </td>
+<td class=value> <& /AssetTracker/Elements/SelectStatus, Name => "Status" &> </td></tr>
+</table>
+
+</TD>
+</TR>
+</table>
+<& /Elements/TitleBoxEnd&>
+
+%#<& /Elements/TitleBoxStart, title => loc('Add comments or replies to selected assets') &>
+%#<table>
+%#<tr><td align=right><&|/l&>Update Type</&>:</td>
+%#<td><select name="UpdateType">
+%#  <option value="private" ><&|/l&>Comments (not sent to requestors)</&></option>
+%#<option value="response" ><&|/l&>Reply to requestors</&></option>
+%#</select> 
+%#</td></tr>
+%#<tr><td align=right><&|/l&>Subject</&>:</td><td> <input name="UpdateSubject" size=60 value=""></td></tr>
+%#% while (my $CF = $TxnCFs->Next()) {
+%#<TR>
+%#<TD ALIGN=RIGHT><% $CF->Name %>:</TD>
+%#<TD><& /Elements/EditCustomField, 
+%#    CustomField => $CF, 
+%#    NamePrefix => "Object-RT::Transaction--CustomField-"
+%#    &><em><% $CF->FriendlyType %></em></TD>
+%#</TD></TR>
+%#% } # end if while
+%# <tr><td align=right><&|/l&>Attach</&>:</td><td><input name="UpdateAttachment" type="file"></td></tr>
+%# <tr><td class=labeltop><&|/l&>Message</&>:</td><td>
+%# <& /Elements/MessageBox, Name=>"UpdateContent"&>
+%# </td></tr>
+%# </table>
+%#
+%#<& /Elements/TitleBoxEnd &>
+
+
+%#<& /Elements/TitleBoxStart, title => loc('Edit Links'), color => "#336633"&>
+%#<i><&|/l&>Enter assets or URIs to link assets to. Separate multiple entries with spaces.</&></i><br>
+%#<& /Ticket/Elements/BulkLinks &>
+%#<& /Elements/TitleBoxEnd &>
+
+<& /Elements/TitleBoxStart, title => loc('Edit Fields'), color => "#336633"&>
+<table>
+% foreach (keys %allcfs) {
+<tr><td class=label>
+%     my $cf = $allcfs{$_};
+%     my $pref;
+%     if ($globalcfs{$cf->Id}) {
+%         $pref = "[Global]";
+%     } else {
+%         $pref = "[Type: " . join(',', sort keys %{$cfqnames{$_}}) . "]";
+%     }
+<%$pref%> <b><% $cf->Name %></b><br>
+<% $cf->FriendlyType %>
+%     if ($cf->Type =~ /(Select|Freeform|Text)/ and $cf->MaxValues == 1) {
+<br><&|/l&>Don't update <% $cf->Name %></&><input type=checkbox name="<%$cf->Id%>-DoNotUpdate" CHECKED>
+%     }
+</td>
+<td>
+% if ($cf->Type eq "Select" and $cf->MaxValues != 1) {
+Add Values
+<& /AssetTracker/Asset/Elements/EditCustomField, CustomField => $cf, NameSuffix => 'AddValues' &>
+Delete Values
+<& /AssetTracker/Asset/Elements/EditCustomField, CustomField => $cf, NameSuffix => 'DeleteValues' &>
+% }
+% elsif ($cf->Type  =~ /(Select|Freeform)/ and $cf->MaxValues == 1) {
+<& /AssetTracker/Asset/Elements/EditCustomField, CustomField => $cf &>
+% }
+% elsif ($cf->Type eq 'Text') {
+<textarea cols=15 rows=3 name="<%$cf->Id%>-Value"></textarea>
+<input type="hidden" name="<%$cf->Id%>-Value-Magic" value="1">
+% } else {
+Add Values<br>
+<textarea cols=15 rows=3 name="<%$cf->Id%>-Values-AddValues"></textarea>
+<input type="hidden"     name="<%$cf->Id%>-Values-AddValues-Magic" value="1">
+</td><td>
+Delete Values<br>
+<textarea cols=15 rows=3 name="<%$cf->Id%>-Values-DeleteValues"></textarea>
+<input type="hidden"     name="<%$cf->Id%>-Values-DeleteValues-Magic" value="1">
+% }
+</td>
+</tr>
+% }
+</table>
+<& /Elements/TitleBoxEnd &>
+
+<& /Elements/TitleBoxStart, title => 'Change Comment',   color=> "#999900", width => "100%" &>
+<& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment" &>
+<& /Elements/TitleBoxEnd &>
+
+<& /Elements/Submit, Label => loc('Update All') &>
+
+
+</FORM>
+<%INIT>
+
+unless ($session{'CurrentUser'}->HasRight( Object => $RTx::AssetTracker::System, Right => 'BulkUpdate')) {
+    Abort(loc("No permission to perform bulk updates of assets."));
+}
+
+# Iterate through the ARGS hash and remove anything with a null value.
+map ($ARGS{$_} =~ /^$/ && (delete $ARGS{$_}), keys %ARGS);
+
+my ($bgcolor, @results);
+my @cols = qw(id Name Status Description TypeObj->Name );
+
+
+my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+$Assets->FromSQL($ARGS{'Query'});
+
+Abort(loc("No search to operate on.")) unless ($Assets);
+
+my %allcfs;
+my %cfqnames;
+my %cfqs;
+my $count = 0;
+while (my $Asset = $Assets->Next) {
+    my $cfq = $Asset->TypeObj;
+    my $cfqid = $cfq->Id;
+    my $cfqn = $cfq->Name;
+    unless ( exists $cfqs{$cfqid} ) {
+	$cfqs{$cfqid} = 1;
+	$count++;
+	my $cfs = $cfq->AssetCustomFields;
+	while (my $cf = $cfs->Next) {
+	    $allcfs{$cf->Id} = $cf;
+	    $cfqnames{$cf->Id}{$cfqn} = 1;
+	}
+    }
+}
+
+my %globalcfs;
+my $CFs = RT::CustomFields->new($RT::SystemUser);
+$CFs->LimitToGlobalAsset;
+while (my $cf = $CFs->Next) {
+    $globalcfs{$cf->Id} = 1;
+}
+
+#my $do_comment_reply=0;
+## Prepare for asset updates
+#$ARGS{'UpdateContent'} =~ s/\r\n/\n/g;
+#chomp ($ARGS{'UpdateContent'}) ;
+
+#if ($ARGS{'UpdateContent'} &&
+    #$ARGS{'UpdateContent'} ne '' &&
+    #$ARGS{'UpdateContent'} ne  "-- \n" .
+    #$session{'CurrentUser'}->UserObj->Signature) {
+            #$do_comment_reply=1;
+#}
+
+#Iterate through each asset we've been handed
+my (@linkresults,@cfresults);
+my %queues;
+
+$Assets->RedoSearch();
+while (my $Asset = $Assets->Next) {
+    $queues{$Asset->TypeObj->Id}++;
+    $RT::Logger->debug( "Checking Asset ".$Asset->Id ."\n");
+    next unless ($ARGS{"UpdateAsset".$Asset->Id});
+    $RT::Logger->debug ("Matched\n");
+    my @updateresults; 
+    #if ($do_comment_reply) {
+       #ProcessUpdateMessage(AssetObj => $Asset, ARGSRef => \%ARGS, Actions => \@updateresults); 
+    #}
+
+    #Update the basics.
+    my @basicresults = ProcessAssetBasics(AssetObj => $Asset, ARGSRef => \%ARGS);
+    my @cfresults = ProcessBulkCustomFieldUpdates(Object => $Asset, ARGSRef => \%ARGS);
+    #my @dateresults = ProcessAssetDates(AssetObj => $Asset, ARGSRef => \%ARGS);
+    #Update the watchers
+    my @watchresults = ProcessAssetWatchers(AssetObj => $Asset, ARGSRef => \%ARGS);    
+
+
+    #Update the links
+    $ARGS{'id'} = $Asset;
+    #$ARGS{$Asset->Id.'-MergeInto'} = $ARGS{'Asset-MergeInto'};
+    #$ARGS{$Asset->Id.'-DependsOn'} = $ARGS{'Asset-DependsOn'};
+    #$ARGS{'DependsOn-'.$Asset->Id} = $ARGS{'DependsOn-Asset'};
+    #$ARGS{$Asset->Id.'-MemberOf'} = $ARGS{'Asset-MemberOf'};
+    #$ARGS{'MemberOf-'.$Asset->Id} = $ARGS{'MemberOf-Asset'};
+    #$ARGS{$Asset->Id.'-RefersTo'} = $ARGS{'Asset-RefersTo'};
+    #$ARGS{'RefersTo-'.$Asset->Id} = $ARGS{'RefersTo-Asset'};
+    #@linkresults = ProcessAssetLinks( AssetObj => $Asset, ARGSRef => \%ARGS);
+    #delete $ARGS{'id'};
+    #delete $ARGS{$Asset->Id.'-MergeInto'};
+    #delete $ARGS{$Asset->Id.'-DependsOn'};
+    #delete $ARGS{'DependsOn-'.$Asset->Id};
+    #delete $ARGS{$Asset->Id.'-MemberOf'};
+    #delete $ARGS{'MemberOf-'.$Asset->Id};
+    #delete $ARGS{$Asset->Id.'-RefersTo'};
+    #delete $ARGS{'RefersTo-'.$Asset->Id};
+    my @tempresults = ( @watchresults,
+			@basicresults,
+			@cfresults,
+			#@dateresults,
+    			@updateresults,
+			#@linkresults,
+			);
+    @tempresults = map { loc("Asset #[_1] [_2]: [_3]",$Asset->Id,$Asset->Name,$_) } @tempresults;
+
+    @results = (@results, @tempresults);
+}
+
+#my $TxnCFs = RT::CustomFields->new($session{CurrentUser});
+#$TxnCFs->LimitToLookupType("RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction");
+#$TxnCFs->LimitToGlobalOrObjectId(sort keys %queues);
+
+</%INIT>

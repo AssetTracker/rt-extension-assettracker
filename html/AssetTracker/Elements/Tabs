@@ -1,0 +1,203 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Elements/Callback, Asset => $Asset, actions=> $actions, tabs => $tabs, %ARGS &>
+<& /Elements/Tabs, 
+    tabs => $tabs, 
+    actions => $actions, 
+    topactions => $topactions,
+    current_tab => $current_tab, 
+    current_toptab => $current_toptab,
+    Title => $Title &> 
+<%INIT>
+
+my $tabs = {};
+my $current_toptab = "AssetTracker/index.html",
+my $searchtabs = {};
+my $actions;
+
+if ( $Asset) {
+	
+my $id   = $Asset->id();
+
+if ( defined $session{'assets'} and $session{'assets'}->Count ) {
+
+        # we have to update session data if we get new ItemMap
+        my $updatesession = 1 unless($session{'assets'}->{'item_map'});
+
+        my $item_map = $session{'assets'}->ItemMap;
+
+        if ($updatesession) {
+                $session{'i'}++;
+		$session{'assets'}->PrepForSerialization();
+        }
+
+        # Don't display prev links if we're on the first asset
+        if ($item_map->{$Asset->Id}->{prev}) {
+                $searchtabs->{'_a'} = {
+                            class => "nav",
+                            path => "AssetTracker/Asset/Display.html?id=" . $item_map->{first},
+                            title => '<< ' . loc('First') };
+                $searchtabs->{"_b"} = { class => "nav",
+                            path => "AssetTracker/Asset/Display.html?id=" . $item_map->{$Asset->Id}->{prev},
+                                  title => '< ' . loc('Prev') };
+       } 
+
+
+        # Don't display next links if we're on the last asset
+        if ($item_map->{$Asset->Id}->{next}) {
+            $searchtabs->{'d'} = { class => "nav",
+                            path => "AssetTracker/Asset/Display.html?id=" . $item_map->{$Asset->Id}->{next},
+                             title => loc('Next') . ' >' };
+            $searchtabs->{'e'} = {
+                           class => "nav",
+                           path => "AssetTracker/Asset/Display.html?id=" . $item_map->{last},
+                           title => loc('Last') . ' >>' };
+        }
+}
+
+
+
+$tabs->{"this"} = { class => "currentnav",
+                    path  => "AssetTracker/Asset/Display.html?id=" . $Asset->id,
+                    title => $Asset->Name,
+                    current_subtab => $current_subtab };
+
+my $asset_page_tabs = {
+    _A => { title => loc('Display'),
+            path  => "AssetTracker/Asset/Display.html?id=" . $id, },
+
+    _B => { title => loc('Edit Basics'),
+            path  => "AssetTracker/Asset/Modify.html?id=" . $id, },
+    _Ba => { title => loc('Edit Fields'),
+            path  => "AssetTracker/Asset/ModifyFields.html?id=" . $id, },
+    _Bb => { title => loc('Edit IPs'),
+            path  => "AssetTracker/Asset/ModifyIPs.html?id=" . $id, },
+
+#    _C => { title => loc('Dates'),
+#            path  => "AssetTracker/Asset/ModifyDates.html?id=" . $id, },
+    _D =>
+      { title => loc('Edit People'), path => "AssetTracker/Asset/ModifyPeople.html?id=" . $id, },
+    _E => { title => loc('Edit Links'),
+            path  => "AssetTracker/Asset/ModifyLinks.html?id=" . $id, },
+    _F => { title => loc('Edit All'),
+            path  => "AssetTracker/Asset/ModifyAll.html?id=" . $id,
+            seperator => 1 },
+    _G => { title => loc('View History'),
+             path  => "AssetTracker/Asset/History.html?id=" . $id, },
+
+};
+
+unless ($RTx::AssetTracker::EnableIP) {
+    delete $asset_page_tabs->{_Bb};
+}
+
+foreach my $tab ( sort keys %{$asset_page_tabs} ) {
+    if ( $asset_page_tabs->{$tab}->{'path'} eq $current_tab ) {
+        $asset_page_tabs->{$tab}->{"subtabs"}        = $subtabs;
+        $tabs->{'this'}->{"current_subtab"}        = 
+        $asset_page_tabs->{$tab}->{"path"};
+    }
+}
+$tabs->{'this'}->{"subtabs"} = $asset_page_tabs;
+$current_tab = "AssetTracker/Asset/Display.html?id=" . $id;
+
+
+
+
+
+#if (    $Asset->CurrentUserHasRight('ModifyAsset')
+     #or $Asset->CurrentUserHasRight('ReplyToAsset') ) {
+    #$actions->{'A'} = { title => loc('Reply'),
+                        #path  => "AssetTracker/Asset/Update.html?Action=Respond&id=" . $id,
+    #};
+#}
+
+}
+
+my $args = "?" . $m->comp(
+    '/Elements/QueryString',
+    Query   => $ARGS{'Query'}   || $session{'CurrentAssetSearchHash'}->{'Query'},
+    Format  => $ARGS{'Format'}  || $session{'CurrentAssetSearchHash'}->{'Format'},
+    OrderBy => $ARGS{'OrderBy'} || $session{'CurrentAssetSearchHash'}->{'OrderBy'},
+    Order   => $ARGS{'Order'}   || $session{'CurrentAssetSearchHash'}->{'Order'},
+    Rows    => $ARGS{'Rows'},
+  ) if ($ARGS{'Query'} or $session{'CurrentAssetSearchHash'}->{'Query'});
+
+$tabs->{"f"} = { path      => "AssetTracker/Search/Build.html?NewQuery=1",
+                 title     => loc('New Query')};
+$tabs->{"g"} = { path      => "AssetTracker/Search/Build.html$args",
+                 title     => loc('Query Builder')};
+$tabs->{"h"} = { path      => "AssetTracker/Search/Edit.html$args",
+                 title     => loc('Advanced'),
+                 separator => 1 };
+if (defined $session{'assets'} and $session{'assets'}->Count) {
+  $tabs->{"i"} = { path      => "AssetTracker/Search/Results.html$args",
+                   title     => loc('Show Results'),
+                   separator => 1,
+                   subtabs   => $searchtabs };
+  if ($current_tab =~  "AssetTracker/Search/Results.html") {
+    $current_tab = "AssetTracker/Search/Results.html$args";
+  }
+}
+
+my $topactions = {
+        A => { html => $m->scomp('/AssetTracker/Elements/CreateAsset')
+                },
+        B => { html => $m->scomp('/AssetTracker/Elements/SimpleSearch')
+                }
+        };
+
+
+</%INIT>
+
+  
+<%ARGS>
+$Asset => undef
+$subtabs => undef
+$current_tab => undef
+$current_subtab => undef
+$Title => undef
+</%ARGS>

@@ -1,0 +1,52 @@
+<TABLE>
+<TR>
+<TD>
+<h3><&|/l&>Add IPs</&></h3>
+% my $i = 1;
+<TABLE>
+<TR><TD>Interface</TD><TD>IP Address</TD><TD>MAC Address</TD><TD>TCP Ports <i>(space separated)</i></TD><TD>UDP Ports</TD></TR>
+% while ($i <= $blanks) {
+<TR>
+<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddInterface<%$i%>" MAXLENTH=25></TD>
+<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddIP<%$i%>" SIZE=15 MAXLENGTH=15></TD>
+<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddMAC<%$i%>" SIZE=12 MAXLENGTH=12></TD>
+<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddTCPPorts<%$i%>" SIZE=30 ></TD>
+<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddUDPPorts<%$i%>" SIZE=30 ></TD>
+% $i++;
+</TR>
+% }
+</TABLE>
+</TD>
+</TR>
+<TR>
+<TD VALIGN=TOP>
+<h3><&|/l&>Current IPs</&></h3>
+<&|/l&>(Check box to delete)</&><br>
+    <table>
+% while(my $ip = $ips->Next) {
+    <tr>
+    <td>
+    <%$ip->Interface%>:
+    <INPUT TYPE=CHECKBOX NAME="Asset-<%$AssetObj->Id%>-DeleteIP-<%$ip->Id%>" UNCHECKED>
+    <%$ip->IP%> (<%$ip->MAC%>)
+    </td>
+    <td>
+    TCP: <INPUT NAME="Asset-<%$AssetObj->Id%>-IP-<%$ip->Id%>-TCPPorts" VALUE="<%join(' ', sort {$a<=>$b} $ip->TCPPorts)%>" SIZE=30>
+    <br>
+    UDP: <INPUT NAME="Asset-<%$AssetObj->Id%>-IP-<%$ip->Id%>-UDPPorts" VALUE="<%join(' ', sort {$a<=>$b} $ip->UDPPorts)%>" SIZE=30>
+    </td>
+    </tr>
+% }
+    </table>
+</TD>
+</TR>
+</TABLE>
+
+<%INIT>
+my $ips = $AssetObj->IPs;
+</%INIT>
+
+<%ARGS>
+$AssetObj => undef
+$blanks => 5
+</%ARGS>

@@ -1,0 +1,26 @@
+# Initial data for a fresh AT Installation.
+
+@Groups = (
+    { Name        => '',
+      Type        => 'Owner',                                  # loc
+      Domain      => 'RTx::AssetTracker::System-Role',
+      Instance    => '',
+      Description => 'SystemRolegroup for internal use',    # loc
+    },
+    { Name        => '',
+      Type        => 'Admin',                             # loc
+      Domain      => 'RTx::AssetTracker::System-Role',
+      Instance    => '',
+      Description => 'Pseudogroup for internal use',        # loc
+    }, );
+
+@Types = ({ Name               => 'Servers',
+             Description       => 'The default asset type',
+             },
+             );
+@ACL = (
+    { UserId => 'root',        # - principalid
+      Right  => 'SuperUser', },
+
+);
+

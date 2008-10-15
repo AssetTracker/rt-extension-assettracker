@@ -1,0 +1,14 @@
+<%INIT>
+  $tabs->{'L'} = { title => loc('Asset Types'),
+                                description => loc('Manage asset types and asset-specific properties'),
+                                path => '/AssetTracker/Admin/Types/index.html',
+                      };
+
+
+</%INIT>
+
+
+<%ARGS>
+$tabs
+</%ARGS>
+

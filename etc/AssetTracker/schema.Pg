@@ -1,0 +1,79 @@
+# Courtesy of Rolf Schaufelberger <rs@plusw.de>
+# {{{ AT_Types
+CREATE TABLE AT_Types (
+  id SERIAL,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  DefaultAdmin integer NULL DEFAULT 0  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created timestamp NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated timestamp NULL  ,
+  Disabled integer NOT NULL DEFAULT 0 ,
+  PRIMARY KEY (id)
+) ;
+CREATE UNIQUE INDEX AT_Types1 ON AT_Types (Name) ;
+CREATE INDEX AT_Types2 ON AT_Types (Disabled) ;
+
+# }}}
+
+# {{{ Assets
+
+CREATE TABLE AT_Assets (
+  id SERIAL,
+  Type integer NOT NULL DEFAULT 0  ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Status varchar(20) NULL ,
+  URI varchar(255),
+
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated timestamp NULL  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created timestamp NULL  ,
+  PRIMARY KEY (id)
+) ;
+
+CREATE INDEX AT_Assets1 ON AT_Assets (Type, Status) ;
+CREATE INDEX AT_Assets2 ON AT_Assets (Name, Type, Status) ;
+
+# }}}
+
+# {{{ AT_IPs
+CREATE TABLE AT_IPs (
+  id SERIAL,
+  IP char(15) NOT NULL  ,
+  MAC char(12) NULL  ,
+  Interface varchar(25) NULL DEFAULT 0  ,
+  Asset integer NOT NULL DEFAULT 0  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created timestamp NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated timestamp NULL  ,
+  PRIMARY KEY (id)
+) ;
+CREATE UNIQUE INDEX AT_IPs1 ON AT_IPs (IP) ;
+CREATE INDEX AT_IPs2 ON AT_IPs (Asset) ;
+
+# }}}
+
+# {{{ AT_Ports
+CREATE TABLE AT_Ports (
+  id SERIAL,
+  Transport char(15) NOT NULL  ,
+  Port char(12) NULL  ,
+  IP integer NOT NULL DEFAULT 0  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created timestamp NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated timestamp NULL  ,
+  PRIMARY KEY (id)
+) ;
+CREATE INDEX AT_Ports1 ON AT_Ports (Port) ;
+CREATE INDEX AT_Ports2 ON AT_Ports (Transport,Port) ;
+CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
+
+# }}}
+

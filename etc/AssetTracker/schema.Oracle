@@ -1,0 +1,75 @@
+# Courtesy of Joop van de Wege <JoopvandeWege@mococo.nl>
+# {{{ AT_Types
+CREATE SEQUENCE AT_TYPES_seq;
+CREATE TABLE AT_Types (
+  id Number(11,0) constraint At_types_key Primary key,
+  Name varchar2(200) NOT NULL  ,
+  Description varchar2(255) ,
+  DefaultAdmin number(11,0) DEFAULT 0  ,
+  Creator number(11,0) DEFAULT 0 NOT NULL ,
+  Created DATE  ,
+  LastUpdatedBy Number(11,0) DEFAULT 0  NOT NULL ,
+  LastUpdated DATE  ,
+  Disabled number(11,0) DEFAULT 0 NOT NULL
+);
+CREATE UNIQUE INDEX AT_Types1 ON AT_Types (Name) ;
+CREATE INDEX AT_Types2 ON AT_Types (Disabled) ;
+
+# }}}
+
+# {{{ Assets
+CREATE SEQUENCE AT_ASSETS_seq;
+CREATE TABLE AT_Assets (
+  id Number(11,0) constraint At_Assets_key Primary key,
+  Type number(11,0) DEFAULT 0  NOT NULL ,
+  Name varchar2(200) NOT NULL  ,
+  Description varchar2(255)  ,
+  Status varchar2(20) ,
+  URI varchar2(255),
+  LastUpdatedBy number(11,0) DEFAULT 0 NOT NULL  ,
+  LastUpdated DATE  ,
+  Creator number(11,0) DEFAULT 0 NOT NULL  ,
+  Created DATE
+);
+
+CREATE INDEX AT_Assets1 ON AT_Assets (Type, Status) ;
+CREATE INDEX AT_Assets2 ON AT_Assets (Name, Type, Status) ;
+
+# }}}
+
+# {{{ AT_IPs
+CREATE SEQUENCE AT_IPs_seq;
+CREATE TABLE AT_IPs (
+  id Number(11,0) constraint At_IPs_key Primary key,
+  IP varchar2(15) NOT NULL  ,
+  MAC varchar2(12)  ,
+  Interface varchar2(25) DEFAULT 0  ,
+  Asset number(11,0) DEFAULT 0  NOT NULL  ,
+  Creator number(11,0) DEFAULT 0  NOT NULL  ,
+  Created DATE   ,
+  LastUpdatedBy number(11,0) DEFAULT 0  NOT NULL  ,
+  LastUpdated DATE
+);
+CREATE UNIQUE INDEX AT_IPs1 ON AT_IPs (IP) ;
+CREATE INDEX AT_IPs2 ON AT_IPs (Asset) ;
+
+# }}}
+
+# {{{ AT_Ports
+CREATE SEQUENCE AT_Ports_seq;
+CREATE TABLE AT_Ports (
+  id Number(11,0) constraint At_Ports_key Primary key,
+  Transport varchar2(15) NOT NULL  ,
+  Port varchar2(12)  ,
+  IP number(11,0) DEFAULT 0  NOT NULL  ,
+  Creator number(11,0) DEFAULT 0  NOT NULL  ,
+  Created DATE   ,
+  LastUpdatedBy number(11,0) DEFAULT 0  NOT NULL  ,
+  LastUpdated DATE
+);
+CREATE INDEX AT_Ports1 ON AT_Ports (Port) ;
+CREATE INDEX AT_Ports2 ON AT_Ports (Transport,Port) ;
+CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
+
+# }}}
+

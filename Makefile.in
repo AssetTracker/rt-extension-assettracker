@@ -1,0 +1,295 @@
+# BEGIN LICENSE BLOCK
+#
+#  Copyright (c) 2002-2003 Jesse Vincent <jesse@bestpractical.com>
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of version 2 of the GNU General Public License
+#  as published by the Free Software Foundation.
+#
+#  A copy of that license should have arrived with this
+#  software, but in any event can be snarfed from www.gnu.org.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+#  GNU General Public License for more details.
+#
+# END LICENSE BLOCK
+
+PERL 			= @PERL@
+
+INSTALL 		= /bin/sh ./install-sh -c
+RT_PREFIX		= @RT_LOCAL_PATH@
+RT_LOCALHTML		= @RT_LOCALHTML_PATH@
+RT_HOME 		= @RT_HOME_PATH@
+
+AT_VERSION_MAJOR        =       @AT_VERSION_MAJOR@
+AT_VERSION_MINOR        =       @AT_VERSION_MINOR@
+AT_VERSION_PATCH        =       @AT_VERSION_PATCH@
+
+AT_VERSION =    $(AT_VERSION_MAJOR).$(AT_VERSION_MINOR).$(AT_VERSION_PATCH)
+TAG        =    rt-$(AT_VERSION_MAJOR)-$(AT_VERSION_MINOR)-$(AT_VERSION_PATCH)
+
+AT_ETC_PATH             = $(RT_PREFIX)/etc/AssetTracker/
+CONFIG_FILE_PATH	= $(RT_PREFIX)/etc/
+CONFIG_FILE	     	= $(RT_PREFIX)/etc/RT_Config.pm
+AT_CONFIG_FILE_PATH	= $(RT_PREFIX)/etc/AssetTracker/
+AT_CONFIG_FILE	     	= $(RT_PREFIX)/etc/AssetTracker/AT_Config.pm
+AT_SITE_CONFIG_FILE     = $(RT_PREFIX)/etc/AssetTracker/AT_SiteConfig.pm
+RT_LIB_PATH	     	= $(RT_PREFIX)/lib
+RT_LEXICON_PATH	     	= $(RT_PREFIX)/po
+MASON_HTML_PATH	 	= $(RT_LOCALHTML)
+RT_BIN_PATH		= $(RT_PREFIX)/bin/
+RT_SBIN_PATH		= $(RT_PREFIX)/sbin/
+
+GETPARAM		=	$(PERL) -I$(RT_LIB_PATH) -I${RT_HOME}/lib -e'use RT; RT::LoadConfig(); print $${$$RT::{$$ARGV[0]}};'
+
+
+DB_TYPE		=		`${GETPARAM} DatabaseType`
+DB_DATABASEHOST		=  `${GETPARAM} DatabaseHost`
+DB_DATABASE	     =	     `${GETPARAM} DatabaseName`
+DB_RT_USER	      =	      `${GETPARAM} DatabaseUser`
+DB_RT_PASS	      =	      `${GETPARAM} DatabasePass`
+DB_DBA			= @DB_ADMIN@
+
+
+
+PRODUCT			= AT
+CANONICAL_REPO		= svn://svn.chaka.net/svn/at/
+CANONICAL_REPO_TAGS		= $(CANONICAL_REPO)/tags/
+CANONICAL_REPO_TRUNK		= $(CANONICAL_REPO)/trunk/
+TMP_DIR			= /tmp
+RELEASE_DIR		= /home/ftp/pub/rt/release
+
+# This is the group that all of the installed files will be chgrp'ed to.
+RTGROUP                 =       @RTGROUP@
+
+
+# User which should own rt binaries.
+BIN_OWNER               =       @BIN_OWNER@
+
+# User that should own all of RT's libraries, generally root.
+LIBS_OWNER              =       @LIBS_OWNER@
+
+# Group that should own all of RT's libraries, generally root.
+LIBS_GROUP              =       @LIBS_GROUP@
+
+#WEB_USER                =       @WEB_USER@
+#WEB_GROUP               =       @WEB_GROUP@
+
+
+#APACHECTL               =       @APACHECTL@
+
+# {{{ Files and directories
+
+# DESTDIR allows you to specify that RT be installed somewhere other than
+# where it will eventually reside
+
+#DESTDIR                 =
+
+
+#RT_PATH                 =       @RT_PATH@
+#RT_ETC_PATH             =       @RT_ETC_PATH@
+#RT_BIN_PATH             =       @RT_BIN_PATH@
+#RT_SBIN_PATH            =       @RT_SBIN_PATH@
+#RT_LIB_PATH             =       @RT_LIB_PATH@
+#RT_MAN_PATH             =       @RT_MAN_PATH@
+#RT_VAR_PATH             =       @RT_VAR_PATH@
+#RT_DOC_PATH             =       @RT_DOC_PATH@
+#RT_LOCAL_PATH           =       @RT_LOCAL_PATH@
+#LOCAL_ETC_PATH          =       @LOCAL_ETC_PATH@
+#LOCAL_LIB_PATH          =       @LOCAL_LIB_PATH@
+#LOCAL_LEXICON_PATH      =       @LOCAL_LEXICON_PATH@
+#MASON_HTML_PATH         =       @MASON_HTML_PATH@
+#MASON_LOCAL_HTML_PATH   =       @MASON_LOCAL_HTML_PATH@
+#MASON_DATA_PATH         =       @MASON_DATA_PATH@
+#MASON_SESSION_PATH      =       @MASON_SESSION_PATH@
+#RT_LOG_PATH         =       @RT_LOG_PATH@
+
+# RT_READABLE_DIR_MODE is the mode of directories that are generally meant
+# to be accessable
+RT_READABLE_DIR_MODE    =       0755
+
+
+
+
+upgrade: config-install install-lib install-html install-lexicon install-sbin install-etc fixperms
+install: config-install upgrade dropdb initdb
+
+html-install: install-html
+
+install-html:
+	for dir in `cd ./html/ && find . -type d -print`; do \
+	  $(INSTALL) -d -m 0755 $(MASON_HTML_PATH)/$$dir ; \
+	done
+	for f in `cd ./html/ && find . -type f -print`; do \
+	  $(INSTALL)  -m 0644 html/$$f	$(MASON_HTML_PATH)/$$f ; \
+	done
+
+libs-install: install-lib
+
+install-lib:
+	for dir in `cd ./lib/ && find . -type d -print`; do \
+	  $(INSTALL) -d -m 0755 $(RT_LIB_PATH)/$$dir ; \
+	done
+	for f in `cd ./lib/ && find . -type f -name \*.pm -print`; do \
+	  $(INSTALL)  -m 0644 lib/$$f  $(RT_LIB_PATH)/$$f ; \
+	done
+
+install-lexicon:
+	for dir in `cd ./po/ && find . -type d -print`; do \
+	  $(INSTALL) -d -m 0755 $(RT_LEXICON_PATH)/$$dir ; \
+	done
+	for f in `cd ./po/ && find . -type f -print`; do \
+	  $(INSTALL)  -m 0644 po/$$f  $(RT_LEXICON_PATH)/$$f ; \
+	done
+
+install-sbin:
+	mkdir -p -m 0755 $(RT_SBIN_PATH);
+	for dir in `cd ./sbin/ && find . -type d -print`; do \
+	  $(INSTALL) -d -m 0755 $(RT_SBIN_PATH)/$$dir ; \
+	done
+	for f in `cd ./sbin/ && find . -type f -print`; do \
+	  $(INSTALL)  -m 0644 sbin/$$f  $(RT_SBIN_PATH)/$$f ; \
+	done
+
+install-etc-old:
+	for dir in `cd ./etc/ && find . -type d -print`; do \
+	  $(INSTALL) -d -m 0755 $(CONFIG_FILE_PATH)/$$dir ; \
+	done
+	for f in `cd ./etc/ && find . -type f -print`; do \
+	  $(INSTALL)  -m 0644 etc/$$f  $(CONFIG_FILE_PATH)/$$f ; \
+	done
+
+# {{{ etc-install
+
+install-etc:
+	mkdir -p $(DESTDIR)/$(AT_ETC_PATH)
+	-cp -rp \
+		etc/AssetTracker/acl.* \
+		etc/AssetTracker/initialdata \
+		etc/AssetTracker/schema.* \
+		etc/AssetTracker/drop_* \
+		etc/AssetTracker/upgrade \
+		$(DESTDIR)/$(AT_ETC_PATH)
+# }}}
+
+
+#factory:
+	@#cd lib; $(PERL) ../tools/factory.mysql $(DB_DATABASE) RT::FM
+#
+#regenerate-catalogs:
+	@#$(PERL) ../rt/sbin/extract-message-catalog po/*/*
+
+initdb:
+	$(PERL) $(RT_SBIN_PATH)/at-setup-database --action init --datadir ./etc/AssetTracker/ --dba $(DB_DBA) --prompt-for-dba-password
+
+
+dropdb:
+	make dropdb.$(DB_TYPE)
+
+dropdb.Pg: etc/AssetTracker/drop_schema.mysql
+	psql -U $(DB_DBA) $(DB_DATABASE) < etc/AssetTracker/drop_schema.Pg
+
+dropdb.mysql: etc/AssetTracker/drop_schema.mysql
+	-mysql	$(DB_DATABASE) -u $(DB_DBA) -p < etc/AssetTracker/drop_schema.mysql
+
+dropdb.Oracle: etc/AssetTracker/drop_schema.Oracle
+	sqlplus	$(DB_DBA)@$(DB_DATABASE) \@etc/AssetTracker/drop_schema.mysql
+
+dropdb.SQLite:
+	rm	$(RT_HOME)/var/$(DB_DATABASE)
+
+POD2TEST_EXE = sbin/extract_pod_tests
+
+testify-pods:
+	[ -d lib/t/autogen ] || mkdir lib/t/autogen
+	find lib -name \*pm |xargs -n 1 $(PERL) $(POD2TEST_EXE)
+	find bin -type f |grep -v \~| xargs -n 1 $(PERL) $(POD2TEST_EXE)
+
+
+license-tag:
+	perl tools/license_tag
+
+test:
+	$(PERL) -Ilib -I@RT_LIB_PATH@ -I$(RT_HOME)/lib lib/t/00smoke.t
+
+regression-install: config-install
+	$(PERL) -pi -e 's/Set\(\$$DatabaseName.*\);/Set\(\$$DatabaseName, "rt3regression"\);/' $(DESTDIR)/$(CONFIG_FILE)
+
+#regression: regression-install dirs files-install libs-install sbin-install bin-install regression-instruct regression-reset-db  testify-pods fixperms apachectl run-regression
+regression: regression-install upgrade regression-reset-db testify-pods fixperms apachectl run-regression
+
+run-regression:
+	prove -I$(RT_LIB_PATH) -I$(RT_HOME)/lib lib/t/setup_regression.t  lib/t/autogen/ lib/t/regression/
+
+# {{{ database-installation
+
+regression-reset-db: dropdb initdb
+
+#initdb :: initialize-database
+
+#initialize-database:
+	#$(PERL) $(DESTDIR)/$(RT_SBIN_PATH)/rt-setup-database --action init --dba $(DB_DBA) --prompt-for-dba-password
+
+#dropdb:
+	#$(PERL) $(DESTDIR)/$(RT_SBIN_PATH)/rt-setup-database --action drop --dba $(DB_DBA) --prompt-for-dba-password
+
+#insert-approval-data:
+	#$(PERL) $(DESTDIR)/$(RT_SBIN_PATH)/insert_approval_scrips
+# }}}
+
+
+clean:
+	find .	-type f -name \*~ |xargs rm
+	find lib/t/autogen -type f |xargs rm
+
+
+apachectl:
+	/usr/sbin/apachectl stop
+	sleep 10
+	/usr/sbin/apachectl start
+	sleep 5
+
+# {{{ fixperms
+fixperms:
+	# Make the libraries readable
+	#chmod $(RT_READABLE_DIR_MODE) $(DESTDIR)/$(RT_PATH)
+	chown -R $(LIBS_OWNER) $(DESTDIR)/$(RT_LIB_PATH)
+	chgrp -R $(LIBS_GROUP) $(DESTDIR)/$(RT_LIB_PATH)
+	chmod -R  u+rwX,go-w,go+rX      $(DESTDIR)/$(RT_LIB_PATH)
+
+
+	chmod 0755 $(DESTDIR)/$(AT_ETC_PATH)
+	chmod 0500 $(DESTDIR)/$(AT_ETC_PATH)/*
+
+	#TODO: the config file should probably be able to have its
+	# owner set separately from the binaries.
+	chown -R $(BIN_OWNER) $(DESTDIR)/$(AT_ETC_PATH)
+	chgrp -R $(RTGROUP) $(DESTDIR)/$(AT_ETC_PATH)
+
+	chmod 0554 $(DESTDIR)/$(AT_CONFIG_FILE)
+	chmod 0554 $(DESTDIR)/$(AT_SITE_CONFIG_FILE)
+
+	# Make the web ui readable by all.
+	chmod -R  u+rwX,go-w,go+rX      $(DESTDIR)/$(MASON_HTML_PATH)
+	chown -R $(LIBS_OWNER)  $(DESTDIR)/$(MASON_HTML_PATH)
+	chgrp -R $(LIBS_GROUP)  $(DESTDIR)/$(MASON_HTML_PATH)
+
+# }}}
+
+
+config-install:
+	mkdir -p $(DESTDIR)/$(AT_CONFIG_FILE_PATH)
+	-cp etc/AssetTracker/AT_Config.pm $(DESTDIR)/$(AT_CONFIG_FILE)
+	[ -f $(DESTDIR)/$(AT_SITE_CONFIG_FILE) ] || cp etc/AssetTracker/AT_SiteConfig.pm $(DESTDIR)/$(AT_SITE_CONFIG_FILE)
+
+	chgrp $(RTGROUP) $(DESTDIR)/$(AT_CONFIG_FILE)
+	chown $(BIN_OWNER) $(DESTDIR)/$(AT_CONFIG_FILE)
+
+	chgrp $(RTGROUP) $(DESTDIR)/$(AT_SITE_CONFIG_FILE)
+	chown $(BIN_OWNER) $(DESTDIR)/$(AT_SITE_CONFIG_FILE)
+
+	@echo "Installed configuration. about to install at in  $(RT_PATH)"
+
+

@@ -1,0 +1,57 @@
+% if ($Assets and $Assets->Count and $ShowFind) {
+<p><&|/l&>Add new links to Assets</&>:<br>
+
+<table>
+<tr><td>
+<&|/l&>Type</&>
+</td><td>
+<&|/l&>Asset</&>
+</td></tr>
+%   while (my $a = $Assets->Next ) {
+    <tr><td><&/AssetTracker/Elements/SelectLinkType, Name => "AddLink-Asset-".$a->URI &></td><td>
+    <a href="<%$RT::WebPath%>/AssetTracker/Asset/Display.html?id=<%$a->Id%>"><%$a->Name%></a>
+    (<% substr($a->Description,0,35) %>)</td></tr>
+%   }
+</table>
+% }
+
+<p><&|/l&>Add new links to</&>:<br>
+<table>
+<tr><td>
+<&|/l&>Type</&>
+</td><td>
+<&|/l&>URI</&>
+</td></tr>
+    <tr><td><&/AssetTracker/Elements/SelectLinkType, Name => "AddLink-Other" &></td> <td><INPUT Name="AddLink-Other-URI"></td></tr>
+</table>
+
+<%INIT>
+my ($Assets);
+
+if ($AssetString) {
+    $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+    if ( $AssetField eq 'Type' ) {
+        my $Types = RTx::AssetTracker::Types->new($session{'CurrentUser'});
+        $Types->Limit(FIELD => 'Name', OPERATOR => $AssetOp, VALUE => $AssetString);
+        while (my $type = $Types->Next) {
+            $Assets->Limit(FIELD => 'Type', VALUE => $type->Id) if $type->Id;
+        }
+    }
+    else {
+        $Assets->Limit(FIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp);
+    }
+    $Assets->Limit(FIELD => 'Status', VALUE => 'retired', OPERATOR => '!=') unless $AllowRetired;
+    #eliminate the assets own id
+    $Assets->Limit(FIELD => 'id', VALUE => $AssetObj->Id, OPERATOR => '!=') if ref $AssetObj;
+}
+
+</%INIT>
+
+<%ARGS>
+$AssetField => 'Name'
+$AssetOp => '='
+$AssetString => undef
+$AllowRetired => 0
+$AssetObj => undef
+$ShowFind => 1
+</%ARGS>

@@ -1,0 +1,7 @@
+PRODUCT			        = at
+TAG			            = 1.2.3
+CANONICAL_REPO		    = svn://svn.chaka.net/at/
+TAGS		            = tags/
+TRUNK	                = branches/1.2-RELEASE
+TMP_DIR			        = /tmp
+RELEASE_DIR		        = /tmp

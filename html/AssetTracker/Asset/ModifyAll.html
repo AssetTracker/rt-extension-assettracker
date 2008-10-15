@@ -1,0 +1,172 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+<& /Elements/Header, Title => loc("Asset [_1]: [_2]", $Action, $Name) &>
+<& /AssetTracker/Elements/Tabs, 
+    Asset => $Asset, 
+    current_tab => "AssetTracker/Asset/ModifyAll.html?id=".$Id, 
+    Title => loc("Asset [_1]: [_2]", $Action, $Name) &>
+
+<& /Elements/ListActions, actions => \@results &>
+
+<FORM METHOD=POST ACTION="ModifyAll.html" ENCTYPE="multipart/form-data">
+<INPUT TYPE=HIDDEN NAME=id VALUE="<%$Id ? $Id : 'new'%>">
+
+
+<& /Elements/TitleBoxStart, title => 'Basics',   color=> "#993333", width => "100%" &>
+<& Elements/EditBasics, AssetObj => $Asset, TypeObj => $TypeObj &>
+<& /Elements/TitleBoxEnd &>
+
+<BR>
+
+<& /Elements/TitleBoxStart, title => loc('People'),width => "100%", color=> "#333399" &>
+<& Elements/EditPeople, AssetObj => $Asset, TypeObj => $TypeObj  &>
+<& /Elements/TitleBoxEnd &>
+
+<BR>
+
+<& /Elements/TitleBoxStart, title => 'Fields',   color=> "#993333", width => "100%" &>
+<& Elements/EditCustomFields, AssetObj => $Asset, TypeObj => $TypeObj &>
+<& /Elements/TitleBoxEnd &>
+
+<BR>
+% if ($Asset && $Asset->Id) {
+<& /Elements/TitleBoxStart, title => loc('Links'), width => "100%", color=> "#333399" &>
+<& /AssetTracker/Elements/EditLinks, AssetObj => $Asset, TypeObj => $TypeObj, ShowFind => 0 &>
+<& /Elements/TitleBoxEnd &>
+
+<BR>
+
+%    if ($RTx::AssetTracker::EnableIP) {
+<& /Elements/TitleBoxStart, title => loc('IPs'),width => "100%", color=> "#993333" &>
+<& Elements/EditIPs, AssetObj => $Asset, TypeObj => $TypeObj  &>
+<& /Elements/TitleBoxEnd &>
+
+<BR>
+%    }
+% }
+
+<& /Elements/TitleBoxStart, title => 'Change Comment',   color=> "#999900", width => "100%" &>
+<& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment" &>
+<& /Elements/TitleBoxEnd &>
+
+<& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to"), color => "#333399" &>
+</form>
+
+<%INIT>
+
+
+my $Asset = undef;
+my $TypeObj;
+my ($Name, $Action, $Id);
+my (@bresults, @wresults, @lresults, @results, @ip_results, @cf_results);
+
+if ($id eq 'new') {
+    ($Asset, @results) = CreateAsset(%ARGS);
+    $m->comp("/AssetTracker/Asset/Display.html", id => $Asset->Id, Actions => \@results);
+    return;
+}
+
+elsif ($id =~ /\d+/ && $id > 0) {
+
+        $Asset = LoadAsset($id);
+        $Name = $Asset->Name;
+        $Action = 'update';
+        $Id = $Asset->Id;
+
+
+        @bresults = ProcessAssetBasics( AssetObj => $Asset, ARGSRef => \%ARGS);
+        @wresults = ProcessAssetWatchers( AssetObj => $Asset, ARGSRef => \%ARGS);
+        @lresults = ProcessAssetLinks( AssetObj => $Asset, ARGSRef => \%ARGS);
+        @cf_results = ProcessATObjectCustomFieldUpdates( Object => $Asset, ARGSRef => \%ARGS);
+        push @ip_results, ProcessAssetIPs( AssetObj => $Asset, ARGSRef => \%ARGS);
+        push @ip_results, ProcessAssetPorts( AssetObj => $Asset, ARGSRef => \%ARGS);
+
+        push @results, @bresults;
+        push @results, @wresults;
+        push @results, @lresults;
+        push @results, @cf_results;
+        push @results, @ip_results;
+
+}
+
+elsif ($Type) {
+
+    $Action = 'create';
+    $Name = '';
+    $Id = '';
+
+    $TypeObj = RTx::AssetTracker::Type->new($session{'CurrentUser'});
+    unless ($TypeObj->Load($ARGS{'Type'})) {
+        Abort('TypeObj not found');
+    }
+
+    unless ($TypeObj->CurrentUserHasRight('CreateAsset')) {
+        Abort('You have no permission to create assets of that type.');
+    }
+
+    #$Asset = RTx::AssetTracker::Asset->new($session{'CurrentUser'});
+    $Asset = undef;
+    #$Asset->SetName("<put asset name here>");
+    #$Asset->SetType($TypeObj->Id);
+
+}
+    
+else {
+
+    Abort("No asset id or type specified.");
+
+}
+
+
+</%INIT>
+
+
+
+<%ARGS>
+$id => undef
+$Type => undef
+</%ARGS>
+
