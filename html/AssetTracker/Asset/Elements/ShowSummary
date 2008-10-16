@@ -43,92 +43,54 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-      <TABLE WIDTH="100%" class="ticketsummary" >
-      <TR>
-	<TD VALIGN=TOP WIDTH="50%" class="boxcontainer">
-	  <& /Elements/TitleBoxStart, title => loc('The Basics'), 
-		title_href =>"$RT::WebPath/AssetTracker/Asset/Modify.html?id=".$Asset->Id, 
-		title_class=> 'inverse',  
-		color => "#993333" &>
+<table width="100%" class="asset-summary" >
+      <tr>
+	<td valign="top" class="boxcontainer">
+	  <&| /Widgets/TitleBox, title => loc('The Basics'), 
+		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/Modify.html?id=".$Asset->Id, 
+		class=> 'asset-info-basics' &>
 	        <& /AssetTracker/Asset/Elements/ShowBasics, Asset => $Asset &>
-	  <& /Elements/TitleBoxEnd &>
-          </TD>
-          <TD>
-	  <& /Elements/TitleBoxStart, title => loc('People'), 
-		title_href =>"$RT::WebPath/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id, 
-		title_class=> 'inverse',  
-		color => "#333399" &>
+    </&>
+	  <&| /Widgets/TitleBox, title => loc('People'), 
+		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id, 
+		class=> 'asset-info-people' &>
 	  <& /AssetTracker/Asset/Elements/ShowPeople, Asset => $Asset &>
-	  <& /Elements/TitleBoxEnd &>
-%#	<BR>
-	</TD>
-</TR>
-<TR>
+    </&>
+
 % if ($RTx::AssetTracker::EnableIP) {
-	<TD VALIGN=TOP WIDTH="50%" class="boxcontainer">
-	  <& /Elements/TitleBoxStart, title => loc('IP Addresses'), 
-		title_href =>"$RT::WebPath/AssetTracker/Asset/ModifyIPs.html?id=".$Asset->Id, 
-		title_class=> 'inverse',  
-		color => "#993333" &>
+	<td valign="top" width="50%" class="boxcontainer">
+	  <&| /Widgets/TitleBox, title => loc('IP Addresses'), 
+		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyIPs.html?id=".$Asset->Id, 
+		class => 'asset-info-IPs' &>
 	        <& /AssetTracker/Asset/Elements/ShowIP, Asset => $Asset &>
-	  <& /Elements/TitleBoxEnd &>
-          </TD>
+	  </&>
 % }
-          <TD>
-	  <& /Elements/TitleBoxStart, title => loc('Links'), 
-		title_href =>"$RT::WebPath/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id, 
-		title_class=> 'inverse',  
-		color => "#333399" &>
-	  <& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 0 &>
-	  <& /Elements/TitleBoxEnd &>
-	</TD>
-</TR>
-<TR>
-	<TD VALIGN=TOP WIDTH="50%" class="boxcontainer">
-          </TD>
-          <TD>
-	  <& /Elements/TitleBoxStart, title => loc('Tickets'), 
-		#title_href =>"$RT::WebPath/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id, 
-		title_class=> 'inverse',  
-		color => "#333399" &>
+
+	<td valign="top" width="50%" class="boxcontainer">
+	  <&| /Widgets/TitleBox, title => loc('Tickets'), 
+		class => 'asset-info-tickets' &>
 	  <& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 1 &>
-	  <& /Elements/TitleBoxEnd &>
-	</TD>
-</TR>
-<TR>
-	<TD VALIGN=TOP WIDTH="100%" COLSPAN="2" class="boxcontainer">
-%#% if ($Asset->TypeObj->AssetCustomFields->First) {
-	  <& /Elements/TitleBoxStart, title => loc('Custom Fields'), 
-		title_href =>"$RT::WebPath/AssetTracker/Asset/ModifyFields.html?id=".$Asset->Id, 
-		title_class=> 'inverse',  
-		color => "#999955" &>
-%#	        <& /AssetTracker/Asset/Elements/ShowCustomFields, Asset => $Asset &>
-                <& /Elements/ShowCustomFields, Object => $Asset &>
-	  <& /Elements/TitleBoxEnd &>
-%#<br>
-%#% }
-%#
-%#	  <& /Elements/TitleBoxStart, title => loc("Dates"),
-%#		title_href =>"$RT::WebPath/AssetTracker/Asset/ModifyDates.html?id=".$Asset->Id, 
-%#		title_class=> 'inverse',  
-%#		 color => "#663366" &>
-%#	  <& /AssetTracker/Asset/Elements/ShowDates, Asset => $Asset &>
-%#	  <& /Elements/TitleBoxEnd &>
-%#	<BR>  
-%#	  <& /Elements/TitleBoxStart, title => loc('Links'), 
-%#		title_href => "$RT::WebPath/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id, 
-%#		title_class=> 'inverse',  
-%#		titleright => '', color=> "#336633" &>
-%#	        <& /Elements/ShowLinks, Asset => $Asset &>
-%#	<& /Elements/TitleBoxEnd &>
-%#        <BR>
-%#	  <& /AssetTracker/Asset/Elements/ShowAttachments, Asset => $Asset, Attachments => $Attachments &>
-%#
-%#	  <& /AssetTracker/Asset/Elements/ShowRequestor, Asset => $Asset &>
-%#
-%#
-      </TR>
-    </TABLE>
+    </&>
+
+	  <&| /Widgets/TitleBox, title => loc('Links'), 
+		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id, 
+		class => 'asset-info-links' &>
+	  <& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 0 &>
+    </&>
+  </td>
+</tr>
+% if ($Asset->TypeObj->AssetCustomFields->First) {
+<tr>
+	<td valign="top" width="100%" colspan="2" class="boxcontainer">
+	  <&| /Widgets/TitleBox, title => loc('Custom Fields'), 
+		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyFields.html?id=".$Asset->Id, 
+		class => 'asset-info-cfs' &>
+        <& /Elements/ShowCustomFields, Object => $Asset &>
+   </&>
+  </td>
+ </tr>
+% }
+</table>
 <%ARGS>
 $Asset => undef
 $Attachments => undef

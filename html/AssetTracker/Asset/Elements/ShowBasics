@@ -45,24 +45,24 @@
 %# END BPS TAGGED BLOCK }}}
 <table>
   <tr>
-    <td class="label"><&|/l&>Id</&>:</td>
-    <td class="value"><%$Asset->Id %></td>
+    <td class="label id"><&|/l&>Id</&>:</td>
+    <td class="value id"><%$Asset->Id %></td>
   </tr>
   <tr>
-    <td class="label"><&|/l&>Name</&>:</td>
-    <td class="value"><% $Asset->Name%></td>
+    <td class="label name"><&|/l&>Name</&>:</td>
+    <td class="value name"><% $Asset->Name%></td>
   </tr>
   <tr>
-    <td class="label"><&|/l&>Description</&>:</td>
-    <td class="value"><% $Asset->Description%></td>
+    <td class="label description"><&|/l&>Description</&>:</td>
+    <td class="value description"><% $Asset->Description%></td>
   </tr>
   <tr>
-    <td class="label"><&|/l&>Status</&>:</td>
-    <td class="value"><&|/l&><% $Asset->Status%></&></td>
+    <td class="label status"><&|/l&>Status</&>:</td>
+    <td class="value status"><&|/l&><% $Asset->Status%></&></td>
   </tr>
   <tr>
-    <td class="label"><&|/l&>Asset Type</&>:</td>
-    <td class="value"><%$Asset->TypeObj->Name%></td>
+    <td class="label atype"><&|/l&>Asset Type</&>:</td>
+    <td class="value atype"><%$Asset->TypeObj->Name%></td>
   </tr>
 <& /Elements/Callback, _CallbackName => 'EndOfList', AssetObj => $Asset, %ARGS &>
 </table>

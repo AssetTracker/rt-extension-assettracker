@@ -61,7 +61,7 @@
 
 </table>
 
-<FORM ACTION="<% $RT::WebPath%>/Ticket/Create.html" NAME="child" method="post">
+<FORM ACTION="<% RT->Config->Get('WebPath')%>/Ticket/Create.html" NAME="child" method="post">
 <input type="hidden" name="new-RefersTo" value="<%$Asset->URI%>">
 <input type="hidden" name="Subject" value="Problem with <%$Asset->Name%>">
 <&|/l, $m->scomp('/Elements/SelectNewTicketQueue' )&><input type="submit" value="New ticket in queue">&nbsp;[_1]</&>

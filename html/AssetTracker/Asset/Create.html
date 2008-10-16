@@ -47,105 +47,89 @@
 <& /AssetTracker/Elements/Tabs, 
     current_toptab => "AssetTracker/Asset/Create.html", 
     Title => loc("Create a new asset") &>
-<FORM ACTION="<%$RT::WebPath%>/AssetTracker/Asset/Create.html" METHOD="POST" ENCTYPE="multipart/form-data" NAME="AssetCreate">
-<INPUT TYPE=HIDDEN Name="id" VALUE="new">
-<A NAME="top">
-	
-	
-<& /Elements/TitleBoxStart, contentbg => "#cccccc", title => loc("Create a new asset") &>
-<TABLE border=0 cellpadding=0 cellspacing=0>
-<TR><TD class=label><&|/l&>Type</&>:</TD>
-<TD class=value><% $TypeObj->Name %>
-<INPUT TYPE=HIDDEN NAME=Type Value="<%$TypeObj->Name%>">
-</TD>
-<TR>
-<TD class=labeltop>
+<form action="<%RT->Config->Get('WebPath')%>/AssetTracker/Asset/Create.html" method="post" enctype="multipart/form-data" name="AssetCreate">
+<input type="hidden" Name="id" value="new" />
+<div id="Asset-Create-basics">
+<a name="basics"></a>	
+<&| /Widgets/TitleBox, title => loc("Create a new asset") &>
+<table border="0" cellpadding="0" cellspacing="0">
+<tr><td class="label"><&|/l&>Type</&>:</td>
+<td class="value"><% $TypeObj->Name %>
+<input type="hidden" name="Type" Value="<%$TypeObj->Name%>" />
+</td>
+<tr>
+<td class="labeltop">
 <&|/l&>Name</&>:
-</TD>
-<TD class=value COLSPAN=5>
-<INPUT NAME="Name" SIZE=40 MAXLENGTH=200 VALUE="<% $ARGS{Name} %>">
-</TD>
-</TR>
-<TR>
-<TD class=label><&|/l&>Status</&>:
-</TD>
-<TD class=value>
+</td>
+<td class="value" colspan="5">
+<input name="Name" size="40" maxlength="200" VALUE="<% $ARGS{Name} %>" />
+</td>
+</tr>
+<tr>
+<td class="label"><&|/l&>Status</&>:
+</td>
+<td class="value">
 <& /AssetTracker/Elements/SelectStatus, Name => "Status", Default => $ARGS{Status}||'new', DefaultValue => 0 &>
-</TD>
-</TR>
-<TR>
-<TD class=label>
+</td>
+</tr>
+<tr>
+<td class="label">
 <&|/l&>Owner</&>:
-</TD>
-<TD class=value>
+</td>
+<td class="value">
 <& /Elements/SelectOwner, Name => "Owner", TypeObj => $TypeObj, Default => $ARGS{Owner}||$RT::Nobody->Id, DefaultValue => 0 &>
-</TD>
-</TR>
-</TR>
-<TR>
-<TD class=labeltop>
+</td>
+</tr>
+</tr>
+<tr>
+<td class="labeltop">
 <&|/l&>Administrators</&>:
-</TD>
-<TD class=value COLSPAN=5>
-<INPUT NAME="Admin" SIZE=40 VALUE="<% $ARGS{Admin} %>"><BR>
-<i><font size=-2>
+</td>
+<td class="value" colspan="5">
+<input name="Admin" size="40" VALUE="<% $ARGS{Admin} %>"/><BR>
+<i><font size="-2">
 <&|/l&>(Administrators)</&></font></i>
-</TD>
-</TR>
-<TR>
-<TD class=label>
+</td>
+</tr>
+<tr>
+<td class="label">
 <&|/l&>Description</&>:
-</TD>
-<TD class=value COLSPAN=5>
-<INPUT Name="Description" SIZE=100 MAXLENGTH=255 value="<%$ARGS{Description} || ''%>">
-</TD>
-</TR>
-%#<TR>
-%#<TD class=label>
-%#<&|/l&>Model</&>:
-%#</TD>
-%#<TD class=value COLSPAN=5>
-%#<INPUT Name="Model" SIZE=40 MAXLENGTH=200 value="<%$ARGS{Model} || ''%>">
-%#</TD>
-%#</TR>
-%#<TR>
-%#<TD class=label>
-%#<&|/l&>Location</&>:
-%#</TD>
-%#<TD class=value COLSPAN=5>
-%#<INPUT Name="Location" SIZE=40 MAXLENGTH=200 value="<%$ARGS{Location} || ''%>">
-%#</TD>
-%#</TR>
-<TR>
-<TD COLSPAN=6>
+</td>
+<td class="value" colspan="5">
+<input Name="Description" size="100" maxlength="255" value="<%$ARGS{Description} || ''%>" />
+</td>
+</tr>
+<tr>
+<td colspan="6">
 <& /AssetTracker/Asset/Elements/EditCustomFields, TypeObj => $TypeObj &>
-</TD>
-</TR>
-<TR>
-<TD ALIGN=RIGHT COLSPAN=2>
-</TD>
-</TR>
-</TABLE>
-<& /Elements/TitleBoxEnd &>
+</td>
+</tr>
+<tr>
+<td align="right" colspan="2">
+</td>
+</tr>
+</table>
+</&>
 <& /Elements/Submit, Label => loc("Create")&>
+</div>
 
-<BR>
-<TABLE WIDTH="100%" BORDER=0>
-<TR>
-<TD WIDTH="50%" VALIGN=TOP>
+<br>
+<table width="100%" border="0">
+<tr>
+<td width="50%" valign="top">
 
 <br>
 
-<BR>
-</TD>
+<br>
+</td>
 
-<TD VALIGN="TOP">
-<BR>
+<td valign="top">
+<br>
 
-</TD>
-</TR>
-</TABLE>
-</FORM>
+</td>
+</tr>
+</table>
+</form>
 
 <%INIT>
 

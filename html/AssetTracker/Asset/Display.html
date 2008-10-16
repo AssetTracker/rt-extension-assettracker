@@ -52,12 +52,13 @@
 
 <& /Elements/ListActions, actions => \@Actions &>
 
-<& /Elements/TitleBoxStart, title => loc('Asset metadata'), contentbg => '#ffffff' &>
-%#<& /AssetTracker/Asset/Elements/ShowSummary,  Asset => $AssetObj, Attachments => $attachments &>
+<div class="summary">
+<&| /Widgets/TitleBox, title => loc('Asset metadata') &>
 <& /AssetTracker/Asset/Elements/ShowSummary,  Asset => $AssetObj &>
-<& /Elements/TitleBoxEnd &>
+</&>
+</div>
+<br />
 
-<BR>
 % if ( $RTx::AssetTracker::ShowAssetHistory ) {
 <& /AssetTracker/Asset/Elements/ShowHistory , 
       Asset => $AssetObj, 

@@ -1,8 +1,8 @@
 %# BEGIN BPS TAGGED BLOCK {{{
 %# 
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%# 
+%# This software is Copyright (c) 1996-2008 Best Practical Solutions, LLC
 %#                                          <jesse@bestpractical.com>
 %# 
 %# (Except where explicitly superseded by other copyright notices)
@@ -22,7 +22,9 @@
 %# 
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
 %# 
 %# 
 %# CONTRIBUTION SUBMISSION POLICY:
@@ -43,28 +45,37 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<TR class="<% $RowNum%2 ? 'oddline' : 'evenline'%>" >
-<TD rowspan="2" valign="top" bgcolor="<%$bgcolor%>"><A NAME="txn-<%$Transaction->Id%>" href="#txn-<%$Transaction->Id%>">#</A><% $LastTransaction ? '<a name="lasttrans">&nbsp;</a>' : '&nbsp;' |n %></TD>
-<TD>&nbsp&nbsp;</TD>
-<TD><font size=-2><% $transdate|n %></font>&nbsp;</TD>
+<div class="asset-transaction <% $type_class %> <% $RowNum % 2 ? 'odd' : 'even' %>">
+% $m->callback( titlebar_cmd => \$titlebar_commands, Transaction => $Transaction, %ARGS, CallbackName => 'ModifyDisplay' );
+
+<table width="100%" cellspacing="0" cellpadding="2" border="0" class="asset-transaction">
+% $m->callback( titlebar_cmd => \$titlebar_commands, Transaction => $Transaction, %ARGS, CallbackName => 'ModifyCommand' );
+  <tr class="metadata">
+    <td rowspan="2" valign="top" class="type">
+      <a name="txn-<% $Transaction->Id %>" href="<% $DisplayPath %>#txn-<% $Transaction->Id %>">#</a>
+      <% $LastTransaction ? '<a id="lasttrans" name="lasttrans"/>' : ''|n %>
+    </td>
+    <td class="date"><% $transdate|n %></td>
 % my $desc = $Transaction->BriefDescription;
-% $m->comp('/Elements/Callback', _CallbackName => 'ModifyDisplay', text => \$desc, Transaction => $Transaction, %ARGS);
-<TD ALIGN="LEFT"><b><%$Transaction->CreatorObj->Name%> - <%$AssetString%> <%$desc%>
-</b>
-% if ($Transaction->Data) {
-<BR><font size=-2><em><%$Transaction->Data%></em></font>
-% }
-</TD>
-<TD><%$TimeTaken%>&nbsp;</TD>
-<TD ALIGN="RIGHT"><font size=-1><%$titlebar_commands|n%></font></TD>
-</TR>
-<TR class="<% $RowNum%2 ? 'oddline' : 'evenline'%>"><TD colspan=5>
-% if ($Transaction->CustomFieldValues->Count) {
-<& /Elements/ShowCustomFields, Object => $Transaction &>
+% $m->callback( text => \$desc, Transaction => $Transaction, %ARGS, CallbackName => 'ModifyDisplay' );
+    <td class="description">
+      <% $Transaction->CreatorObj->Name %> - <% $AssetString %> <% $desc %>
+    </td>
+    <td class="time-taken"><% $TimeTaken %></td>
+    <td class="actions<% $titlebar_commands ? '': ' hidden'%>"><% $titlebar_commands |n %></td>
+  </tr>
+
+  <tr>
+    <td colspan="5" class="content">
+% if ( $Transaction->CustomFieldValues->Count ) {
+      <& /Elements/ShowCustomFields, Object => $Transaction &>
 % }
 % $m->comp('ShowTransactionAttachments', %ARGS, Parent => 0) unless ($Collapsed ||!$ShowBody);
-</TD>
-</TR>
+    </td>
+  </tr>
+
+</table>
+</div>
 
 <%ARGS>
 $Asset => undef
@@ -73,72 +84,78 @@ $ShowHeaders => 0
 $Collapsed => undef
 $ShowTitleBarCommands => 1
 $RowNum => 1
-$AttachPath => $RT::WebPath."/AssetTracker/Asset/Attachment"
-$UpdatePath => $RT::WebPath."/AssetTracker/Asset/Update.html"
-$EmailRecordPath => $RT::WebPath."/AssetTracker/Asset/ShowEmailRecord.html"
-$TicketRecordPath => $RT::WebPath."/Ticket/Display.html"
+$DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$Asset->id
+$AttachPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Attachment"
+$UpdatePath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Update.html"
+$EmailRecordPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/ShowEmailRecord.html"
 $Attachments => undef
 $AttachmentContent => undef
 $ShowBody => 1
 $LastTransaction => 0
+$WarnUnsigned => undef
 </%ARGS>
+<%ONCE>
 
+my %class = (
+    Create     => 'message',
+    Correspond => 'message',
+    Comment    => 'message',
+
+    AddWatcher => 'people',
+    DelWatcher => 'people',
+    Take       => 'people',
+    Untake     => 'people',
+    Force      => 'people',
+    Steal      => 'people',
+    Give       => 'people',
+
+    AddLink    => 'links',
+    DeleteLink => 'links',
+);
+
+</%ONCE>
 <%INIT>
-
-my ( $TimeTaken, $AssetString, $bgcolor );
 
 my $transdate = $Transaction->CreatedAsString();
 $transdate =~ s/\s/&nbsp;/g;
 
-if ( $Transaction->Type =~ /^(Create|Correspond|Comment$)/ ) {
-    if ( $Transaction->IsInbound ) {
-        $bgcolor = "#336699";
+my ($type, $field) = ($Transaction->Type, $Transaction->Field || '');
+my $type_class = $class{ $type };
+
+unless ( $type_class ) {
+    if ( $field eq 'Owner' ) {
+        $type_class = 'people';
+    }
+    elsif ( $type =~ /^(Status|Set|Told)$/ ) {
+        if ( $field =~ /^(Told|Starts|Started|Due)$/ ) {
+            $type_class = 'dates';
+        }
+        else {
+            $type_class = 'basics';
+        }
     }
     else {
-        $bgcolor = "#339999";
+        $type_class = 'other';
     }
-}
-elsif (    ( $Transaction->Field =~ /^Owner$/ )
-        or ( $Transaction->Type =~ /^(AddWatcher|DelWatcher)$/ ) ) {
-    $bgcolor = "#333399";
-
-}
-elsif ( $Transaction->Type =~ /^(AddLink|DeleteLink)$/ ) {
-    $bgcolor = "#336633";
-}
-elsif ( $Transaction->Type =~ /^(Status|Set|Told)$/ ) {
-    if ( $Transaction->Field =~ /^(Told|Starts|Started|Due)$/ ) {
-        $bgcolor = "#663366";
-    }
-    else {
-        $bgcolor = "#993333";
-    }
-}
-else {
-    $bgcolor = "#cccccc";
 }
 
+my $AssetString = '';
 if ( $Asset->Id != $Transaction->ObjectId ) {
     $AssetString = "Asset " . $Transaction->Object->Name . ": ";
 }
 
-if ( $Transaction->TimeTaken != 0 ) {
-    $TimeTaken = $Transaction->TimeTaken . " min";
-} else {
-    $TimeTaken = '';
-}
+my $TimeTaken = '';
+$TimeTaken = $Transaction->TimeTaken . " min"
+    if $Transaction->TimeTaken;
 
 unless ($Attachments) { 
     my $attachments = $Transaction->Attachments;
     $attachments->Columns( qw( Id Filename ContentType Headers Subject Parent ContentEncoding ContentType TransactionId) );
     $Attachments = $attachments->ItemsArrayRef();
 }
-my $titlebar_commands = '&nbsp;';
+my $titlebar_commands = '';
 
-my @DisplayHeaders=qw ( _all);
-
-if ( $Transaction->Type =~ /EmailRecord$/ ) {
-    @DisplayHeaders = qw(To Cc Bcc);
+if ( $type =~ /EmailRecord$/ ) {
 
     $titlebar_commands .=
         "[<a target=\"_blank\" href=\"$EmailRecordPath?id="
@@ -146,50 +163,31 @@ if ( $Transaction->Type =~ /EmailRecord$/ ) {
       . "&Transaction="
       . $Transaction->Id
       . "&Attachment="
-      . (    $Transaction->Attachments->First
-          && $Transaction->Attachments->First->Id )
-
+      . ( $Attachments->[0] && $Attachments->[0]->id )
       . '">' . loc('Show') . "</a>]&nbsp;";
     $ShowBody = 0;
 }
 
-elsif ( $Transaction->Type =~ /TicketLink$/ ) {
-
-    unless ( $ShowHeaders ) {
-        @DisplayHeaders = qw(To From RT-Send-Cc Cc Bcc Date Subject);
-    }
-
-    $titlebar_commands .=
-        "[<a target=\"_blank\" href=\"$TicketRecordPath?id="
-      . $Transaction->NewValue
-      . '">' . loc('Show') . "</a>]&nbsp;";
-    $ShowBody = 0;
-}
 
 # If the transaction has anything attached to it at all
 else {
 
-    unless ( $ShowHeaders ) {
-        @DisplayHeaders = qw(To From RT-Send-Cc Cc Bcc Date Subject);
-    }
-
     if ( $Attachments->[0] && $ShowTitleBarCommands ) {
-        if ( $Transaction->Object->CurrentUserHasRight('ReplyToAsset')
-             or $Transaction->Object->CurrentUserHasRight('ModifyAsset')) {
+        my $asset = $Transaction->Object;
+        my $can_modify = $asset->CurrentUserHasRight('ModifyAsset');
+        if ( $can_modify || $asset->CurrentUserHasRight('ReplyToAsset') ) {
             $titlebar_commands .=
-                "[<a href=\"".$UpdatePath."?id="
-              . $Transaction->ObjectId
-              . "&QuoteTransaction="
-              . $Transaction->Id
+                "[<a href=\"".$UpdatePath
+              . "?id=" . $Transaction->ObjectId
+              . "&QuoteTransaction=" . $Transaction->Id
               . "&Action=Respond\">"
               . loc('Reply')
               . "</a>]&nbsp;";
         }
-        if ( $Transaction->Object->CurrentUserHasRight('CommentOnAsset')
-             or $Transaction->Object->CurrentUserHasRight('ModifyAsset')) {
+        if ( $can_modify || $asset->CurrentUserHasRight('CommentOnAsset') ) {
             $titlebar_commands .=
                 "[<a href=\"".$UpdatePath."?id="
-              . $Transaction->ObejctId
+              . $Transaction->ObjectId
               . "&QuoteTransaction="
               . $Transaction->Id
               . "&Action=Comment\">"

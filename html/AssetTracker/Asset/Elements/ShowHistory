@@ -1,8 +1,8 @@
 %# BEGIN BPS TAGGED BLOCK {{{
 %# 
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%# 
+%# This software is Copyright (c) 1996-2008 Best Practical Solutions, LLC
 %#                                          <jesse@bestpractical.com>
 %# 
 %# (Except where explicitly superseded by other copyright notices)
@@ -22,7 +22,9 @@
 %# 
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
 %# 
 %# 
 %# CONTRIBUTION SUBMISSION POLICY:
@@ -43,58 +45,56 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
+<%doc>
+#   This is (ab)used in Admin/(Users|Groups)/History.html and should probably
+#   be generalized at some point.
+</%doc>
 <%perl>
- if ($ShowDisplayModes or $ShowTitle) {
-my $title;
-my $titleright;
-if ($ShowTitle) {
-    $title = loc('History');
-    if ($MaxRows > 0) {
-       $title .= loc(' (last [_1])', $MaxRows);
+if ($ShowDisplayModes or $ShowTitle) {
+    my $title = $ShowTitle
+                    ? loc('History')
+                    : '&nbsp;';
+
+    my $titleright;
+
+    if ($ShowDisplayModes) {
+        $titleright = '';
+        
+        if ($ShowHeaders) {
+            $titleright .= qq{<a href="$URIFile?id=} .
+                           $Asset->id.qq{">} .
+                           loc("Brief headers") .
+                           qq{</a> &mdash; };
+            $titleright .= q[<span class="selected">] . loc("Full headers") . "</span>";
+        }
+        else {
+            $titleright .= q[<span class="selected">] . loc("Brief headers") . "</span> &mdash; ";
+            $titleright .= qq{<a href="$URIFile?ShowHeaders=1;id=} .
+                           $Asset->id.qq{">} .
+                           loc("Full headers") .
+                           qq{</a>};
+        }
     }
-}
-else {
-    $title = '&nbsp;';
-}
-$titleright = loc('Display mode') . ":";
-if ($ShowHeaders) {
-    $titleright .= "[<A HREF=\"" . $URIFile . "?id="
-      . $Asset->id . "\">"
-      . loc("Brief headers")
-      . "</a>] <b>["
-      . loc("Full headers") . "]</b>";
-}
-else {
-    $titleright .= "<b>["
-      . loc("Brief headers")
-      . "]</b> [<A HREF=\""
-      . $URIFile
-      . "?ShowHeaders=1"
-      . "&id="
-      . $Asset->id . "\">"
-      . loc("Full headers") . "</a>]";
-}
 </%perl>
-<& /Elements/TitleBoxStart, title => $title, titleright => $titleright, bodyclass=> ''&>
+<div class="history">
+<& /Widgets/TitleBoxStart, title => $title, titleright_raw => $titleright &>
 % }
 
-<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=2 BORDER=0>
+<div id="asset-history">
 <%perl>
 my @attachments = @{$Attachments->ItemsArrayRef()};
 my @attachment_content = @{$AttachmentContent->ItemsArrayRef()};
 
-
-
-
-
 while ( my $Transaction = $Transactions->Next ) {
     my $skip = 0;
-    $m->comp( '/Elements/Callback',
-              _CallbackName => 'SkipTransaction',
-              Transaction   => $Transaction,
-              skip          => \$skip,
-              %ARGS );
+    $m->callback(
+        %ARGS,
+        Transaction   => $Transaction,
+        skip          => \$skip,
+        CallbackName  => 'SkipTransaction',
+    );
     next if $skip;
+
     $i++;
 
     my @trans_attachments = grep { $_->TransactionId == $Transaction->Id } @attachments;
@@ -103,21 +103,24 @@ while ( my $Transaction = $Transactions->Next ) {
     grep { ($_->TransactionId == $Transaction->Id ) && ($trans_content->{$_->Id} = $_)  } @attachment_content;
 
    
+    my $IsLastTransaction = 0;
+    if ( $OldestFirst ) {
+        $IsLastTransaction = $Transactions->IsLast;
+    } else {
+        $IsLastTransaction = 1 if ( $i == 1 );
+    }
+
     #Args is first because we're clobbering the "Attachments" parameter 
     $m->comp( 'ShowTransaction',
             %ARGS,
 
-	      AttachPath	  => $AttachPath,
-	      UpdatePath	   => $UpdatePath,
-              Asset               => $Asset,
+              Asset                => $Asset,
               Transaction          => $Transaction,
               ShowHeaders          => $ShowHeaders,
-              Collapsed            => $Collapsed,
               RowNum               => $i,
-              ShowTitleBarCommands => $ShowTitleBarCommands,
               Attachments          => \@trans_attachments,
               AttachmentContent    => $trans_content,
-              LastTransaction      => $Transactions->IsLast
+              LastTransaction      => $IsLastTransaction
  );
 
 # manually flush the content buffer after each txn, so the user sees
@@ -126,48 +129,45 @@ $m->flush_buffer();
 }
 
 </%perl>
-</TABLE>
+</div>
 % if ($ShowDisplayModes or $ShowTitle) {
-<& /Elements/TitleBoxEnd &>
+<& /Widgets/TitleBoxEnd &>
 % }
+</div>
 <%INIT>
 my $Transactions = new RTx::AssetTracker::Transactions($session{'CurrentUser'});
 if ($Assets) {
     while (my $t = $Assets->Next) {
-	$Transactions->LimitToAsset($t->id);
+        $Transactions->LimitToAsset($t->id);
     }
 } else {
     $Transactions = $Asset->Transactions;
 }
 
-$Transactions->OrderByCols (
-                { FIELD => 'Created',   ORDER => 'DESC' },
-                { FIELD => 'id',     ORDER => 'DESC' } );
+
+my $OldestFirst = RT->Config->Get( 'OldestTransactionsFirst', $session{'CurrentUser'} );
+my $SortOrder = $OldestFirst? 'ASC': 'DESC';
+$Transactions->OrderByCols( { FIELD => 'Created',
+                              ORDER => $SortOrder },
+                            { FIELD => 'id',
+                              ORDER => $SortOrder },
+                          );
 
 my $i;
-
-if ($MaxRows) {
-    $Transactions->RowsPerPage($MaxRows) if $MaxRows > 0;
-    $Transactions->OrderBy(FIELD => "id", ORDER => "DESC");
-}
-
 $Attachments ||=  $m->comp('/AssetTracker/Asset/Elements/FindAttachments', Asset => $Asset, Assets => $Assets || undef);
 $AttachmentContent ||= $m->comp('/AssetTracker/Asset/Elements/LoadTextAttachments', Asset => $Asset);
 
 </%INIT>
 <%ARGS>
-$URIFile => $RT::WebPath."/AssetTracker/Asset/Display.html"
+$URIFile => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html"
 $Asset => undef
 $Assets => undef
 $Attachments => undef
 $AttachmentContent => undef
 $ShowHeaders => undef
-$Collapsed => undef
 $ShowTitle => 1
 $ShowDisplayModes => 1
-$ShowTitleBarCommands => 1
-$MaxRows => undef
-$AttachPath => $RT::WebPath."/AssetTracker/Asset/Attachment"
-$UpdatePath => $RT::WebPath."/AssetTracker/Asset/Update.html"
-
+$WarnUnsigned => undef
+$AttachPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Attachment"
+$UpdatePath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Update.html"
 </%ARGS>

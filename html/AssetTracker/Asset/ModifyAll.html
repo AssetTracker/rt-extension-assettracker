@@ -43,56 +43,53 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc("Asset [_1]: [_2]", $Action, $Name) &>
+<& /Elements/Header, Title => loc("Asset [_1]: [_2]", $Action, ($Name || "New")) &>
 <& /AssetTracker/Elements/Tabs, 
     Asset => $Asset, 
     current_tab => "AssetTracker/Asset/ModifyAll.html?id=".$Id, 
-    Title => loc("Asset [_1]: [_2]", $Action, $Name) &>
+    Title => loc("Asset [_1]: [_2]", $Action, ($Name || "New")) &>
 
 <& /Elements/ListActions, actions => \@results &>
 
-<FORM METHOD=POST ACTION="ModifyAll.html" ENCTYPE="multipart/form-data">
-<INPUT TYPE=HIDDEN NAME=id VALUE="<%$Id ? $Id : 'new'%>">
+<form method="post" action="ModifyAll.html" enctype="multipart/form-data">
+<input type="hidden" name="id" value="<%$Id ? $Id : 'new'%>" />
 
 
-<& /Elements/TitleBoxStart, title => 'Basics',   color=> "#993333", width => "100%" &>
+<&| /Widgets/TitleBox, title => 'Basics', class => 'asset-info-basics', width => "100%" &>
 <& Elements/EditBasics, AssetObj => $Asset, TypeObj => $TypeObj &>
-<& /Elements/TitleBoxEnd &>
+</&>
 
-<BR>
-
-<& /Elements/TitleBoxStart, title => loc('People'),width => "100%", color=> "#333399" &>
+<&| /Widgets/TitleBox, title => loc('People'),width => "100%", class	=> 'asset-info-people' &>
 <& Elements/EditPeople, AssetObj => $Asset, TypeObj => $TypeObj  &>
-<& /Elements/TitleBoxEnd &>
+</&>
 
-<BR>
-
-<& /Elements/TitleBoxStart, title => 'Fields',   color=> "#993333", width => "100%" &>
+<&| /Widgets/TitleBox, title => 'Fields',   class => 'asset-info-cfs', width => "100%" &>
 <& Elements/EditCustomFields, AssetObj => $Asset, TypeObj => $TypeObj &>
-<& /Elements/TitleBoxEnd &>
+</&>
 
-<BR>
 % if ($Asset && $Asset->Id) {
-<& /Elements/TitleBoxStart, title => loc('Links'), width => "100%", color=> "#333399" &>
+<&| /Widgets/TitleBox, title => loc('Links'), width => "100%", class => 'asset-info-links' &>
 <& /AssetTracker/Elements/EditLinks, AssetObj => $Asset, TypeObj => $TypeObj, ShowFind => 0 &>
-<& /Elements/TitleBoxEnd &>
+</&>
 
-<BR>
-
-%    if ($RTx::AssetTracker::EnableIP) {
-<& /Elements/TitleBoxStart, title => loc('IPs'),width => "100%", color=> "#993333" &>
+%  if ($RTx::AssetTracker::EnableIP) {
+<&| /Widgets/TitleBox, title => loc('IPs'),width => "100%", class => 'asset-info-IPs' &>
 <& Elements/EditIPs, AssetObj => $Asset, TypeObj => $TypeObj  &>
-<& /Elements/TitleBoxEnd &>
+</&>
 
-<BR>
 %    }
 % }
 
-<& /Elements/TitleBoxStart, title => 'Change Comment',   color=> "#999900", width => "100%" &>
+<&| /Widgets/TitleBox, title => 'Change Comment',  class => 'asset-info-comment', width => "100%" &>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment" &>
-<& /Elements/TitleBoxEnd &>
+</&>
 
-<& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to"), color => "#333399" &>
+% if ($Action eq 'create') {
+<& /Elements/Submit, Label => loc('Create') &>
+% }
+% else {
+<& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to") &>
+% }
 </form>
 
 <%INIT>

@@ -44,7 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <LABEL ACCESSKEY="9">
-<SELECT NAME ="<%$Name%>" onchange="document.CreateAssetOfType.submit()" class="select-queue">
+<SELECT NAME ="<%$Name%>" onchange="document.CreateAssetOfType.submit()" class="select-assettype">
 % foreach my $type (@{$session{'create_in_types'}}) {
 <OPTION 
     VALUE="<%$type->{'id'}%>" 
@@ -72,8 +72,6 @@ while (my $type=$t->Next) {
 }
 }
 </%INIT>
-
-
 <%ARGS>
 $Name => 'Type'
 $Verbose =>  0

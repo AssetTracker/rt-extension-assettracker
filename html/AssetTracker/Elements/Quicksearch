@@ -43,9 +43,10 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/TitleBoxStart, title => loc("Quick search"), bodyclass => "" &>
+<div class="asset-overview">
+<&| /Widgets/TitleBox, title => loc("Quick search"), bodyclass => "" &>
 
-<TABLE BORDER=0 cellspacing=0 cellpadding=1 WIDTH=100%>                       
+<table border="0" cellspacing="0" cellpadding="1" width="100%">                       
 <tr>                                                                          
 <th class="collection-as-table" align=left><&|/l&>Asset Type</&></th>                                         
 % foreach ((sort keys %status), 'all') {
@@ -55,21 +56,21 @@
 
 % $i++;                                                                         
 % foreach my $type (sort keys %sql) {
-<TR class="<% $i%2 ? 'oddline' : 'evenline'%>" >                                
-<TD align=left>
-<A HREF="<%$RT::WebPath%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{'all'}%>&Rows=50"><%$type%></A>
-</TD>
+<tr class="<% $i%2 ? 'oddline' : 'evenline'%>" >                                
+<td align="left">
+<a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{'all'}%>&Rows=50"><%$type%></a>
+</td>
 %     foreach my $status ((sort keys %status), 'all') {
-<TD align=center>
-<A HREF="<%$RT::WebPath%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{$status}%>&Rows=50"><%$count{$type}{$status}%></A>
-</TD>
+<td align="center">
+<a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{$status}%>&Rows=50"><%$count{$type}{$status}%></a>
+</td>
 %     }
-</TR>
+</tr>
 % }
 
-</TABLE>
-<& /Elements/TitleBoxEnd &>
-
+</table>
+</&>
+</div>
 <%INIT>
 my $Types = RTx::AssetTracker::Types->new($session{'CurrentUser'}); 
 $Types->UnLimit();

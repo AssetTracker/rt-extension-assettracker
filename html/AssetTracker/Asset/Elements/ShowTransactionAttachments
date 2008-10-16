@@ -1,8 +1,8 @@
 %# BEGIN BPS TAGGED BLOCK {{{
 %# 
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%# 
+%# This software is Copyright (c) 1996-2008 Best Practical Solutions, LLC
 %#                                          <jesse@bestpractical.com>
 %# 
 %# (Except where explicitly superseded by other copyright notices)
@@ -22,7 +22,9 @@
 %# 
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
 %# 
 %# 
 %# CONTRIBUTION SUBMISSION POLICY:
@@ -43,59 +45,40 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<%perl>
+<%PERL>
 # Find all the attachments which have parent $Parent
 # For each of these attachments
-foreach my $message ( grep { $_->Parent == $Parent } @$Attachments ) {
+foreach my $message ( grep $_->__Value('Parent') == $Parent, @$Attachments ) {
+    $m->comp( 'ShowMessageHeaders',
+              Message        => $message,
+              DisplayHeaders => \@DisplayHeaders,
+            );
 
-    # {{{    show the headers
-    my $headers = $message->Headers;
-    chomp $headers;
-
-    # localize the common headers (like 'Subject:'), too.
-    $headers =~ s/^([^:]+)(?=:)/loc($1)/em;
-    $m->comp(
-        'ShowMessageHeaders',
-        Headers        => $headers,
-        Transaction    => $Transaction,
-        DisplayHeaders => \@DisplayHeaders
-    );
-
-    # }}}
-    # {{{ if there's any size at all, show the download link
     my $size = $message->ContentLength;
-    if ($size) {
-        
-</%perl> 
+    if ( $size ) {
+</%PERL>
 <div class="downloadattachment">
-<%perl>
-
-     #     show a download link
-     if ( $size > 1024 ) {
-         $size = loc( "[_1]k", int( $size / 102.4 ) / 10 );
-     }
-     else {
-        $size = loc( "[_1]b", $size );
-     }
-        
-</%PERL> 
-<A HREF="<%$AttachPath%>/<%$Transaction->Id%>/<%$message->Id%>/<%$message->Filename | u%>"><&|/l&>Download</&> <%$message->Filename || loc('(untitled)') %></a> 
-<div class="downloadcontenttype">
-<%$message->ContentType%> <% $size %> 
-</div> 
-</div>
+<a href="<% $AttachPath %>/<% $Transaction->Id %>/<% $message->Id %>/<% ($message->Filename ||'')| u%>"><&|/l&>Download</&> <% $message->Filename || loc('(untitled)') %></a>
+% if ( $DownloadableHeaders && !$message->Filename && $message->ContentType =~ /text/  ) {
+ / <a href="<% $AttachPath %>/WithHeaders/<% $message->Id %>"><% loc('with headers') %></a>
 % }
-% # }}}
+<br/>
+<span class="downloadcontenttype"><% $message->ContentType %> <% $size_to_str->( $size ) %></span>
+</div>
+%   }
+
 <div class="messagebody">
-<%perl>
-# {{{   if it has a content-disposition: attachment, don't show inline
-unless ( $message->GetHeader('Content-Disposition') =~ /attachment/i ) {
+<%PERL>
+# {{{ if it has a content-disposition: attachment, don't show inline
+unless ( ($message->GetHeader('Content-Disposition')||"") =~ /attachment/i ) {
 
     my $content;
 
     # If it's text
     if (   $message->ContentType =~ m{^(text|message)}i
-        && $size <= $RT::MaxInlineBody )
+        && !( $message->Filename && RT->Config->Get('SuppressInlineTextFiles', $session{'CurrentUser'} ) )
+        && (   !RT->Config->Get( 'MaxInlineBody', $session{'CurrentUser'} )
+            || $size <= RT->Config->Get('MaxInlineBody', $session{'CurrentUser'} ) ) )
     {
 
         if (
@@ -109,10 +92,10 @@ unless ( $message->GetHeader('Content-Disposition') =~ /attachment/i ) {
             # or it's of our prefered alterative type
             || (
                 (
-                    $RT::PreferRichText
+                    RT->Config->Get('PreferRichText')
                     && ( $message->ContentType =~ m{^text/(?:html|enriched)$} )
                 )
-                || ( !$RT::PreferRichText
+                || ( !RT->Config->Get('PreferRichText')
                     && ( $message->ContentType !~ m{^text/(?:html|enriched)$} )
                 )
             )
@@ -128,16 +111,14 @@ unless ( $message->GetHeader('Content-Disposition') =~ /attachment/i ) {
 
             # if it's a text/html clean the body and show it
             if ( $message->ContentType =~ m{^text/(?:html|enriched)$}i ) {
-                $content =
-                  $m->comp( '/Elements/ScrubHTML', Content => $content );
-                $m->out($content);
+                $m->out( $m->comp( '/Elements/ScrubHTML', Content => $content ) );
             }
 
             # if it's a text/plain show the body
-            elsif ( $message->ContentType =~ m{^(text|message|text)}i ) {
+            elsif ( $message->ContentType =~ m{^(text|message)}i ) {
 
-                eval { $content = Text::Quoted::extract($content); };
-                if ($@) { 1; }
+                eval { require Text::Quoted;  $content = Text::Quoted::extract($content); };
+                if ($@) { $RT::Logger->warning( "Text::Quoted failed: $@" ) }
 
                 $m->comp(
                     'ShowMessageStanza',
@@ -147,56 +128,76 @@ unless ( $message->GetHeader('Content-Disposition') =~ /attachment/i ) {
                 );
             }
         }
-
     }
 
     # if it's an image, show it as an image
-    elsif ( $message->ContentType =~ /^image\//i ) {
+    elsif ( RT->Config->Get('ShowTransactionImages') and  $message->ContentType =~ /^image\//i ) {
         $m->out('<img src="'
               . $AttachPath . '/'
               . $Transaction->Id . '/'
               . $message->Id
-              . '/">' );
+              . '/" />' );
+    }
+    elsif ( $message->ContentLength > 0 ) {
+        $m->out(
+            loc( 'Message body not shown because it is too large or is not plain text.' )
+        );
     }
 }
 
 # }}}
 
 $m->comp(
-    'ShowTransactionAttachments', %ARGS,
+    $m->current_comp,
+    %ARGS,
     Parent    => $message->id,
     ParentObj => $message
 );
 
-## Please see file perltidy.ERR
-}
 </%PERL>
 </div>
+% }
 <%ARGS>
 $Asset => undef
 $Transaction => undef
 $ShowHeaders => 0
 $Collapsed => undef
+$DownloadableHeaders => 1
 $ShowTitleBarCommands => 1
 $RowNum => 1
-$AttachPath => $RT::WebPath."/AssetTracker/Asset/Attachment"
-$UpdatePath => $RT::WebPath."/AssetTracker/Asset/Update.html"
-$EmailRecordPath => $RT::WebPath."/AssetTracker/Asset/ShowEmailRecord.html"
+$AttachPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Attachment"
+$UpdatePath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Update.html"
+$EmailRecordPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/ShowEmailRecord.html"
 $Attachments => undef
-$AttachmentContent => undef
+$AttachmentContent => {}
 $ShowBody => 1
 $Parent => 0
-$ParentObj => 0
+$ParentObj => undef
 </%ARGS>
 <%INIT>
-my @DisplayHeaders=qw( _all);
-
+my @DisplayHeaders=qw(_all);
 if ( $Transaction->Type =~ /EmailRecord$/ ) {
     @DisplayHeaders = qw(To Cc Bcc);
 }
 
 # If the transaction has anything attached to it at all
 elsif (!$ShowHeaders)  {
-        @DisplayHeaders = qw(To From RT-Send-Cc Cc Bcc Date Subject);
+    @DisplayHeaders = qw(To From RT-Send-Cc Cc Bcc Date Subject);
+    push @DisplayHeaders, 'RT-Send-Bcc' if RT->Config->Get('ShowBccHeader');
 }
+
+my $size_to_str = sub {
+    my $size = shift;
+    # show a download link
+    if ( $size > 1024*1024 ) {
+        $size = loc( "[_1]b", int( $size / 1024 / 102.4 ) / 10 );
+    }
+    elsif ( $size > 1024 ) {
+        $size = loc( "[_1]k", int( $size / 102.4 ) / 10 );
+    }
+    else {
+        $size = loc( "[_1]b", $size );
+    }
+    return $size;
+};
 </%INIT>

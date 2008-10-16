@@ -51,14 +51,15 @@
 
 <& /Elements/ListActions, actions => \@results &>
 
-<FORM METHOD=POST ACTION="ModifyPeople.html">
-<INPUT TYPE=HIDDEN NAME=id VALUE="<%$Asset->Id%>">
-<& /Elements/TitleBoxStart, title => loc('Modify people related to asset #[_1]', $Asset->Id),   width => "100%", color=> "#333399" &>
+<form method="post" action="ModifyPeople.html">
+<input type="hidden" name="id" value="<%$Asset->Id%>">
+<&| /Widgets/TitleBox, title => loc('Modify people related to asset #[_1]', $Asset->Id),   width => "100%", class => 'asset-info-people' &>
 <& Elements/EditPeople, Asset => $Asset, UserField => $UserField, UserString => $UserString, UserOp => $UserOp, GroupString => $GroupString, GroupOp => $GroupOp, GroupField => $GroupField &> 
-<BR>
+</&>
+<&| /Widgets/TitleBox, title => loc('Comments'),   width => "100%", class => 'asset-info-comment' &>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "PeopleComment" &>
-<& /Elements/TitleBoxEnd &>
-<& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to"), color => "#333399" &>
+</&>
+<& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to") &>
 </form>
 
 <%INIT>
