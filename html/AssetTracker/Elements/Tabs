@@ -157,7 +157,9 @@ $current_tab = "AssetTracker/Asset/Display.html?id=" . $id;
 
 }
 
-my $args = "?" . $m->comp(
+my $args = '?'; # Doing it this way prevents uninitialised variable errors
+                # in logs since $args is not always set.
+$args .= $m->comp(
     '/Elements/QueryString',
     Query   => $ARGS{'Query'}   || $session{'CurrentAssetSearchHash'}->{'Query'},
     Format  => $ARGS{'Format'}  || $session{'CurrentAssetSearchHash'}->{'Format'},
