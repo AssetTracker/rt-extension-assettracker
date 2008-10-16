@@ -63,7 +63,7 @@ foreach my $col (@Format) {
     $item++;
     if ( $col->{title} eq 'NEWLINE' ) {
         while ( $item < $maxitems ) {
-            $m->out(qq{<th class="collection-as-table">&nbsp;</th>\n});
+            $m->out(qq{<th class="collection-as-table" align="left">&nbsp;</th>\n});
             $item++;
         }
 
@@ -71,7 +71,7 @@ foreach my $col (@Format) {
         $m->out(qq{</TR>\n<TR class="collection-as-table">});
     }
     else {
-        $m->out('<TH class="collection-as-table">');
+        $m->out('<TH class="collection-as-table" align="left">');
         my $title = $col->{title};
         $title =~ s/^__(.*)__$/$1/o;
         $title = (

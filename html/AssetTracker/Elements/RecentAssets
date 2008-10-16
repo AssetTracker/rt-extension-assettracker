@@ -43,18 +43,18 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/TitleBox, 
+<&| /Widgets/TitleBox, 
 	title => loc('[_1] Most recently updated assets', $rows),
 	title_href => "Search/Results.html".$QueryString &>
-<& /AssetTracker/Elements/AssetList, 
+  <& /AssetTracker/Elements/AssetList, 
         Format => "'<a href=\"$RT::WebPath/AssetTracker/Asset/Display.html?id=__id__\">__Name__</a>/TITLE:Name', Description, TypeName, Status",
-
         Query => $Query,
         OrderBy => 'LastUpdated',
         Order => 'DESC',
         Rows => $rows,
         ShowNavigation => 0
         &>
+</&>
 <%init>
 my $rows = 10;
 
