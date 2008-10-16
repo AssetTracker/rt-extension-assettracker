@@ -873,13 +873,12 @@ if ( $ARGS{"DoSearch"} ) {
 
 # {{{ Build a querystring for the tabs
 
-my $QueryString;
+my $QueryString = '?';
 if ($NewQuery) {
-    $QueryString = '?NewQuery=1';
+    $QueryString .= 'NewQuery=1';
 }
 else {
-    $QueryString = '?'
-      . $m->comp(
+    $QueryString .= $m->comp(
         '/Elements/QueryString',
         Query   => $Query,
         Format  => $Format,

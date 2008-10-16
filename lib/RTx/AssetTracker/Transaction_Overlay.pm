@@ -995,10 +995,10 @@ $_BriefDescriptions{CustomField} = sub {
             $field = $cf->Name();
         }
 
-        if ( $self->OldValue eq '' ) {
+        if ( (not defined $self->OldValue) or ($self->OldValue eq '') ) {
             return ( $self->loc("[_1] [_2] added", $field, $self->NewValue) );
         }
-        elsif ( $self->NewValue eq '' ) {
+        elsif ( (not defined $self->NewValue) or ($self->NewValue eq '') ) {
             return ( $self->loc("[_1] [_2] deleted", $field, $self->OldValue) );
 
         }
