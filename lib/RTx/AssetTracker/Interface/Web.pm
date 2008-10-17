@@ -827,7 +827,6 @@ sub _ProcessATObjectCustomFieldUpdates {
                 $_;
             }
             grep defined, @values;
-        use Data::Dumper;$RT::Logger->error($arg);
         if ( $arg eq 'AddValue' || $arg eq 'Value' ) {
             foreach my $value (@values) {
                 my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue(
