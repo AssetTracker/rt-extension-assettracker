@@ -45,11 +45,10 @@
 %# those contributions and any derivatives thereof.
 %# 
 
-<link rel="stylesheet" href="<%RT->Config->Get('WebPath')%>/NoAuth/css/webat.css" type="text/css" media="all"/>
 <!--[if lt IE 8]>
-<link rel="stylesheet" href="<%RT->Config->Get('WebPath')%>/NoAuth/css/webatmsie.css" type="text/css" media="all" />
+<link rel="stylesheet" href="<%RT->Config->Get('WebPath')%>/NoAuth/css/<%RT->Config->Get('WebDefaultStylesheet')%>/webatmsie.css" type="text/css" media="all" />
 <![endif]-->
 <!--[if lt IE 7]>
-<link rel="stylesheet" href="<%RT->Config->Get('WebPath')%>/NoAuth/css/webatmsie6.css" type="text/css" media="all" />
+<link rel="stylesheet" href="<%RT->Config->Get('WebPath')%>/NoAuth/css/<%RT->Config->Get('WebDefaultStylesheet')%>/webatmsie6.css" type="text/css" media="all" />
 <![endif]-->
 
