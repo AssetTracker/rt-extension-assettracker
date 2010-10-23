@@ -3,8 +3,6 @@
 # and edit them there.
 #
 
-package RTx::AssetTracker;
-
 =head1 NAME
 
 AT::Config
@@ -15,8 +13,8 @@ use AT::Config;
 
 =cut
 
-# $DefaultSearchResultFormat is the default format for RT search results
-Set ($DefaultSearchResultFormat, 
+# $DefaultAssetSearchResultFormat is the default format for RT search results
+Set ($DefaultAssetSearchResultFormat, 
  qq{'<B><A HREF="$RT::WebPath/AssetTracker/Asset/Display.html?id=__id__">__Name__</a></B>/TITLE:Name',
    Description,
    Status,
@@ -31,8 +29,8 @@ Set ($DefaultSearchResultFormat,
 # WARNING. DO NOT DELETE ANY OF THE DEFAULT STATUSES. If you do, RT
 # will break horribly.
 
-@ActiveStatus = qw(production development qa dr pilot test) unless @ActiveStatus;
-@InactiveStatus = qw(retired) unless @InactiveStatus;
+@AssetActiveStatus = qw(production development qa dr pilot test) unless @AssetActiveStatus;
+@AssetInactiveStatus = qw(retired) unless @AssetInactiveStatus;
 
 # }}}
 
@@ -58,10 +56,10 @@ Set ($ShowAssetHistory, 10);
 # number of elements. The first element in each pair is the
 # forward link and the second element is the reverse link.
 
-# @LinkTypes = qw( LocatedAt AtThisLocation );
+# @AssetLinkTypes = qw( LocatedAt AtThisLocation );
 
 # List of role names. Need more/less/different roles? Change it!
-# @ActiveRoles = qw( Admin Owner ); #default
+# @AssetRoles = qw( Admin Owner ); #default
 
 # When displaying asset watchers descend into groups and show
 # the user members. Turning this off make the display more succinct.

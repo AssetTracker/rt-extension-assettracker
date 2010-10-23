@@ -77,8 +77,8 @@ foreach my $right ( keys %{$RIGHTS} ) {
 sub ActiveRoleArray {
     my $self = shift;
 
-    if (@RTx::AssetTracker::ActiveRoles) {
-        return (@RTx::AssetTracker::ActiveRoles)
+    if (@RT::AssetRoles) {
+        return (@RT::AssetRoles)
     } else {
         return (sort keys %DEFAULT_ROLES);
     }
@@ -217,10 +217,10 @@ Returns an array of all ActiveStatuses for this queue
 
 sub ActiveStatusArray {
     my $self = shift;
-    if (@RTx::AssetTracker::ActiveStatus) {
-        return (@RTx::AssetTracker::ActiveStatus)
+    if (@RT::AssetActiveStatus) {
+        return (@RT::AssetActiveStatus)
     } else {
-        $RT::Logger->warning("RTx::AssetTracker::ActiveStatus undefined, falling back to deprecated defaults");
+        $RT::Logger->warning("RT::AssetActiveStatus undefined, falling back to deprecated defaults");
         return (@DEFAULT_ACTIVE_STATUS);
     }
 }
@@ -237,8 +237,8 @@ Returns an array of all InactiveStatuses for this queue
 
 sub InactiveStatusArray {
     my $self = shift;
-    if (@RTx::AssetTracker::InactiveStatus) {
-        return (@RTx::AssetTracker::InactiveStatus)
+    if (@RT::AssetInactiveStatus) {
+        return (@RT::AssetInactiveStatus)
     } else {
         $RT::Logger->warning("RTx::AssetTracker::InactiveStatus undefined, falling back to deprecated defaults");
         return (@DEFAULT_INACTIVE_STATUS);

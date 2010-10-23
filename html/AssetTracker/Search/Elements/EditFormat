@@ -61,6 +61,7 @@ Format:
 
 % # sort CFs by name
 % my @Columns;
+% push @Columns, shift @$AvailableColumns;
 % while ($Columns[-1] ne 'NEWLINE') {
 %     push @Columns, shift @$AvailableColumns;
 % }

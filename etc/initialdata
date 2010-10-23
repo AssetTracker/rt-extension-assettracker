@@ -1,0 +1,60 @@
+# Initial data for a fresh AT Installation.
+use RTx::AssetTracker;
+use RTx::AssetTracker::Type;
+
+@Groups = (
+    { Name        => '',
+      Type        => 'Owner',                                  # loc
+      Domain      => 'RTx::AssetTracker::System-Role',
+      Instance    => '',
+      Description => 'SystemRolegroup for internal use',    # loc
+    },
+    { Name        => '',
+      Type        => 'Admin',                             # loc
+      Domain      => 'RTx::AssetTracker::System-Role',
+      Instance    => '',
+      Description => 'Pseudogroup for internal use',        # loc
+    }, );
+
+@Types = ({ Name               => 'Servers',
+             Description       => 'The default asset type',
+          });
+
+@Final = ( \&SystemRights, \&AssetTypes );
+
+sub SystemRights {
+    $| = 1;
+
+    my $CurrentUser = RT::CurrentUser->new();
+    $CurrentUser->LoadByName('RT_System');
+    print "Creating Superuser ACL...";
+
+    my $superuser_ace = RT::ACE->new($CurrentUser);
+    $superuser_ace->_BootstrapCreate(
+                         PrincipalId => ACLEquivGroupId( $CurrentUser->Id ),
+                         PrincipalType => 'Group',
+                         RightName     => 'SuperUser',
+                         ObjectType    => 'RTx::AssetTracker::System',
+                         ObjectId      => '1' );
+    
+    my $root_user = RT::User->new($CurrentUser);
+    $root_user->Load("root");
+    $root_user->PrincipalObj->GrantRight( Right => 'SuperUser',
+                                          Object => $RTx::AssetTracker::System );
+    
+    print "done.\n";
+}
+
+sub AssetTypes {
+    my $CurrentUser = RT::CurrentUser->new();
+    $CurrentUser->LoadByName('RT_System');
+    print "Creating default asset types...";
+
+    for $item (@Types) {
+        my $new_entry = new RTx::AssetTracker::Type($CurrentUser);
+        my ( $return, $msg ) = $new_entry->Create(%$item);
+        print "(Error: $msg)" unless ($return);
+        print $return. ".";
+    }
+    print "done.\n";
+}

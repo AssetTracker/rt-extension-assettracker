@@ -130,7 +130,7 @@ my $asset_page_tabs = {
 
 };
 
-unless ($RTx::AssetTracker::EnableIP) {
+unless ($RT::EnableIP) {
     delete $asset_page_tabs->{_Bb};
 }
 

@@ -60,7 +60,7 @@ $CurrentDisplayColumns => undef
 <%init>
 
 unless ($Format) {         
-    $Format = $RTx::AssetTracker::DefaultSearchResultFormat;
+    $Format = $RT::DefaultAssetSearchResultFormat;
 }   
    
 
@@ -82,7 +82,7 @@ splice(@fields, 2, 0, ActiveRoleArray());
 push (@fields, $_) for RTx::AssetTracker::Asset::LINKORDER();
 push @fields, qw( IP NEWLINE );
 
-unless ($RTx::AssetTracker::EnableIP) {
+unless ($RT::EnableIP) {
     @fields = grep { $_ ne 'IP' } @fields;
 }
 
@@ -202,10 +202,10 @@ elsif ( $ColDown ) {
 my @format_string;
 foreach my $field (@seen) {
     next unless $field;
-    my $row = "'" . $field->{Prefix};
+    my $row = "'" . ($field->{Prefix} || '');
     $row .= "__" . $m->interp->apply_escapes( $field->{Column}, 'h' ) . "__"
       unless ( $field->{Column} eq "<blank>" );
-    $row .= $field->{Suffix} . "'";
+    $row .= ($field->{Suffix} || '') . "'";
     push( @format_string, $row );
 }
 

@@ -141,7 +141,7 @@
 <INPUT Name="ValueOfLinks" value="" SIZE=5>
 </td></tr>
 
-% if ($RTx::AssetTracker::EnableIP) {
+% if ($RT::EnableIP) {
 <tr><td align=right>
 <& /AssetTracker/Elements/SelectIPField, Name => 'IPField' &>
 </td><td>

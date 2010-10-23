@@ -62,7 +62,7 @@
 </td>
 %     foreach my $status ((sort keys %status), 'all') {
 <td align="center">
-<a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{$status}%>&Rows=50"><%$count{$type}{$status}%></a>
+<a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{$status}%>&Rows=50"><% $count{$type}{$status} %></a>
 </td>
 %     }
 </tr>
@@ -95,7 +95,7 @@ while (my $type = $Types->Next) {
        $Assets->FromSQL($sql{$type->Name}{'all'});
        $count{$type->Name}{'all'} = $Assets->Count();
 }
-foreach my $status (@RTx::AssetTracker::ActiveStatus) {
+foreach my $status (@RT::AssetActiveStatus) {
     $sql{all}{$status} = "Status='$status'";
     $Assets->FromSQL($sql{all}{$status});
     $count{all}{$status} = $Assets->Count();

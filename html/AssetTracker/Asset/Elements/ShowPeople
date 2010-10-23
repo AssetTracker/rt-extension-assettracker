@@ -63,5 +63,5 @@
 </table>
 <%ARGS>
 $Asset => undef
-$ShowTypeWatchers   => $RTx::AssetTracker::ShowTypeWatchersInAsset
+$ShowTypeWatchers   => $RT::ShowTypeWatchersInAsset
 </%ARGS>

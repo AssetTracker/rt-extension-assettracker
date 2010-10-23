@@ -57,7 +57,7 @@
 	  <& /AssetTracker/Asset/Elements/ShowPeople, Asset => $Asset &>
     </&>
 
-% if ($RTx::AssetTracker::EnableIP) {
+% if ($RT::EnableIP) {
 	<td valign="top" width="50%" class="boxcontainer">
 	  <&| /Widgets/TitleBox, title => loc('IP Addresses'), 
 		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyIPs.html?id=".$Asset->Id, 

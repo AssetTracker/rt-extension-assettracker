@@ -191,8 +191,8 @@ sub LINKORDER     { return  @LINKORDER   }
 sub ConfigureLinks {
     my $class = shift;
 
-    if (@RTx::AssetTracker::LinkTypes and ! (@RTx::AssetTracker::LinkTypes % 2)) {
-        my @local_links = @RTx::AssetTracker::LinkTypes;
+    if (@RT::AssetLinkTypes and ! (@RT::AssetLinkTypes % 2)) {
+        my @local_links = @RT::AssetLinkTypes;
         while ( @local_links ) {
             my $forward = shift @local_links;
             my $reverse = shift @local_links;
@@ -1439,7 +1439,7 @@ sub SetStatus {
        }
     }
 
-    unless (grep {$_ eq $args{'Status'}} (@RTx::AssetTracker::ActiveStatus,@RTx::AssetTracker::InactiveStatus)) {
+    unless (grep {$_ eq $args{'Status'}} (@RT::AssetActiveStatus,@RT::AssetInactiveStatus)) {
       return (0, $self->loc('[_1] is not a valid Asset Status', $args{'Status'})
 );
     }
@@ -1614,7 +1614,7 @@ sub _AddLink {
     }
 
     if ( $other_asset_uri->Resolver->Scheme eq 'at'
-     and $RTx::AssetTracker::ModifyBothAssetsForLink) {
+     and $RT::ModifyBothAssetsForLink) {
         my $object = $other_asset_uri->Resolver->Object;
 
         if (   UNIVERSAL::isa( $object, 'RTx::AssetTracker::Asset' )
@@ -1707,15 +1707,15 @@ sub SatisfiesUniqueness {
     my $Type   = RTx::AssetTracker::Type->new( $RT::SystemUser );
     $Type->Load($type);
 
-    if ($RTx::AssetTracker::GlobalUniqueAssetName) {
+    if ($RT::GlobalUniqueAssetName) {
         $Assets->Limit(FIELD => "Name", VALUE => $name);
         return (0, "Asset name $name isn't unique across the entire asset database") if $Assets->Count;
     }
-    if ($RTx::AssetTracker::TypeUniqueAssetName) {
+    if ($RT::TypeUniqueAssetName) {
         $Assets->Limit(FIELD => "Type", VALUE => $type);
         return (0, "Asset name $name isn't unique among assets of type: " . $Type->Name) if $Assets->Count;
     }
-    if ($RTx::AssetTracker::TypeStatusUniqueAssetName) {
+    if ($RT::TypeStatusUniqueAssetName) {
         $Assets->Limit(FIELD => "Status", VALUE => $stat);
         return (0, "Asset name $name isn't unique among assets of type: " . $Type->Name . ", and status: $stat") if $Assets->Count;
     }

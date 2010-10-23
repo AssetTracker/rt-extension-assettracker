@@ -128,4 +128,9 @@ for compatibility. dummy method
 sub Load {
     return(1);
 }
+
+sub ACLEquivalenceObjects {
+   return ();
+}
+
 1;

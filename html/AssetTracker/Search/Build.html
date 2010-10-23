@@ -205,7 +205,7 @@ if ( $ARGS{'Revert'} ) {
 
 # {{{ if we're asked to load a search, load it.
 
-if ( $ARGS{'LoadSavedSearch'} =~ /^(.*?)-(\d+)-AssetSavedSearch-(\d+)$/ ) {
+if ( $ARGS{'LoadSavedSearch'} && $ARGS{'LoadSavedSearch'} =~ /^(.*?)-(\d+)-AssetSavedSearch-(\d+)$/ ) {
     my $obj_type  = $1;
     my $obj_id    = $2;
     my $search_id = $3;

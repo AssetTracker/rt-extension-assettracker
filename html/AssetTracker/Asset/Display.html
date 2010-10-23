@@ -59,13 +59,13 @@
 </div>
 <br />
 
-% if ( $RTx::AssetTracker::ShowAssetHistory ) {
+% if ( $RT::ShowAssetHistory ) {
 <& /AssetTracker/Asset/Elements/ShowHistory , 
       Asset => $AssetObj, 
       Assets => $Assets, 
       Collapsed => $ARGS{'Collapsed'}, 
       ShowHeaders => $ARGS{'ShowHeaders'},
-      MaxRows => $RTx::AssetTracker::ShowAssetHistory,
+      MaxRows => $RT::ShowAssetHistory,
       Attachments => $attachments,
       AttachmentContent => $attachment_content
       &> 

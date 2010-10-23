@@ -18,7 +18,9 @@
 
 package RTx::AssetTracker;
 use strict;
-#use vars qw/$System/;
+use warnings;
+our $VERSION = '1.2.5';
+
 use RTx::AssetTracker::System;
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Asset;
@@ -34,22 +36,10 @@ use vars qw($VERSION
         $ATConfigDone
 );
 
-$VERSION = '@AT_VERSION_MAJOR@.@AT_VERSION_MINOR@.@AT_VERSION_PATCH@';
-$CORE_CONFIG_FILE = "@RT_LOCAL_PATH@/etc/AssetTracker/AT_Config.pm";
-$SITE_CONFIG_FILE = "@RT_LOCAL_PATH@/etc/AssetTracker/AT_SiteConfig.pm";
+$LocalEtcPath = "$RT::LocalPluginPath/RTx-AssetTracker/etc";
+$CORE_CONFIG_FILE = "$LocalEtcPath/AT_Config.pm";
+$SITE_CONFIG_FILE = "$LocalEtcPath/AT_SiteConfig.pm";
 $ATConfigDone = 0;
-
-
-
-#$BasePath = '';
-
-#$EtcPath = '';
-#$BinPath = '';
-#$VarPath = '';
-#$LocalPath = '';
-$LocalEtcPath = "@RT_LOCAL_PATH@/etc/AssetTracker";
-#$LocalLexiconPath = '';
-
 
 
 =head2 LoadConfig

@@ -136,6 +136,7 @@ $ASSET_COLUMN_MAP = {
     },
     Status => {
         attribute => 'Status',
+        title     => 'Status',
         value     => sub { return loc($_[0]->Status) }
     },
     Description => {

@@ -1,2 +1,0 @@
-ALTER TABLE AT_Assets ADD URI varchar(255) NULL;
-ALTER TABLE AT_Assets drop column Parent;

@@ -72,7 +72,7 @@
 <& /AssetTracker/Elements/EditLinks, AssetObj => $Asset, TypeObj => $TypeObj, ShowFind => 0 &>
 </&>
 
-%  if ($RTx::AssetTracker::EnableIP) {
+%  if ($RT::EnableIP) {
 <&| /Widgets/TitleBox, title => loc('IPs'),width => "100%", class => 'asset-info-IPs' &>
 <& Elements/EditIPs, AssetObj => $Asset, TypeObj => $TypeObj  &>
 </&>

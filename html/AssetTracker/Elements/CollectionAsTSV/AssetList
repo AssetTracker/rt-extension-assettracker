@@ -22,7 +22,7 @@
 $r->content_type('application/vnd.ms-excel');
 my $maxitems = 0;
 
-$Format ||= $RTx::AssetTracker::DefaultSearchResultFormat;
+$Format ||= $RT::DefaultAssetSearchResultFormat;
 # Scrub the html of the format string to remove any potential nasties.
 $Format = $m->comp('/Elements/ScrubHTML', Content => $Format);
 
@@ -62,7 +62,7 @@ $AllowSorting => undef
 $Order => undef
 $OrderBy => undef
 $BaseURL => undef
-$Format => $RTx::AssetTracker::DefaultSearchResultFormat
+$Format => $RT::DefaultAssetSearchResultFormat
 $ShowNavigation => 1
 $ShowHeader => 1
 </%ARGS>
