@@ -97,6 +97,7 @@ sub NewItem {
     return(RTx::AssetTracker::IP->new($self->CurrentUser));
 }
 
+
         eval "require RTx::AssetTracker::IPs_Overlay";
         if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IPs_Overlay.pm}) {
             die $@;

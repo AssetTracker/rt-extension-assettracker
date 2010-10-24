@@ -1078,6 +1078,48 @@ sub RolesForType {
 
 # }}}
 
+### Shredder methods ###
+
+use RT::Shredder::Constants;
+use RT::Shredder::Exceptions;
+use RT::Shredder::Dependencies;
+
+sub __DependsOn
+{
+    my $self = shift;
+    my %args = (
+            Shredder => undef,
+            Dependencies => undef,
+            @_,
+           );
+    my $deps = $args{'Dependencies'};
+    my $list = [];
+
+# Tickets
+    my $objs = RTx::AssetTracker::Assets->new( $self->CurrentUser );
+    $objs->{'allow_deleted_search'} = 1;
+    $objs->Limit( FIELD => 'Type', VALUE => $self->Id );
+    push( @$list, $objs );
+
+# Type role groups( Owner, Admin )
+    $objs = RT::Groups->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Type-Role' );
+    $objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
+    push( @$list, $objs );
+# Custom Fields
+    $objs = RT::CustomFields->new( $self->CurrentUser );
+    $objs->LimitToType( $self->id );
+    push( @$list, $objs );
+
+    $deps->_PushDependencies(
+            BaseObject => $self,
+            Flags => DEPENDS_ON,
+            TargetObjects => $list,
+            Shredder => $args{'Shredder'}
+        );
+    return $self->SUPER::__DependsOn( %args );
+}
+
 
 
 1;

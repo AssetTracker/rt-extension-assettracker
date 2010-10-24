@@ -24,6 +24,7 @@ our $VERSION = '1.2.5';
 use RTx::AssetTracker::System;
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Asset;
+use RT::Shredder;
 
 use vars qw($VERSION
         $CORE_CONFIG_FILE
@@ -40,7 +41,6 @@ $LocalEtcPath = "$RT::LocalPluginPath/RTx-AssetTracker/etc";
 $CORE_CONFIG_FILE = "$LocalEtcPath/AT_Config.pm";
 $SITE_CONFIG_FILE = "$LocalEtcPath/AT_SiteConfig.pm";
 $ATConfigDone = 0;
-
 
 =head2 LoadConfig
 

@@ -25,46 +25,51 @@ package RTx::AssetTracker::Port;
 use strict;
 no warnings qw(redefine);
 
-use RTx::AssetTracker::Ports;
+use RTx::AssetTracker::Asset;
+use RTx::AssetTracker::IP;
 
-sub Create {
+sub IPObj {
 
     my $self = shift;
 
+    my $ip = RTx::AssetTracker::IP->new( $self->CurrentUser );
+    $ip->Load($self->IP);
+    return $ip;
+}
+
+## Shredder methods ##
+use RT::Shredder::Constants;
+use RT::Shredder::Exceptions;
+use RT::Shredder::Dependencies;
+
+sub __DependsOn
+{
+    my $self = shift;
     my %args = (
-                Transport => '',
-                Port => '',
-                IP => '0',
-                  @_);
+            Shredder => undef,
+            Dependencies => undef,
+            @_,
+           );
+    my $deps = $args{'Dependencies'};
+    my $list = [];
 
-    #return (1, "No right to modify asset") unless $self->AssetObj->CurrenUserHasRight('ModifyAsset');
-    return (0, "Invalid transport. Must be TCP or UDP") unless $args{Transport} =~ /^(TCP|UDP)$/;
-    return (0, "Port must be a number") unless ( $args{Port} =~ /^\d+$/ and $args{Port} > 0 );
+# Port Transactions
+    my $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Type', VALUE => 'AddPort' );
+    $objs->Limit( FIELD => 'ObjectType', VALUE => 'RTx::AssetTracker::Asset' );
+    $objs->Limit( FIELD => 'ObjectId', VALUE => $self->IPObj->Asset );
+    $objs->Limit( FIELD => 'NewValue', VALUE => $self->IPObj->IP . ' ' . $self->Transport . ' ' . $self->Port );
+    push( @$list, $objs );
 
-    $self->SUPER::Create(
-                         Transport => $args{'Transport'},
-                         Port => $args{'Port'},
-                         IP => $args{'IP'},
-    );
+    $deps->_PushDependencies(
+            BaseObject => $self,
+            Flags => DEPENDS_ON,
+            TargetObjects => $list,
+            Shredder => $args{'Shredder'}
+        );
 
+    return $self->SUPER::__DependsOn( %args );
 }
 
-sub LoadPort {
-
-    my $self = shift;
-    my %args = @_;
-
-    my $Ports = RTx::AssetTracker::Ports->new( $self->CurrentUser );
-    $Ports->Limit( FIELD => 'Transport', VALUE => $args{Transport} );
-    $Ports->Limit( FIELD => 'Port', VALUE => $args{Port} );
-    $Ports->Limit( FIELD => 'IP', VALUE => $args{IP} );
-
-    #return (0, $Ports->Count . " ports found, 1 expected") if $Ports->Count > 1;
-    return (0, "No ports found, 1 expected") if $Ports->Count == 0;
-
-    $self->Load($Ports->First->Id);
-    return ($Ports->First, "Port found") if $Ports->Count == 1;
-
-}
 
 1;

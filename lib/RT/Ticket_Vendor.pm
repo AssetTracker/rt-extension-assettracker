@@ -36,4 +36,15 @@ my $Orig_AddLink = \&_AddLink;
 
 };
 
+my $Orig_LINKTYPEMAP = \&LINKTYPEMAP;
+
+*LINKTYPEMAP = sub {
+
+    my $self = shift;
+    my $ticket_map = $Orig_LINKTYPEMAP->($self);
+    my $asset_map = RTx::AssetTracker::Asset->LINKTYPEMAP();
+
+    return { %$asset_map, %$ticket_map };
+};
+
 1;

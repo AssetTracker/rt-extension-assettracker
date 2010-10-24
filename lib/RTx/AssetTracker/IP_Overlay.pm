@@ -275,5 +275,45 @@ sub DeleteAllPorts {
 
 }
 
+## Shredder methods ##
+use RT::Shredder::Constants;
+use RT::Shredder::Exceptions;
+use RT::Shredder::Dependencies;
+
+sub __DependsOn
+{
+    my $self = shift;
+    my %args = (
+            Shredder => undef,
+            Dependencies => undef,
+            @_,
+           );
+    my $deps = $args{'Dependencies'};
+    my $list = [];
+
+# IP Ports
+    my $objs = RTx::AssetTracker::Ports->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'IP', VALUE => $self->Id );
+    push( @$list, $objs );
+
+#IP Transactions
+    $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Type', VALUE => 'AddIP' );
+    $objs->Limit( FIELD => 'ObjectType', VALUE => 'RTx::AssetTracker::Asset' );
+    $objs->Limit( FIELD => 'ObjectId', VALUE => $self->Asset );
+    $objs->Limit( FIELD => 'NewValue', VALUE => $self->IP );
+    push( @$list, $objs );
+
+#TODO: Users, Types if we wish export tool
+    $deps->_PushDependencies(
+            BaseObject => $self,
+            Flags => DEPENDS_ON,
+            TargetObjects => $list,
+            Shredder => $args{'Shredder'}
+        );
+
+    return $self->SUPER::__DependsOn( %args );
+}
+
 
 1;
