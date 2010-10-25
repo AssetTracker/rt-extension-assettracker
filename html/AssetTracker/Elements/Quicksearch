@@ -44,7 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <div class="asset-overview">
-<&| /Widgets/TitleBox, title => loc("Quick search"), bodyclass => "" &>
+<&| /Widgets/TitleBox, title => loc("Asset Quick search"), bodyclass => "" &>
 
 <table border="0" cellspacing="0" cellpadding="1" width="100%">                       
 <tr>                                                                          

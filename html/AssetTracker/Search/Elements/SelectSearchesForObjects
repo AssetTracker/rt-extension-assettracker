@@ -46,6 +46,7 @@
 <%args>
 @Objects => undef
 $Name => undef
+$SearchType => 'Asset'
 </%args>
 <select name="<%$Name%>">
 % foreach my $object (@Objects) {
@@ -55,10 +56,12 @@ $Name => undef
 <option value=""></option>
 <option value=""><&|/l, $object->Name&>[_1]'s saved searches</&></option>
 % }
-% my @searches = $object->Attributes->Named('AssetSavedSearch');
+% my @searches = $object->Attributes->Named('SavedSearch');
 % @searches = sort { $a->Description cmp $b->Description } @searches;
 % foreach my $search (@searches) { 
-<option value="<%ref($object)%>-<%$object->id%>-AssetSavedSearch-<%$search->Id%>"> -<%$search->Description||loc('Unnamed search')%></option>
+%     next if ($search->SubValue('SearchType')
+%              && $search->SubValue('SearchType') ne $SearchType);
+<option value="<%ref($object)%>-<%$object->id%>-SavedSearch-<%$search->Id%>"> -<%$search->Description||loc('Unnamed search')%></option>
 % }
 % }
 </select>

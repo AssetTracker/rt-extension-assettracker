@@ -40,6 +40,8 @@ Also, most AT configuration option have been renamed, and they are all now in th
 So, for example the configuration option $RTx::AssetTracker::DefaultSearchResultFormat is now
 $RT::DefaultAssetSearchResultFormat.
 
+TODO: Document converting asset saved searches.
+
 MISSING FEATURES
 
 * There is no Scrips system for AT, yet.

@@ -71,4 +71,7 @@ Set ($ShowGroupMembers, 1);
 # where users think there is no watcher assigned when there really is.
 Set ($ShowTypeWatchersInAsset, 0);
 
+local $rt_comps = RT->Config->Get("HomepageComponents");
+RT->Config->Set("HomepageComponents", [@$rt_comps, qw(AssetQuickSearch)]);
+
 1;
