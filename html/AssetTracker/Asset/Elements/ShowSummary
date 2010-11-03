@@ -72,9 +72,11 @@
 	  <& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 1 &>
     </&>
 
+% my (@extra);
+% push @extra, titleright_raw => '<a href="'. RT->Config->Get('WebPath'). '/AssetTracker/Asset/Graphs/index.html?id='.$Asset->id.'">'.loc('Graph').'</a>' unless RT->Config->Get('DisableGraphViz');
 	  <&| /Widgets/TitleBox, title => loc('Links'), 
 		title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id, 
-		class => 'asset-info-links' &>
+		class => 'asset-info-links', @extra &>
 	  <& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 0 &>
     </&>
   </td>
