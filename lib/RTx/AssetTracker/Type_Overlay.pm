@@ -59,6 +59,9 @@ foreach my $right ( keys %{$RIGHTS} ) {
     $RT::ACE::LOWERCASERIGHTNAMES{ lc $right } = $right;
 }
 
+# Custom field support
+RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type' => "Asset Types" );
+
 # {{{ Setup Roles/Watchers
 
 %DEFAULT_ROLES = (
@@ -716,6 +719,7 @@ sub AssetCustomFields {
 
     my $cfs = RT::CustomFields->new( $self->CurrentUser );
     if ( $self->CurrentUserHasRight('SeeType') ) {
+        $cfs->SetContextObject( $self );
         $cfs->LimitToGlobalOrObjectId( $self->Id );
         $cfs->LimitToLookupType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' );
     }

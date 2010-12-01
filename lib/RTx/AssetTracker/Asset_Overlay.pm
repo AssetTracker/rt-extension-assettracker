@@ -1248,6 +1248,7 @@ sub CustomFieldValues {
     my $field = shift;
     if ( $field =~ /\D/ ) {
         my $cf = RT::CustomField->new( $self->CurrentUser );
+        $cf->SetContextObject( $self );
         $cf->LoadByName( Name => $field, Type => $self->TypeObj->Id );
         unless ( $cf->id ) {
             $cf->LoadByName( Name => $field, Type => '0' );

@@ -50,27 +50,33 @@ sub LoadByName {
     # XXX - really naive implementation.  Slow. - not really. still just one query
 
     my $CFs = RT::CustomFields->new($self->CurrentUser);
+    $CFs->SetContextObject( $self->ContextObject );
 
     $CFs->Limit( FIELD => 'Name', VALUE => $args{'Name'} );
     # Don't limit to queue if queue is 0.  Trying to do so breaks
     # RT::Group type CFs.
-    if (defined $args{'Queue'}) {
+    if ( defined $args{'Queue'} ) {
         $CFs->LimitToQueue( $args{'Queue'} );
     }
     elsif (defined $args{'Type'}) {
         $CFs->LimitToType( $args{'Type'} );
     }
 
-    # When loading by name, it's ok if they're disabled. That's not a big deal.
-    $CFs->{'find_disabled_rows'}=1;
+    # When loading by name, we _can_ load disabled fields, but prefer
+    # non-disabled fields.
+    $CFs->FindAllRows;
+    $CFs->OrderByCols(
+        { FIELD => "Disabled", ORDER => 'ASC' },
+    );
 
     # We only want one entry.
     $CFs->RowsPerPage(1);
-    unless ($CFs->First) {
-        return(0, $self->loc('Custom field not found'));
-    }
-    return($self->Load($CFs->First->id));
 
+    # version before 3.8 just returns 0, so we need to test if wantarray to be
+    # backward compatible.
+    return wantarray ? (0, $self->loc("Not found")) : 0 unless my $first = $CFs->First;
+
+    return $self->LoadById( $first->id );
 }
 
 

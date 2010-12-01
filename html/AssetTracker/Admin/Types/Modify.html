@@ -67,6 +67,19 @@
 </TR><TR>
 <TD ALIGN=RIGHT>
 <&|/l&>Description</&>:</TD><TD COLSPAN=3><INPUT name="Description" value="<% ($Create) ? "" : $TypeObj->Description %>" size=60></TD></TR>
+
+% my $CFs = $TypeObj->CustomFields;
+% while (my $CF = $CFs->Next) {
+<tr valign="top"><td align="right">
+<% loc($CF->Name) %>:
+</td><td>
+<& /Elements/EditCustomField, CustomField => $CF,
+                              Object => $TypeObj,
+                              ($Create ? (NamePrefix => 'Object-RTx::AssetTracker::Type--CustomField-')
+                                       : () )&>
+</td></tr>
+% }
+
 <TR>
 <TD>
 </TD>
@@ -75,6 +88,7 @@
 <& /Elements/Callback, TypeObj => $TypeObj, results => \@results, %ARGS &>
 </TD>
 </TR>
+
 
 </TABLE>
 <& /Elements/Submit, Label => loc('Save Changes') &>
@@ -119,12 +133,13 @@ my @attribs= qw(Description Name );
 				    ARGSRef => \%ARGS);
 
   #we're asking about enabled on the web page but really care about disabled.
-  if ($Enabled == 1) {
+  if (defined $Enabled && $Enabled == 1) {
       $Disabled = 0;
   }	
   else {
       $Disabled = 1;
   }
+
   if  ( ($SetEnabled) and ( $Disabled != $TypeObj->Disabled) ) { 
       my  ($code, $msg) = $TypeObj->SetDisabled($Disabled);
       push @results, loc('Enabled status: [_1]', loc_fuzzy($msg));
@@ -134,6 +149,7 @@ my @attribs= qw(Description Name );
       $EnabledChecked ="";
   }
 
+    push @results, ProcessObjectCustomFieldUpdates( ARGSRef => \%ARGS, Object => $TypeObj );
 #    my @linkresults;
 #    $m->comp('/Elements/Callback', results => \@linkresults, 
 #	     RecordObj => $TypeObj, ARGSRef => \%ARGS, 
