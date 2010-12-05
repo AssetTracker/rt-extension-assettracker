@@ -6,18 +6,15 @@ if ($ARGS{id}) {
     if ($cf->LookupType =~ /^RTx::AssetTracker::Type/io) {
         $tabs->{'this'}->{subtabs}->{D} = {
         title => loc('Applies to'),
-            path  => "AssetTracker/Admin/CustomFields/Objects.html?id=" . $ARGS{id},
-            #path  => "Admin/CustomFields/Objects.html?id=" . $ARGS{id},
+            path  => "Admin/CustomFields/Objects.html?id=" . $ARGS{id},
         };
         $tabs->{'this'}->{subtabs}->{F} = {
         title => loc('Group Rights'),
-            path  => "AssetTracker/Admin/CustomFields/GroupRights.html?id=" . $ARGS{id},
-            #path  => "Admin/CustomFields/Objects.html?id=" . $ARGS{id},
+            path  => "Admin/CustomFields/GroupRights.html?id=" . $ARGS{id},
         };
         $tabs->{'this'}->{subtabs}->{G} = {
         title => loc('User Rights'),
-            path  => "AssetTracker/Admin/CustomFields/UserRights.html?id=" . $ARGS{id},
-            #path  => "Admin/CustomFields/Objects.html?id=" . $ARGS{id},
+            path  => "Admin/CustomFields/UserRights.html?id=" . $ARGS{id},
         };
     }
 }
