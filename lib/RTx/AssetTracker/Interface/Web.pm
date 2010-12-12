@@ -736,34 +736,36 @@ sub ProcessATObjectCustomFieldUpdates {
     # Build up a list of objects that we want to work with
     my %custom_fields_to_mod;
     foreach my $arg ( keys %$ARGSRef ) {
+
         # format: Object-<object class>-<object id>-CustomField-<CF id>-<commands>
         next unless $arg =~ /^Object-([\w:]+)-(\d*)-CustomField-(\d+)-(.*)$/;
 
         # For each of those objects, find out what custom fields we want to work with.
-        $custom_fields_to_mod{ $1 }{ $2 || 0 }{ $3 }{ $4 } = $ARGSRef->{ $arg };
+        $custom_fields_to_mod{$1}{ $2 || 0 }{$3}{$4} = $ARGSRef->{$arg};
     }
 
     # For each of those objects
     foreach my $class ( keys %custom_fields_to_mod ) {
-        foreach my $id ( keys %{$custom_fields_to_mod{$class}} ) {
+        foreach my $id ( keys %{ $custom_fields_to_mod{$class} } ) {
             my $Object = $args{'Object'};
             $Object = $class->new( $session{'CurrentUser'} )
                 unless $Object && ref $Object eq $class;
 
-            $Object->Load( $id ) unless ($Object->id || 0) == $id;
+            $Object->Load($id) unless ( $Object->id || 0 ) == $id;
             unless ( $Object->id ) {
                 $RT::Logger->warning("Couldn't load object $class #$id");
                 next;
             }
 
-            foreach my $cf ( keys %{ $custom_fields_to_mod{ $class }{ $id } } ) {
+            foreach my $cf ( keys %{ $custom_fields_to_mod{$class}{$id} } ) {
                 my $CustomFieldObj = RT::CustomField->new( $session{'CurrentUser'} );
-                $CustomFieldObj->LoadById( $cf );
+                $CustomFieldObj->LoadById($cf);
                 unless ( $CustomFieldObj->id ) {
                     $RT::Logger->warning("Couldn't load custom field #$cf");
                     next;
                 }
-                push @results, _ProcessATObjectCustomFieldUpdates(
+                push @results,
+                    _ProcessATObjectCustomFieldUpdates(
                     Prefix      => "Object-$class-$id-CustomField-$cf-",
                     Object      => $Object,
                     CustomField => $CustomFieldObj,
@@ -779,28 +781,33 @@ sub ProcessATObjectCustomFieldUpdates {
 # Just a copy of _ProcessObjectCustomFieldUpdates with the Data parameter passed
 # to various calls to Add/DeleteCustomFieldValue
 sub _ProcessATObjectCustomFieldUpdates {
-    my %args = @_;
-    my $cf = $args{'CustomField'};
-    my $ARGSRef = $args{'ARGSRef'};
+    my %args    = @_;
+    my $cf      = $args{'CustomField'};
     my $cf_type = $cf->Type;
+    my $ARGSRef = $args{'ARGSRef'};
 
     # Normalise - remove blank Values since magic value will take care of this. This is
     # because sometimes, the browser gives you a blank value and also a magic value
     # which causes CFs to be processed twice by the code below.
-    if (!$args{'ARGS'}->{'Values'} and $args{'ARGS'}->{'Values-Magic'}) {
-      delete $args{'ARGS'}->{'Values'};
+    if (   defined $args{'ARGS'}->{'Values'}
+        && !length $args{'ARGS'}->{'Values'}
+        && $args{'ARGS'}->{'Values-Magic'} )
+    {
+        delete $args{'ARGS'}->{'Values'};
     }
 
     my @results;
     foreach my $arg ( keys %{ $args{'ARGS'} } ) {
+
         # skip category argument
         next if $arg eq 'Category';
 
         # since http won't pass in a form element with a null value, we need
         # to fake it
         if ( $arg eq 'Values-Magic' ) {
+
             # We don't care about the magic, if there's really a values element;
-            next if defined $args{'ARGS'}->{'Value'} && length $args{'ARGS'}->{'Value'};
+            next if defined $args{'ARGS'}->{'Value'}  && length $args{'ARGS'}->{'Value'};
             next if defined $args{'ARGS'}->{'Values'} && length $args{'ARGS'}->{'Values'};
 
             # "Empty" values does not mean anything for Image and Binary fields
@@ -811,22 +818,22 @@ sub _ProcessATObjectCustomFieldUpdates {
         }
 
         my @values = ();
-        if ( ref $args{'ARGS'}->{ $arg } eq 'ARRAY' ) {
+        if ( ref $args{'ARGS'}->{$arg} eq 'ARRAY' ) {
             @values = @{ $args{'ARGS'}->{$arg} };
-        } elsif ( $cf_type =~ /text/i ) { # Both Text and Wikitext
-            @values = ($args{'ARGS'}->{$arg});
+        } elsif ( $cf_type =~ /text/i ) {    # Both Text and Wikitext
+            @values = ( $args{'ARGS'}->{$arg} );
         } else {
-            @values = split /\r*\n/, $args{'ARGS'}->{ $arg }
-                if defined $args{'ARGS'}->{ $arg };
+            @values = split /\r*\n/, $args{'ARGS'}->{$arg}
+                if defined $args{'ARGS'}->{$arg};
         }
-        @values = grep length,
-            map {
-                s/\r+\n/\n/g;
-                s/^\s+//;
-                s/\s+$//;
-                $_;
+        @values = grep length, map {
+            s/\r+\n/\n/g;
+            s/^\s+//;
+            s/\s+$//;
+            $_;
             }
             grep defined, @values;
+
         if ( $arg eq 'AddValue' || $arg eq 'Value' ) {
             foreach my $value (@values) {
                 my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue(
@@ -836,18 +843,13 @@ sub _ProcessATObjectCustomFieldUpdates {
                 );
                 push ( @results, $msg );
             }
-        }
-        elsif ( $arg eq 'Upload' ) {
+        } elsif ( $arg eq 'Upload' ) {
             my $value_hash = _UploadedFile( $args{'Prefix'} . $arg ) or next;
-            my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue(
-                %$value_hash,
-                Field => $cf,
-                Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
-            );
+            my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue( %$value_hash, Field => $cf,
+                Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},);
             push ( @results, $msg );
-        }
-        elsif ( $arg eq 'DeleteValues' ) {
-            foreach my $value ( @values ) {
+        } elsif ( $arg eq 'DeleteValues' ) {
+            foreach my $value (@values) {
                 my ( $val, $msg ) = $args{'Object'}->DeleteCustomFieldValue(
                     Field => $cf,
                     Value => $value,
@@ -855,9 +857,8 @@ sub _ProcessATObjectCustomFieldUpdates {
                 );
                 push ( @results, $msg );
             }
-        }
-        elsif ( $arg eq 'DeleteValueIds' ) {
-            foreach my $value ( @values ) {
+        } elsif ( $arg eq 'DeleteValueIds' ) {
+            foreach my $value (@values) {
                 my ( $val, $msg ) = $args{'Object'}->DeleteCustomFieldValue(
                     Field   => $cf,
                     ValueId => $value,
@@ -865,13 +866,12 @@ sub _ProcessATObjectCustomFieldUpdates {
                 );
                 push ( @results, $msg );
             }
-        }
-        elsif ( $arg eq 'Values' && !$cf->Repeated ) {
+        } elsif ( $arg eq 'Values' && !$cf->Repeated ) {
             my $cf_values = $args{'Object'}->CustomFieldValues( $cf->id );
 
             my %values_hash;
-            foreach my $value ( @values ) {
-                if ( my $entry = $cf_values->HasEntry( $value ) ) {
+            foreach my $value (@values) {
+                if ( my $entry = $cf_values->HasEntry($value) ) {
                     $values_hash{ $entry->id } = 1;
                     next;
                 }
@@ -890,20 +890,19 @@ sub _ProcessATObjectCustomFieldUpdates {
                 next if $values_hash{ $cf_value->id };
 
                 my ( $val, $msg ) = $args{'Object'}->DeleteCustomFieldValue(
-                    Field => $cf,
+                    Field   => $cf,
                     ValueId => $cf_value->id,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
                 );
                 push ( @results, $msg);
             }
-        }
-        elsif ( $arg eq 'Values' ) {
+        } elsif ( $arg eq 'Values' ) {
             my $cf_values = $args{'Object'}->CustomFieldValues( $cf->id );
 
             # keep everything up to the point of difference, delete the rest
             my $delete_flag;
-            foreach my $old_cf (@{$cf_values->ItemsArrayRef}) {
-                if (!$delete_flag and @values and $old_cf->Content eq $values[0]) {
+            foreach my $old_cf ( @{ $cf_values->ItemsArrayRef } ) {
+                if ( !$delete_flag and @values and $old_cf->Content eq $values[0] ) {
                     shift @values;
                     next;
                 }
@@ -913,7 +912,7 @@ sub _ProcessATObjectCustomFieldUpdates {
             }
 
             # now add/replace extra things, if any
-            foreach my $value ( @values ) {
+            foreach my $value (@values) {
                 my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue(
                     Field => $cf,
                     Value => $value,
@@ -921,11 +920,13 @@ sub _ProcessATObjectCustomFieldUpdates {
                 );
                 push ( @results, $msg );
             }
-        }
-        else {
-            push ( @results,
+        } else {
+            push(
+                @results,
                 loc("User asked for an unknown update type for custom field [_1] for [_2] object #[_3]",
-                $cf->Name, ref $args{'Object'}, $args{'Object'}->id )
+                    $cf->Name, ref $args{'Object'},
+                    $args{'Object'}->id
+                )
             );
         }
     }
