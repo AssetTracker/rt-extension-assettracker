@@ -1020,6 +1020,8 @@ sub TypeObj {
     return ($type_obj);
 }
 
+sub AssetTypeObj { $_[0]->TypeObj() }
+
 # }}}
 
 
@@ -1903,7 +1905,6 @@ sub __DependsOn
 # IP Addresses
     $objs = RTx::AssetTracker::IPs->new( $self->CurrentUser );
     $objs->Limit( FIELD => 'Asset', VALUE => $self->Id );
-warn $objs->BuildSelectQuery();
     push( @$list, $objs );
 
 #TODO: Users, Types if we wish export tool

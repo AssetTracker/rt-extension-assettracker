@@ -1,9 +1,17 @@
 <%INIT>
-  $tabs->{'K'} = { title => loc('AT Group Rights'),
+  $tabs->{'K'} = { title => loc('AT Scrips'),
+                                text => loc('Modify Asset Tracker global scrips'),
+                                path => $RT::WebPath.'/AssetTracker/Admin/Global/Scrips.html',
+                      };
+  $tabs->{'M'} = { title => loc('AT Templates'),
+                                text => loc('Modify Asset Tracker global templates'),
+                                path => $RT::WebPath.'/AssetTracker/Admin/Global/Templates.html',
+                      };
+  $tabs->{'O'} = { title => loc('AT Group Rights'),
                                 text => loc('Modify Asset Tracker global group rights'),
                                 path => $RT::WebPath.'/AssetTracker/Admin/Global/GroupRights.html',
                       };
-  $tabs->{'L'} = { title => loc('AT User Rights'),
+  $tabs->{'Q'} = { title => loc('AT User Rights'),
                                 text => loc('Modify Asset Tracker global user rights'),
                                 path => $RT::WebPath.'/AssetTracker/Admin/Global/UserRights.html',
                       };

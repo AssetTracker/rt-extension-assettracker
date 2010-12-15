@@ -24,6 +24,11 @@ our $VERSION = '1.2.5';
 use RTx::AssetTracker::System;
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Asset;
+use RTx::AssetTracker::Templates;
+use RTx::AssetTracker::Scrips;
+use RTx::AssetTracker::Scrips;
+use RTx::AssetTracker::ScripConditions;
+use RTx::AssetTracker::ScripActions;
 use RT::Shredder;
 
 use vars qw($VERSION

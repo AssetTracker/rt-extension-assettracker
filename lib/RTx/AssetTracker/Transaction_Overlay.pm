@@ -56,7 +56,7 @@
 
 
 Each RTx::AssetTracker::Transaction describes an atomic change to a asset object 
-or an update to an RT::Asset object.
+or an update to an RTx::AssetTracker::Asset object.
 It can have arbitrary MIME attachments.
 
 
@@ -79,7 +79,7 @@ no warnings qw(redefine);
 use vars qw( %_BriefDescriptions );
 
 use RT::Attachments;
-use RT::Scrips;
+use RTx::AssetTracker::Scrips;
 
 # {{{ sub Create 
 
@@ -152,10 +152,10 @@ sub Create {
 
     #Provide a way to turn off scrips if we need to
         $RT::Logger->debug('About to think about scrips for transaction #' .$self->Id);
-        $RT::Logger->warning('We don\'t do scrips yet #' .$self->Id);
-        $args{'ActivateScrips'} = 0;
+        #$RT::Logger->warning('We don\'t do scrips yet #' .$self->Id);
+        #$args{'ActivateScrips'} = 0;
     if ( $args{'ActivateScrips'} and $args{'ObjectType'} eq 'RTx::AssetTracker::Asset' ) {
-       $self->{'scrips'} = RT::Scrips->new($RT::SystemUser);
+       $self->{'scrips'} = RTx::AssetTracker::Scrips->new($RT::SystemUser);
 
         $RT::Logger->debug('About to prepare scrips for transaction #' .$self->Id); 
 

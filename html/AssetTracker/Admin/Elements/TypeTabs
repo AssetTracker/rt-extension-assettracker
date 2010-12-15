@@ -53,7 +53,7 @@
 my $tabs;
 if ($id) {
   $tabs->{'this'}  = {
-                title => $TypeObj->Name,
+                title => $AssetTypeObj->Name,
   		     	path => "AssetTracker/Admin/Types/Modify.html?id=".$id,
                     current_subtab => $current_tab,     
                 subtabs => {
@@ -63,6 +63,14 @@ if ($id) {
 		 D => { title => loc('People'),
 		 	path => "AssetTracker/Admin/Types/People.html?id=".$id,
 		      },
+
+                 F => { title => loc('Templates'),
+                                path => "AssetTracker/Admin/Types/Templates.html?id=".$id,
+                              },
+                 F3 => { title => loc('Scrips'),
+                                path => "AssetTracker/Admin/Types/Scrips.html?id=".$id,
+                              },
+
 
                  G1 => { title => loc('Asset Custom Fields'),
                         path => 'AssetTracker/Admin/Types/CustomFields.html?SubType=RTx::AssetTracker::Asset&id='.$id,
@@ -96,7 +104,7 @@ foreach my $tab ( sort keys %{$tabs->{'this'}->{'subtabs'}} ) {
 </%INIT>
   
 <%ARGS>
-$TypeObj => undef
+$AssetTypeObj => undef
 $id => undef
 $subtabs => undef
 $current_subtab => undef
