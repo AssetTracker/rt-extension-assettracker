@@ -76,3 +76,83 @@ CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
 
 # }}}
 
+--- {{{ ScripConditions
+
+CREATE TABLE AT_ScripConditions (
+  id INTEGER PRIMARY KEY  ,
+  Name varchar(200) NULL  ,
+  Description varchar(255) NULL  ,
+  ExecModule varchar(60) NULL  ,
+  Argument varchar(255) NULL  ,
+  ApplicableTransTypes varchar(60) NULL  ,
+
+  Creator integer NULL  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NULL  ,
+  LastUpdated DATETIME NULL  
+  
+) ;
+
+--- }}}
+
+--- {{{ Scrips 
+
+CREATE TABLE AT_Scrips (
+  id INTEGER PRIMARY KEY  ,
+  Description varchar(255),
+  ScripCondition integer NULL  ,
+  ScripAction integer NULL  ,
+  ConditionRules text NULL  ,
+  ActionRules text NULL  ,
+  CustomIsApplicableCode text NULL  ,
+  CustomPrepareCode text NULL  ,
+  CustomCommitCode text NULL  ,
+  Stage varchar(32) NULL  ,
+  AssetType integer NULL  ,
+  Template integer NULL  ,
+  Creator integer NULL  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NULL  ,
+  LastUpdated DATETIME NULL  
+  
+) ;
+
+--- }}}
+
+--- {{{ ScripActions
+
+CREATE TABLE AT_ScripActions (
+  id INTEGER PRIMARY KEY  ,
+  Name varchar(200) NULL  ,
+  Description varchar(255) NULL  ,
+  ExecModule varchar(60) NULL  ,
+  Argument varchar(255) NULL  ,
+  Creator integer NULL  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NULL  ,
+  LastUpdated DATETIME NULL  
+  
+) ;
+
+--- }}}
+
+--- {{{ Templates
+
+CREATE TABLE AT_Templates (
+  id INTEGER PRIMARY KEY  ,
+  AssetType integer NOT NULL DEFAULT 0 ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Type varchar(16) NULL  ,
+  Language varchar(16) NULL  ,
+  TranslationOf integer NULL  ,
+  Content blob NULL  ,
+  LastUpdated DATETIME NULL  ,
+  LastUpdatedBy integer NULL  ,
+  Creator integer NULL  ,
+  Created DATETIME NULL  
+  
+) ;
+
+--- }}}
+

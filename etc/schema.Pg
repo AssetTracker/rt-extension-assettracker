@@ -77,3 +77,97 @@ CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
 
 # }}}
 
+--
+-- Sequences for table SCRIPCONDITIONS
+--
+
+CREATE SEQUENCE at_scripconditions_id_seq;
+
+CREATE TABLE AT_ScripConditions (
+  id INTEGER DEFAULT nextval('at_scripconditions_id_seq'),
+  Name varchar(200) NULL  ,
+  Description varchar(255) NULL  ,
+  ExecModule varchar(60) NULL  ,
+  Argument varchar(255) NULL  ,
+  ApplicableTransTypes varchar(60) NULL  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created TIMESTAMP NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated TIMESTAMP NULL  ,
+  PRIMARY KEY (id)
+
+);
+
+--
+-- Sequences for table SCRIPS
+--
+
+CREATE SEQUENCE at_scrips_id_seq;
+
+CREATE TABLE AT_Scrips (
+  id INTEGER DEFAULT nextval('at_scrips_id_seq'),
+  Description varchar(255),
+  ScripCondition integer NOT NULL DEFAULT 0  ,
+  ScripAction integer NOT NULL DEFAULT 0  ,
+  ConditionRules text NULL  ,
+  ActionRules text NULL  ,
+  CustomIsApplicableCode text NULL  ,
+  CustomPrepareCode text NULL  ,
+  CustomCommitCode text NULL  ,
+  Stage varchar(32) NULL  ,
+  AssetType integer NOT NULL DEFAULT 0  ,
+  Template integer NOT NULL DEFAULT 0  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created TIMESTAMP NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated TIMESTAMP NULL  ,
+  PRIMARY KEY (id)
+
+);
+
+--
+-- Sequences for table SCRIPACTIONS
+--
+
+CREATE SEQUENCE at_scripactions_id_seq;
+
+CREATE TABLE AT_ScripActions (
+  id INTEGER DEFAULT nextval('at_scripactions_id_seq'),
+  Name varchar(200) NULL  ,
+  Description varchar(255) NULL  ,
+  ExecModule varchar(60) NULL  ,
+  Argument varchar(255) NULL  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created TIMESTAMP NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated TIMESTAMP NULL  ,
+  PRIMARY KEY (id)
+
+);
+
+
+--
+-- Sequences for table TEMPLATES
+--
+
+CREATE SEQUENCE at_templates_id_seq;
+
+CREATE TABLE AT_Templates (
+  id INTEGER DEFAULT nextval('at_templates_id_seq'),
+  AssetType integer NOT NULL DEFAULT 0 ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Type varchar(16) NULL  ,
+  Language varchar(16) NULL  ,
+  TranslationOf integer NOT NULL DEFAULT 0  ,
+  Content text NULL  ,
+  LastUpdated TIMESTAMP NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created TIMESTAMP NULL  ,
+  PRIMARY KEY (id)
+
+);
+
+

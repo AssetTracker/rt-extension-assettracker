@@ -73,3 +73,75 @@ CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
 
 # }}}
 
+
+CREATE SEQUENCE AT_SCRIPCONDITIONS_seq;
+CREATE TABLE AT_ScripConditions (
+ 	id 			NUMBER(11, 0) 
+		CONSTRAINT AT_ScripConditions_Key PRIMARY KEY,
+	Name 			VARCHAR2(200),
+	Description 		VARCHAR2(255),
+	ExecModule		VARCHAR2(60),
+	Argument		VARCHAR2(255),
+	ApplicableTransTypes	VARCHAR2(60),
+  	Creator 		NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	Created 		DATE,
+  	LastUpdatedBy 		NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	LastUpdated		DATE
+);
+
+
+CREATE SEQUENCE AT_SCRIPS_seq;
+CREATE TABLE AT_Scrips (
+  	id 		NUMBER(11,0) 
+		CONSTRAINT AT_Scrips_Key PRIMARY KEY,	
+	Description	VARCHAR2(255),
+	ScripCondition 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+	ScripAction	NUMBER(11,0) DEFAULT 0 NOT NULL,
+	ConditionRules	CLOB,
+	ActionRules	CLOB,
+	CustomIsApplicableCode	CLOB,
+	CustomPrepareCode	CLOB,
+	CustomCommitCode	CLOB,
+	Stage		VARCHAR2(32),
+	AssetType	NUMBER(11,0) DEFAULT 0 NOT NULL,
+	Template	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	Creator 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	Created 	DATE,
+  	LastUpdatedBy 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	LastUpdated 	DATE  
+);
+
+
+CREATE SEQUENCE AT_SCRIPACTIONS_seq;
+CREATE TABLE AT_ScripActions (
+  id		NUMBER(11,0) 
+		CONSTRAINT AT_ScripActions_Key PRIMARY KEY,
+  Name		VARCHAR2(200),
+  Description	VARCHAR2(255),
+  ExecModule	VARCHAR2(60),
+  Argument	VARCHAR2(255),
+  Creator	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  Created	DATE,
+  LastUpdatedBy	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  LastUpdated	DATE
+);
+
+
+CREATE SEQUENCE AT_TEMPLATES_seq;
+CREATE TABLE AT_Templates (
+  	id 		NUMBER(11,0) 
+		CONSTRAINT AT_Templates_Key PRIMARY KEY,
+	AssetType 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+	Name		VARCHAR2(200) NOT NULL,
+	Description	VARCHAR2(255),
+	Type		VARCHAR2(16),
+  	Language 	VARCHAR2(16), 
+  	TranslationOf 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	Content 	CLOB,
+  	LastUpdated 	DATE,
+  	LastUpdatedBy 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	Creator 	NUMBER(11,0) DEFAULT 0 NOT NULL,
+  	Created 	DATE
+);
+
+
