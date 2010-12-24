@@ -515,7 +515,7 @@ sub _AddLinksOnCreateOrUpdate {
             # then run _AddLink that doesn't check for ACLs
             if ( RT->Config->Get( 'StrictLinkACL' ) ) {
                 if ( $obj && !$obj->CurrentUserHasRight('ModifyAsset') ) {
-                    push @errors, $self->loc('Linking. Permission denied');
+                    push @errors, $self->loc('Linking. Permission Denied');
                     next;
                 }
             }
@@ -563,7 +563,7 @@ sub UpdateAsset {
         $args{_RecordTransaction} = 0;
     }
 
-    return 0, 0, $self->loc('Permission denied') unless $self->CurrentUserHasRight('ModifyAsset');
+    return 0, 0, $self->loc('Permission Denied') unless $self->CurrentUserHasRight('ModifyAsset');
 
     my $changing_type = undef;
     my $changing_name = undef;
