@@ -139,49 +139,8 @@ sub RegisterLinkType {
 
 }
 
-our %OLD_LINKTYPEMAP = (
-    RefersTo => { Type => 'RefersTo',
-                  Mode => 'Target', },
-    ReferredToBy => { Type => 'RefersTo',
-                      Mode => 'Base', },
-    RunsOn => { Type => 'RunsOn',
-                 Mode => 'Target', },
-    IsRunning => { Type => 'RunsOn',
-                 Mode => 'Base', },
-    DependsOn => { Type => 'DependsOn',
-                   Mode => 'Target', },
-    DependedOnBy => { Type => 'DependsOn',
-                      Mode => 'Base', },
-    ComponentOf => { Type => 'ComponentOf',
-                   Mode => 'Target', },
-    HasComponent => { Type => 'ComponentOf',
-                      Mode => 'Base', },
-    HasComponents => { Type => 'ComponentOf',
-                      Mode => 'Base', },
-    Components => { Type => 'ComponentOf',
-                      Mode => 'Base', },
-);
-
 # }}}
 
-
-# {{{ LINKDIRMAP
-# A helper table for links mapping to make it easier
-# to build and parse links between assets
-
-
-our %OLD_LINKDIRMAP = (
-    RefersTo => { Base => 'RefersTo',
-                Target => 'ReferredToBy', },
-    RunsOn => { Base => 'RunsOn',
-                  Target => 'IsRunning', },
-    DependsOn => { Base => 'DependsOn',
-                  Target => 'DependedOnBy', },
-    ComponentOf => { Base => 'ComponentOf',
-                  Target => 'HasComponent', },
-);
-
-# }}}
 
 sub LINKMAP       { return \%LINKMAP   }
 sub LINKTYPEMAP   { return \%LINKTYPEMAP   }
@@ -263,6 +222,7 @@ Arguments: ARGS is a hash of named parameters.  Valid parameters are:
   Owner -- A reference to a list of  email addresses or Names
   Admin -- A reference to a list of  email addresses or Names
   CustomField-<n> -- a scalar or array of values for the customfield with the id <n>
+  IP Address -- A reference to a list of either bare IP addresses or hashes of the appropiate form.
 
 
 Returns: ASSETID, Transaction Object, Error Message
@@ -294,11 +254,15 @@ sub Create {
         Admin              => undef,
         TransactionData    => undef,
         _RecordTransaction => 1,
+        _Commit            => 1,
         @_
     );
 
-    my ( $ErrStr, $Owner, $resolved );
-    my (@non_fatal_errors);
+    unless ($args{'_Commit'}) {
+        $args{'_RecordTransaction'} = 0;
+    }
+
+    my ($ErrStr, @non_fatal_errors);
 
     my $TypeObj = RTx::AssetTracker::Type->new($RT::SystemUser);
 
@@ -342,72 +306,13 @@ sub Create {
     return ($rv, 0, $msg) unless $rv;
 
 
-    #Since we have a type, we can set type defaults
-
-    # {{{ Deal with setting the owner
-
-    #if ( ref( $args{'Owner'} ) eq 'RT::User' ) {
-        #$Owner = $args{'Owner'};
-    #}
-
-    #If we've been handed something else, try to load the current user.
-    #elsif ( $args{'Owner'} ) {
-        #$Owner = $self->CurrentUser->UserObj;
-
-        #push( @non_fatal_errors,
-                #$self->loc("Owner could not be set.") . " "
-              #. $self->loc( "User '[_1]' could not be found.", $args{'Owner'} )
-          #)
-          #unless ( $Owner->Id );
-    #}
-
-    #If we have a proposed owner and they don't have the right
-    #to own a asset, scream about it and make them not the owner
-    #if (
-            #( defined($Owner) )
-        #and ( $Owner->Id )
-        #and ( $Owner->Id != $RT::Nobody->Id )
-        #and (
-            #!$Owner->HasRight(
-                #Object => $TypeObj,
-                #Right  => 'OwnAsset'
-            #)
-        #)
-      #)
-    #{
-
-        #$RT::Logger->warning( "User "
-              #. $Owner->Name . "("
-              #. $Owner->id
-              #. ") was proposed "
-              #. "as a asset owner but has no rights to own "
-              #. "assets in "
-              #. $TypeObj->Name );
-
-        #push @non_fatal_errors,
-          #$self->loc( "Owner '[_1]' does not have rights to own this asset.",
-            #$Owner->Name
-          #);
-
-        #$Owner = undef;
-    #}
-
-    #If we haven't been handed a valid owner, make it nobody.
-    #unless ( defined($Owner) && $Owner->Id ) {
-        #$Owner = new RT::User( $self->CurrentUser );
-        #$Owner->Load( $RT::Nobody->Id );
-    #}
-
-    # }}}
-
-    $RT::Handle->BeginTransaction();
+    $RT::Handle->BeginTransaction() if $args{'_Commit'};
 
     my %params = (
         Type            => $TypeObj->Id,
         Name            => $args{'Name'},
         Description     => $args{'Description'},
         Status          => $args{'Status'},
-        #Owner           => $Owner->Id,
     );
 
 # Parameters passed in during an import that we probably don't want to touch, otherwise
@@ -424,7 +329,7 @@ sub Create {
         );
     }
 
-    my $create_groups_ret = $self->_CreateAssetGroups();
+    my $create_groups_ret = $self->_CreateAssetGroups( _RecordTransaction => $args{_RecordTransaction}, _Commit => $args{_Commit} );
     unless ($create_groups_ret) {
         $RT::Logger->crit( "Couldn't create asset groups for asset "
               . $self->Id
@@ -435,17 +340,7 @@ sub Create {
         );
     }
 
-# Set the owner in the Groups table
-# We denormalize it into the Asset table too because doing otherwise would
-# kill performance, bigtime. It gets kept in lockstep thanks to the magic of transactionalization
-
-    #$self->OwnerGroup->_AddMember(
-        #PrincipalId       => $Owner->PrincipalId,
-        #InsideTransaction => 1
-    #);
-
-    # {{{ Deal with setting up watchers
-
+    #Deal with setting up watchers
     foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
         next unless ( defined $args{$type} );
         foreach my $watcher (
@@ -458,38 +353,36 @@ sub Create {
             # we reason that all-digits number must be a principal id, not email
             # this is the only way to can add
             my $field = 'Email';
-            $field = 'PrincipalId' if $watcher =~ /^\d+$/;
+            if ($watcher =~ /^\d+$/) {
+                $field = 'PrincipalId';
+            }
+            elsif (my ($group_name) = $watcher =~ /^@(.+)$/) {
+                my $group = RT::Group->new($self->CurrentUser);
+                $group->LoadUserDefinedGroup($group_name);
+                if ($group->Id) {
+                    $field = 'PrincipalId';
+                    $watcher = $group->PrincipalId;
+                }
+            }
 
             my ( $wval, $wmsg );
 
-            #if ( $type eq 'Admin' ) {
-
-        # Note that we're using AddWatcher, rather than _AddWatcher, as we
-        # actually _want_ that ACL check. Otherwise, random asset creators
-        # could make themselves adminccs and maybe get asset rights. that would
-        # be poor
-                ( $wval, $wmsg ) = $self->AddWatcher(
-                    Type   => $type,
-                    $field => $watcher,
-                    Silent => 1
-                );
-            #}
-            #else {
-                #( $wval, $wmsg ) = $self->_AddWatcher(
-                    #Type   => $type,
-                    #$field => $watcher,
-                    #Silent => 1
-                #);
-            #}
+            # Note that we're using AddWatcher, rather than _AddWatcher, as we
+            # actually _want_ that ACL check. Otherwise, random asset creators
+            # could make themselves adminccs and maybe get asset rights. that would
+            # be poor
+            ( $wval, $wmsg ) = $self->AddWatcher(
+                Type   => $type,
+                $field => $watcher,
+                Silent => 1
+            );
 
             push @non_fatal_errors, $wmsg unless ($wval);
         }
     }
 
-    # }}}
 
-    # {{{ Add all the custom fields
-
+    #Add all the custom fields
     foreach my $arg ( keys %args ) {
         next unless ( $arg =~ /^CustomField-(\d+)$/i );
         my $cfid = $1;
@@ -510,7 +403,23 @@ sub Create {
         }
     }
 
-    # }}}
+
+    #Add links
+    my ($addlink_rv, $addlink_errors) = $self->_AddLinksOnCreateOrUpdate(%args);
+    push @non_fatal_errors, @$addlink_errors;
+
+    #Add IP addresses
+    my $ips = defined $args{'IP Address'} ? $args{'IP Address'} : [];
+    for my $ip (@$ips) {
+        my $ip_ref = {};
+        if (!ref $ip) {
+            $ip = { IP => $ip };
+        }
+
+        my ($rv, $msg) = $self->AddIP(%$ip, Silent => 1, SilentPorts => 1);
+        return (0,0,$msg) unless ($rv);
+    }
+
 
     # We override the URI lookup. the whole reason
     # we have a URI column is so that joins on the links table
@@ -551,7 +460,7 @@ sub Create {
     else {
 
         # Not going to record a transaction
-        $RT::Handle->Commit();
+        $RT::Handle->Commit() if $args{'_Commit'};
         $ErrStr = $self->loc( "Asset [_1] created of type '[_2]'", $self->Id, $TypeObj->Name );
         $ErrStr = join( "\n", $ErrStr, @non_fatal_errors );
         return ( $self->Id, $0, $ErrStr );
@@ -559,8 +468,302 @@ sub Create {
     }
 }
 
+sub _AddLinksOnCreateOrUpdate {
+    my ($self, %args) = @_;
+
+    my @errors;
+
+    #Add links
+    foreach my $type ( keys %LINKTYPEMAP ) {
+        next unless ( defined $args{$type} );
+        foreach my $link (
+            ref( $args{$type} ) ? @{ $args{$type} } : ( $args{$type} ) )
+        {
+            # Check rights on the other end of the link if we must
+            # then run _AddLink that doesn't check for ACLs
+            if ( RT->Config->Get( 'StrictLinkACL' ) ) {
+                my ($val, $msg, $obj) = $self->__GetAssetFromURI( URI => $link );
+                unless ( $val ) {
+                    push @errors, $msg;
+                    next;
+                }
+                if ( $obj && !$obj->CurrentUserHasRight('ModifyAsset') ) {
+                    push @errors, $self->loc('Linking. Permission denied');
+                    next;
+                }
+            }
+
+            my ( $wval, $wmsg ) = $self->_AddLink(
+                Type                          => $LINKTYPEMAP{$type}->{'Type'},
+                $LINKTYPEMAP{$type}->{'Mode'} => $link,
+                Silent                        => 1,
+                'Silent'. ( $LINKTYPEMAP{$type}->{'Mode'} eq 'Base'? 'Target': 'Base' )
+                                              => 1,
+            );
+
+            push @errors, $wmsg unless ($wval);
+        }
+    }
+
+    return (@errors ? 0 : 1), \@errors;
+}
 
 # }}}
+
+
+sub UpdateAsset {
+    my $self = shift;
+
+    my %args = (
+        id                 => undef,
+        Type               => undef,
+        Name               => undef,
+        Description        => undef,
+        Status             => undef,
+        TransactionData    => undef,
+        _RecordTransaction => 1,
+        _Commit            => 1,
+        _Detailed          => 0,
+        @_
+    );
+
+    unless ($args{_Commit}) {
+        $args{_RecordTransaction} = 0;
+    }
+
+    return 0, 0, $self->loc('Permission denied') unless $self->CurrentUserHasRight('ModifyAsset');
+
+    my $changing_type = undef;
+    my $changing_name = undef;
+    my $changing_status = undef;
+    my $asset_updated = undef;
+
+
+    # If the Type is being updated make sure we can find the new Type and have CreateAsset on it
+    my $TypeObj = RTx::AssetTracker::Type->new($RT::SystemUser);
+    if ( defined( $args{Type} ) && $args{Type} ne $self->TypeObj->Name ) {
+        $changing_type = 1;
+        $TypeObj->Load( $args{Type} );
+
+        #Can't create a asset without a type.
+        unless ( $TypeObj->Id ) {
+            return ( 0, 0, $self->loc("Could not load asset type '[_1]'", $args{Type}) );
+        }
+    
+        #Now that we have a type, Check the ACLS
+        unless ( $self->CurrentUser->HasRight(
+                Right  => 'CreateAsset',
+                Object => $TypeObj,
+                EquivObjects => [ $RTx::AssetTracker::System ],)
+        ) {
+            return (
+                0, 0,
+                $self->loc( "No permission to create assets of this type '[_1]'", $TypeObj->Name));
+        }
+    }
+
+    if (defined( $args{Name} ) && $args{Name} ne $self->Name ) {
+        $changing_name = 1;
+    }
+
+    if (defined( $args{Status} ) && $args{Status} ne $self->Status ) {
+        $changing_status = 1;
+    }
+
+    my $name   = defined $args{Name}   ? $args{Name}   : $self->Name;
+    my $status = defined $args{Status} ? $args{Status} : $self->Status;
+
+    # test name uniqueness
+    if ($changing_type || $changing_name || $changing_status) {
+        $asset_updated++;
+        my ($rv, $msg) = $self->SatisfiesUniqueness($name, $TypeObj->Id, $status);
+        unless ($rv) {
+            warn ($rv, 0, $msg);
+            return ($rv, 0, $msg);
+        }
+    }
+
+    $RT::Handle->BeginTransaction() if $args{_Commit};
+
+    $self->SetType( Value => $TypeObj->Id, RecordTransaction => $args{_Detailed}) if $changing_type;
+    $self->SetName( Value => $name, RecordTransaction => $args{_Detailed}) if $changing_name;
+
+    if (defined $args{Description} && $args{Description} ne $self->Description) {
+        $self->SetDescription( Value => $args{Description}, RecordTransaction => $args{_Detailed});
+        $asset_updated++;
+    }
+
+    if (defined($args{Status}) && $args{Status} ne $self->Status) {
+        unless ( $TypeObj->IsValidStatus( $args{Status} ) ) {
+            return ( 0, 0, $self->loc('Invalid value for status') );
+        }
+        $self->SetStatus( Value => $args{Status}, RecordTransaction => $args{_Detailed});
+        $asset_updated++;
+    }
+
+    #watchers
+    foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+        next unless ( exists $args{$type} );
+
+        my $role_method = $type . 'RoleGroup';
+        my $members_current = $self->$role_method->MembersObj->ItemsArrayRef;
+        my $role_current = [ map { $_->MemberObj->IsGroup ? '@'. $_->MemberObj->Object->Name()
+                                                          : $_->MemberObj->Object->EmailAddress } @$members_current ];
+
+        my $role_new = ref( $args{$type} ) ? $args{$type} : [ $args{$type} ];
+        my ($add_role, $delete_role) = $self->_set_compare($role_current, $role_new);
+        $asset_updated++ if @$add_role || @$delete_role;
+
+        for my $watcher (@$delete_role) {
+            next unless $watcher;
+
+            my $field = 'Email';
+            if ($watcher =~ /^\d+$/) {
+                $field = 'PrincipalId';
+            }
+            elsif (my ($group_name) = $watcher =~ /^@(.+)$/) {
+                my $group = RT::Group->new($self->CurrentUser);
+                $group->LoadUserDefinedGroup($group_name);
+                if ($group->Id) {
+                    $field = 'PrincipalId';
+                    $watcher = $group->PrincipalId;
+                }
+            }
+
+            my ( $wval, $wmsg ) = $self->DeleteWatcher(
+                Type   => $type,
+                $field => $watcher,
+                Silent => !$args{_Detailed},
+            );
+
+            return $wval, $wmsg unless ($wval);
+        }
+
+        foreach my $watcher ( @$add_role ) {
+            next unless $watcher;
+
+            my $field = 'Email';
+            if ($watcher =~ /^\d+$/) {
+                $field = 'PrincipalId';
+            }
+            elsif (my ($group_name) = $watcher =~ /^@(.+)$/) {
+                my $group = RT::Group->new($self->CurrentUser);
+                $group->LoadUserDefinedGroup($group_name);
+                if ($group->Id) {
+                    $field = 'PrincipalId';
+                    $watcher = $group->PrincipalId;
+                }
+            }
+
+            my ( $wval, $wmsg ) = $self->_AddWatcher(
+                Type   => $type,
+                $field => $watcher,
+                Silent => !$args{_Detailed},
+            );
+
+            return $wval, $wmsg unless ($wval);
+        }
+    }
+
+    #custom fields
+    foreach my $arg ( keys %args ) {
+        next unless ( $arg =~ /^CustomField-(\d+)$/i );
+        my $cfid = $1;
+
+        my $values_new =  ref( $args{$arg} ) eq 'ARRAY' ? $args{$arg} : [ $args{$arg} ];
+        my $values_current = [  map { $_->Content } @{ $self->CustomFieldValues->ItemsArrayRef }];
+
+        my ($add_values, $delete_values) = $self->_set_compare($values_current, $values_new);
+        $asset_updated++ if @$add_values || @$delete_values;
+
+        #delete old values
+        for my $val (@$delete_values) {
+
+            my $cf = RT::CustomField->new($self->CurrentUser);
+            $cf->Load($cfid);
+
+            my ( $rv, $msg ) = $cf->DeleteValueForObject(
+                Object  => $self,
+                Content => $val,
+            );
+            return 0, $msg unless $rv;
+
+            if ( $args{_Detailed} ) {
+                my ( $TransactionId, $Msg, $TransactionObj ) = $self->_NewTransaction(
+                    Type          => 'CustomField',
+                    Field         => $cf->Id,
+                    OldReference  => $val,
+                    ReferenceType => 'RT::ObjectCustomFieldValue',);
+            }
+        }
+
+        #add new values
+        for my $value ( @$add_values ) {
+            next unless ( defined($value) && length($value) );
+
+            # Allow passing in uploaded LargeContent etc by hash reference
+            $self->_AddCustomFieldValue(
+                (UNIVERSAL::isa( $value => 'HASH' )
+                    ? %$value
+                    : (Value => $value)
+                ),
+                Field             => $cfid,
+                RecordTransaction => $args{_Detailed},
+            );
+        }
+    }
+
+    #TODO support link transactions
+    my $base_links = RT::Links->new($self->CurrentUser);
+    $base_links->Limit( FIELD => 'Base', VALUE => $self->URI );
+    $_->Delete for @{ $base_links->ItemsArrayRef };
+
+    my $target_links = RT::Links->new($self->CurrentUser);
+    $target_links->Limit( FIELD => 'Target', VALUE => $self->URI );
+    $_->Delete for @{ $target_links->ItemsArrayRef };
+
+    my ($addlink_rv, $addlink_errors) = $self->_AddLinksOnCreateOrUpdate(%args);
+    return 0, join("\n", @$addlink_errors) unless $addlink_rv;
+
+    #TODO support IP transactions
+    #Delete existing IPs
+    $_->Delete for @{$self->IPs->ItemsArrayRef};
+
+    #Add IP addresses
+    my $ips = defined $args{'IP Address'} ? $args{'IP Address'} : [];
+    for my $ip (@$ips) {
+        my $ip_ref = {};
+        if (!ref $ip) {
+            $ip = { IP => $ip };
+        }
+
+        my ($rv, $msg) = $self->AddIP(%$ip, Silent => 1, SilentPorts => 1);
+        return (0,0,$msg) unless ($rv);
+    }
+
+
+    #unless ($asset_updated) {
+        #return ($self->Id, 0, $self->loc('Asset not changed'));
+    #}
+
+    my $trans_id = 0;
+    if ( $args{_RecordTransaction} ) {
+
+        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+                                     Type      => "Update",
+                                     Data      => $self->loc('Asset updated on import'),
+        );
+        $trans_id = $TransObj->Id;
+    }
+
+    if ($args{_Commit}) {
+        $RT::Handle->Commit();
+    }
+
+    return $self->Id, $trans_id, $self->loc('Asset [_1] updated', $self->Id);
+}
+
+
 
 # {{{ Routines dealing with watchers.
 
@@ -620,14 +823,15 @@ ok ($group->Id, "Found the Admin object for this asset");
 
 sub _CreateAssetGroups {
     my $self = shift;
+    my %args = @_;
 
     foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
         my $type_obj = RT::Group->new($self->CurrentUser);
-        #my ($id, $msg) = $type_obj->CreateRoleGroup(Domain => 'RTx::AssetTracker::Asset-Role',
         my ($id, $msg) = $type_obj->_Create(Domain => 'RTx::AssetTracker::Asset-Role',
                                                        Instance => $self->Id,
                                                        Type => $type,
-                                                       InsideTransaction => 1 );
+                                                       InsideTransaction => 1,
+                                                       '_RecordTransaction' => $args{'_Commit'} && $args{'_RecordTransaction'} );
         unless ($id) {
             $RT::Logger->error("Couldn't create a asset group of type '$type' for asset ".
                                $self->Id.": ".$msg);
@@ -684,6 +888,7 @@ sub AddWatcher {
         Email => undef,
         @_
     );
+
 
     # {{{ Check ACLS
     #If the watcher we're trying to add is for the current user
@@ -931,6 +1136,44 @@ sub DeleteWatcher {
                          $args{'Type'} ) );
 }
 
+sub DeleteAllWatchers {
+    my $self = shift;
+    my %args = ( Type        => undef,
+                 TransactionData => undef,
+                 @_ );
+
+    my $group = $self->LoadAssetRoleGroup( Type => $args{Type} );
+    unless ( $group->id ) {
+        return ( 0, $self->loc("Group [_1] not found", $args{Type}) );
+    }
+
+    my $members = $group->MembersObj;
+    while (my $member = $members->Next) {
+        my $principal = $member->MemberObj;
+        my ( $m_id, $m_msg ) = $group->_DeleteMember( $principal->Id );
+        unless ($m_id) {
+            $RT::Logger->error( "Failed to delete "
+                                . $principal->Id
+                                . " as a member of group "
+                                . $group->Id . "\n"
+                                . $m_msg );
+
+            return (0,
+                    $self->loc(
+                        'Could not remove that principal as a [_1] for this asset',
+                        $args{Type} ) );
+        }
+
+        unless ( $args{Silent} ) {
+            $self->_NewTransaction( Type     => 'DelWatcher',
+                                    OldValue => $principal->Id,
+                                    Field    => $args{Type},
+                                    Data     => $args{TransactionData} );
+        }
+        
+    }
+}
+
 
 
 # }}}
@@ -958,6 +1201,9 @@ sub CurrentUserHasRight {
           )
     );
 
+    unless ( $self->CurrentUserHasRight('ModifyAsset') ) {
+        return ( 0, $self->loc("Permission Denied") );
+    }
 }
 
 # }}}
@@ -1266,7 +1512,6 @@ sub CustomFieldValues {
 sub IPs {
     my $self = shift;
     my $ips = RTx::AssetTracker::IPs->new( $self->CurrentUser );
-    #$ips->UnLimit;
     $ips->Limit( FIELD => 'Asset', VALUE => $self->Id );
 
     return $ips;
@@ -1356,13 +1601,26 @@ sub AddIP {
 
 }
 
+sub _export_formatted_IPs {
+    my ($self) = @_;
+
+    my $ips = $self->IPs->ItemsArrayRef;
+    return join('|', map { $self->_format_IP($_) } @$ips);
+}
+
+sub _format_IP {
+    my ($self, $ip) = @_;
+
+    return join(':', $ip->Interface, $ip->IP, $ip->MAC, join(',', $ip->TCPPorts), join(',', $ip->UDPPorts));
+}
+
 sub IPsAsList {
 
     my $self = shift;
     my $ips = $self->IPs;
     my @ips;
     while (my $ip = $ips->Next) {
-	push @ips, $ip->IP;
+        push @ips, $ip->IP;
     }
 
     return @ips;
@@ -1448,11 +1706,11 @@ sub SetStatus {
     }
 
     #Actually update the status
-    my ($val, $msg)= $self->_Set( Field           => 'Status',
+    my ($val, $msg)= $self->_Set( %args,
+                          Field           => 'Status',
                           Value           => $args{Status},
                           TimeTaken       => 0,
-                          TransactionType => 'Status',
-                          TransactionData => $args{TransactionData}  );
+                          TransactionType => 'Status', );
 
     return($val,$msg);
 }
@@ -1676,6 +1934,26 @@ sub _AddLink {
 
 }
 
+sub __GetAssetFromURI {
+    my $self = shift;
+    my %args = ( URI => '', @_ );
+
+    my $uri_obj = RT::URI->new( $self->CurrentUser );
+    $uri_obj->FromURI( $args{'URI'} );
+
+    unless ( $uri_obj->Resolver && $uri_obj->Scheme ) {
+        my $msg = $self->loc( "Couldn't resolve '[_1]' into a URI.", $args{'URI'} );
+        $RT::Logger->warning( $msg );
+        return( 0, $msg );
+    }
+    my $obj = $uri_obj->Resolver->Object;
+    unless ( UNIVERSAL::isa($obj, 'RTx::AssetTracker::Asset') && $obj->id ) {
+        return (1, 'Found not an asset', undef);
+    }
+    return (1, 'Found asset', $obj);
+}
+
+
 # }}}
 
 sub SetName {
@@ -1690,7 +1968,7 @@ sub SetName {
     my ($rv, $msg) = $self->SatisfiesUniqueness($args{Value}, $self->Type, $self->Status);
 
     if ($rv) {
-        return $self->_Set(Field => 'Name', Value => $args{Value}, TransactionData => $args{TransactionData});
+        return $self->_Set(%args, Field => 'Name');#, Value => $args{Value}, TransactionData => $args{TransactionData});
     }
     else {
         return $rv, $msg;
@@ -1712,14 +1990,17 @@ sub SatisfiesUniqueness {
 
     if ($RT::GlobalUniqueAssetName) {
         $Assets->Limit(FIELD => "Name", VALUE => $name);
+        $Assets->Limit(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
         return (0, "Asset name $name isn't unique across the entire asset database") if $Assets->Count;
     }
     if ($RT::TypeUniqueAssetName) {
         $Assets->Limit(FIELD => "Type", VALUE => $type);
+        $Assets->Limit(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
         return (0, "Asset name $name isn't unique among assets of type: " . $Type->Name) if $Assets->Count;
     }
     if ($RT::TypeStatusUniqueAssetName) {
         $Assets->Limit(FIELD => "Status", VALUE => $stat);
+        $Assets->Limit(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
         return (0, "Asset name $name isn't unique among assets of type: " . $Type->Name . ", and status: $stat") if $Assets->Count;
     }
 
@@ -1918,6 +2199,23 @@ sub __DependsOn
     return $self->SUPER::__DependsOn( %args );
 }
 
+sub Export {
+    my ($self) = @_;
 
+    return $self;
+}
+
+use Set::Scalar;
+sub _set_compare {
+    my ($self, $current, $new) = @_;
+
+    my $current_set = Set::Scalar->new(@$current);
+    my $new_set = Set::Scalar->new(@$new);
+
+    my $add    = $new_set - $current_set;
+    my $delete = $current_set - $new_set;
+    return $add, $delete;
+
+}
 
 1;

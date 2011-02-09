@@ -1,0 +1,50 @@
+<& /Elements/Header, Title => loc("Asset Import") &>
+<& /AssetTracker/Elements/Tabs,
+    current_tab => "AssetTracker/Search/Export.html",
+    Title => loc("Asset Import") &>
+
+<& /Elements/ListActions, actions => $results &>
+
+<form action="Import.html" name="AssetImport" method="post" enctype="multipart/form-data">
+<input name="XML" type="file" />
+Run scrips: <input name="RunScrips" type="checkbox" />
+Run scrips: <input name="Detailed" type="checkbox" />
+<br/><input type="submit" class="button" name="Import" value="<&|/l&>Import</&>" />
+
+</form>
+
+
+<%INIT>
+my $results = [];
+unless (RT->Config->Get("AssetImportRequiresRights") &&
+        $session{CurrentUser}->HasRight( Object => $RTx::AssetTracker::System, Right => 'AssetImport')) {
+	$m->abort;
+}
+
+if ($Import && $XML) {
+    my $cgi_object = $m->cgi_object;
+    my $fh = $cgi_object->upload('XML');
+    my $filename = "$fh";
+
+    my ($buffer, $xml_data);
+    while ( my $bytesread = read( $fh, $buffer, 4096 ) ) {
+        $xml_data .= $buffer;
+    }
+	my $assets = RTx::AssetTracker::Assets->new($session{CurrentUser});
+    my $rv;
+    eval {
+	    ($rv, $results) = $assets->ImportXML($xml_data, $RunScrips, $Detailed);
+        unshift @$results, loc("Asset import errors. No changes were made.") unless $rv;
+        use YAML; warn Dump([$rv, $results]);
+    };
+    if ($@) {
+        unshift @$results, loc("Asset import exception: [_1]", $@) unless $rv;
+    }
+}
+</%INIT>
+<%ARGS>
+$Import => undef
+$XML => ''
+$RunScrips => 0
+$Detailed => 0
+</%ARGS>

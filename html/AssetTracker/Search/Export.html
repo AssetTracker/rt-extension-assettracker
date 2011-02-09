@@ -1,0 +1,16 @@
+<%INIT>
+my $Assets = RTx::AssetTracker::Assets->new($session{CurrentUser});
+$Assets->FromSQL($Query);
+
+my $DisplayFormat = $Format || RT->Config->Get('DefaultAssetSearchResultFormat');
+my @Format = $m->comp('/Elements/CollectionAsTable/ParseFormat', Format => $DisplayFormat);
+
+$r->headers_out->set("Content-Disposition" => "attachment; Content-type=application/vnd.ms-excel; filename=foo.xls");
+$m->out($Assets->ExportExcel(\@Format));
+$m->flush_buffer;
+$m->abort;
+</%INIT>
+<%ARGS>
+$Query
+$Format
+</%ARGS>

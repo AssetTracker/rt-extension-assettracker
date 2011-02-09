@@ -27,6 +27,9 @@ use strict;
 no warnings qw(redefine);
 use vars qw( @SORTFIELDS %FIELDS );
 use RT::CustomFields;
+use File::Temp 'tempdir';
+use HTML::Mason;
+use XML::Parser;
 
 # FIELDS is a mapping of searchable Field name, to Type, and other
 # metadata.
@@ -2362,6 +2365,412 @@ sub PrepForSerialization {
     $self->RedoSearch();
 }
 
+sub Export {
+    my ($self, $format) = @_;
+}
+
+sub ExportExcel {
+    my ($self, $format) = @_;
+
+    local $HTML::Mason::Commands::r = FakeRequest->new;
+
+    my $row_data = '';
+    my $row_count = $self->Count()+1;
+    my $export_format = [ { attribute => 'id' }, grep { $_->{title} ne 'NEWLINE' && $_->{title} ne 'id' } @$format ];
+    my $column_count = @$export_format;
+
+    my $i = 1;
+    my $header = '<Row>';
+    for my $f (@$export_format) {
+        my $attr = $f->{attribute};
+        $row_data .= qq{<Column ss:Width="60.0" />\n};
+        my $value = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "title") || $attr;
+        my $out = _xml_escape_value($value);
+        $header .= qq{<Cell ><Data ss:Type="String">$out</Data></Cell>\n};
+    }
+    $header .= '</Row>';
+    $row_data .= $header;
+
+    while (my $asset = $self->Next) {
+        my $row = "\n<Row>";
+        my $record = $asset->Export;
+
+        for my $f (@$export_format) {
+            my $attr = $f->{attribute};
+            my $style = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "style") || 'Default';
+            my $type = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "type") || 'String';
+            my $value = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "export_value")
+                     || run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "value");
+            my $out;
+            if (ref($value) eq 'CODE') {
+                my ($computed_value) = $value->($asset);
+                if (ref($computed_value) eq 'SCALAR') {
+                    $out = _xml_escape_value($$computed_value);
+                }
+                else {
+                    $out = _xml_escape_value($computed_value);
+                }
+            }
+            elsif (ref($value) eq 'SCALAR') {
+                $out = _xml_escape_value($$value);
+            }
+            else {
+                $out = _xml_escape_value($value);
+            }
+            $row .= qq{<Cell ss:StyleID="$style"><Data ss:Type="$type">$out</Data></Cell>\n};
+        }
+        
+        $row .= '</Row>';
+        $row_data .= $row;
+    }
+
+
+    return <<"EOF"
+<?xml version="1.0"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Version>12.0</Version>
+ </DocumentProperties>
+ <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+  <Date1904/>
+ </ExcelWorkbook>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Bottom"/>
+   <Borders/>
+   <Font ss:FontName="Verdana"/>
+   <Interior/>
+   <NumberFormat/>
+   <Protection/>
+  </Style>
+  <Style ss:ID="s21">
+   <NumberFormat ss:Format="General Date"/>
+  </Style>
+  <Style ss:ID="s23">
+   <NumberFormat ss:Format="0"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Export">
+  <Table ss:ExpandedColumnCount="$column_count" ss:ExpandedRowCount="$row_count" x:FullColumns="1" x:FullRows="1">
+$row_data
+  </Table>
+ </Worksheet>
+</Workbook>
+EOF
+
+}
+
+sub ImportXML {
+    my ($self, $xml, $runscrips, $detailed) = @_;
+
+    return ['permission denied'] unless RT->Config->Get("AssetImportRequiresRights")
+                                 && $self->CurrentUser->HasRight( Object => $RTx::AssetTracker::System, Right => 'AssetImport');
+
+    $runscrips = 1 unless defined $runscrips;
+
+    my $dom = create_dom_from_xml($xml);
+    my ($first_worksheet) = grep { ref($_) eq 'RTx::AssetTracker::Assets::Worksheet' } @{ $dom->[0]{Kids} };
+    my ($first_table) = grep { ref($_) eq 'RTx::AssetTracker::Assets::Table' } @{ $first_worksheet->{Kids} };
+    my @rows = grep { ref($_) eq 'RTx::AssetTracker::Assets::Row' } @{ $first_table->{Kids} };
+    my $headers = $self->_import_headers(shift @rows);
+    @rows = map { $self->_import_row($_, scalar(@$headers)) } @rows;
+    my ($rv, $msgs) = $self->Import($headers, \@rows, $runscrips, $detailed);
+    return $rv, $msgs;
+}
+
+sub Import {
+    my ($self, $headers, $rows, $runscrips, $detailed) = @_;
+
+    return 0, ['permission denied'] unless RT->Config->Get("AssetImportRequiresRights")
+                                    && $self->CurrentUser->HasRight( Object => $RTx::AssetTracker::System, Right => 'AssetImport');
+
+    $runscrips = 1 unless defined $runscrips;
+
+    my $rv = 0;
+    my $msgs = [];
+    my $ids = [];
+
+    unless ($headers->[0] eq 'id') {
+        push @$msgs, "First column of import must be 'id'";
+        return $rv, $msgs;
+    }
+
+
+    $RT::Handle->BeginTransaction();
+    my @new = ();
+    my @update = ();
+
+    my $error = 0;
+    for my $row (@$rows) {
+        my ($aid, $msg) = $self->_import($headers, $row, $runscrips, $detailed);
+        #warn $row->[0], $msg;
+
+        if (!$aid) {
+            push @$msgs, $msg;
+            $error++;
+        }
+        elsif ($row->[0] =~ /^(\d+)(\.0)?$/) {
+            push @update, $1;
+            push @$ids, $1;
+        }
+        else {
+            push @new, $aid;
+            push @$ids, $aid;
+        }
+    }
+
+    if ($error) {
+    $RT::Logger->error( "Asset import error. Rolling back DB transactions." );
+        $RT::Handle->Rollback();
+        return 0, $msgs;
+    }
+    else {
+        $RT::Handle->Commit();
+        #load each asset and do a Create/Update transaction with $runscrips set
+        for my $id (@new) {
+            my $asset = RTx::AssetTracker::Asset->new($self->CurrentUser);
+            $asset->Load($id);
+            $asset->_NewTransaction(Type => "Create");
+            push @$msgs, $self->loc("Asset #[_1] created", $id);
+        }
+        for my $id (@update) {
+            my $asset = RTx::AssetTracker::Asset->new($self->CurrentUser);
+            $asset->Load($id);
+            $asset->_NewTransaction(Type => "Update");
+            push @$msgs, $self->loc("Asset [_1] possibly updated", $id);
+        }
+    }
+
+    return $ids, $msgs;
+
+}
+
+sub _import {
+    my ($self, $header, $asset_row, $runscrips, $detailed) = @_;
+
+    require Storable;
+    my $row = Storable::dclone($asset_row);
+
+    my %asset = ();
+    for (@$header) {
+        $asset{$_} = shift @$row;
+    }
+
+    %asset = $self->_fixup_import(%asset);
+
+    my $id = delete $asset{id};
+    my $asset = RTx::AssetTracker::Asset->new($self->CurrentUser);
+    if ($id eq 'new') {
+        my ($aid, undef, $err) = $asset->Create( %asset, _Commit => 0, _RecordTransaction => 0 );
+        return $aid, $err;
+    }
+    elsif ($id =~ /(\d+)/) {
+        $asset->Load($1);
+        my ($aid, undef, $err) = $asset->UpdateAsset( %asset, _Commit => 0, _RecordTransaction => 0, _Detailed => $detailed );
+        return $aid, $self->loc("Asset #[_1] not updated: [_2]", $asset->Id, $err);
+    }
+    else {
+        return 0, "Unrecognized id: $id";
+    }
+}
+
+sub _fixup_import {
+    my ($self, %asset) = @_;
+
+    my %fixed;
+    $fixed{$_} = delete $asset{$_} for qw(id Name Type Status Description);
+
+    #roles
+    foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+        next unless $asset{$type};
+        $fixed{$type} = [ split(/,\s*/, delete $asset{$type}) ];
+    }
+
+    #links
+    my $LINKTYPEMAP = RTx::AssetTracker::Asset::LINKTYPEMAP();
+    for my $type (keys %$LINKTYPEMAP) {
+        next unless exists $asset{$type} && defined $asset{$type};
+        my @URIs = split(/,/, delete $asset{$type});
+        $fixed{$type} = \@URIs;
+    }
+
+    #ip addresses
+    my @ips = (exists $asset{'IP Address'} && defined $asset{'IP Address'}) ? split(/\|/, delete $asset{'IP Address'}) : ();
+    my $import_ips = [];
+    for my $ip (@ips) {
+        my ($interface, $address, $mac, $tcp, $udp) = split(/:/, $ip);
+        my $tcp_ports = [ split(/,/, $tcp) ];
+        my $udp_ports = [ split(/,/, $udp) ];
+        push @$import_ips, { 
+                 IP        => $address,
+                 Interface => $interface,
+                 MAC => $mac,
+                 TCPPorts => $tcp_ports,
+                 UDPPorts => $udp_ports, };
+    }
+    if (@$import_ips) {
+        $fixed{'IP Address'} = $import_ips;
+    }
+
+    #custom fields are last
+    for my $possible_cf (keys %asset) {
+        my $cf = RT::CustomField->new($self->CurrentUser);
+        $cf->LoadByName(Name => $possible_cf);
+        if ($cf->id) {
+            my $type = $cf->Type;
+            if ($cf->MaxValues && $type =~ /^(Wikitext|Text|Freeform)$/) {
+                $fixed{"CustomField-".$cf->id} = delete $asset{$possible_cf};
+            }
+            elsif ( $cf->MaxValues && $type eq 'Select') {
+#make sure the value is valid???
+                $fixed{"CustomField-".$cf->id} = delete $asset{$possible_cf};
+            }
+            elsif (!$cf->MaxValues && $type eq 'Select') {
+#make sure the values are valid???
+                $fixed{"CustomField-".$cf->id} = delete $asset{$possible_cf};
+            }
+            else {
+                #????
+            }
+        }
+    }
+
+    #should we error on anything that is left?
+
+    return %fixed;
+}
+
+sub _import_headers {
+    my ($self, $row) = @_;
+
+    my @headers;
+
+    ROW:
+        for my $cell (@{$row->{Kids}}) {
+            next unless ref($cell) eq 'RTx::AssetTracker::Assets::Cell';
+            for my $data (@{$cell->{Kids}}) {
+                next unless ref($data) eq 'RTx::AssetTracker::Assets::Data';
+                for my $characters (@{$data->{Kids}}) {
+                    next unless ref($characters) eq 'RTx::AssetTracker::Assets::Characters';
+                    my $text = $characters->{Text};
+                    last ROW unless defined $text;
+                    push @headers, $text;
+                }
+            }
+        }
+
+    return \@headers;
+}
+
+sub _import_row {
+    my ($self, $row, $column_count) = @_;
+
+    my @row;
+    my $count = 0;
+
+    ROW:
+    for my $cell (@{$row->{Kids}}) {
+        next unless ref($cell) eq 'RTx::AssetTracker::Assets::Cell';
+        for my $data (@{$cell->{Kids}}) {
+            if (ref($data->{Kids})) {
+                for my $characters (@{$data->{Kids}}) {
+                    my $text = $characters->{Text};
+                    push @row, $text;
+                }
+            }
+            else { push @row, undef; }
+        }
+        last if ++$count == $column_count;
+    }
+
+    return \@row;
+}
+
+
+sub create_dom_from_xml {
+    my ($xml) = @_;
+
+    my $xp = XML::Parser->new(Style => "Objects", Namespaces => 1);
+    my $dom = eval { $xp->parse($xml); };
+
+    unless ($dom && !$@) {
+        die "XML document not properly formed: $@\n"
+    }
+
+    return $dom;
+}
+
+
+sub _xml_escape_value {
+    my ($str) = @_;
+
+    return unless $str;
+
+    $str =~ s/&/&amp;/g;
+    $str =~ s/</&lt;/g;
+    $str =~ s/>/&gt;/g;
+    $str =~ s/"/&quot;/g;
+
+    return $str;
+}
+
+{
+    my $mason;
+    my $outbuf = '';
+    my $data_dir = '';
+
+    use HTML::Mason::FakeApache;
+    sub mason {
+        unless ($mason) {
+            # user may not have permissions on the data directory, so create a
+            # new one
+            $data_dir = tempdir(CLEANUP => 1);
+
+            $mason = HTML::Mason::Interp->new(
+                #RT::Interface::Web::Handler->DefaultHandlerArgs,
+                comp_root => [
+                    [ local    => $RT::MasonLocalComponentRoot ],
+                    (map {[ "plugin-".$_->Name =>  $_->ComponentRoot ]} @{RT->Plugins}),
+                    [ standard => $RT::MasonComponentRoot ]
+                ],
+                request_class        => 'RT::Interface::Web::Request',
+                cgi_request => new HTML::Mason::FakeApache,
+                auto_send_headers => 0,
+
+                out_method => \$outbuf,
+                autohandler_name => '', # disable forced login and more
+                data_dir => $data_dir,
+            );
+        }
+        return $mason;
+    }
+
+    sub run_component {
+        my $x = mason->exec(@_);
+        my $ret = $outbuf;
+        $outbuf = '';
+        #return $ret;
+        return $x;
+    }
+}
+
+package FakeRequest;
+sub new { bless {}, shift }
+sub header_out { shift }
+sub headers_out { shift }
+sub content_type {
+    my $self = shift;
+    $self->{content_type} = shift if @_;
+    return $self->{content_type};
+}
+
+1;
+
+
 =head1 FLAGS
 
 RT::Tickets supports several flags which alter search behavior:
@@ -2386,7 +2795,6 @@ ok( $unlimitassets->UnLimit );
 ok( $unlimitassets->Count > 0, "UnLimited assets object should return assets" );
 
 =end testing
-
 
 
 1;

@@ -121,7 +121,6 @@ sub RoleDescription {
 }
 
 sub ConfigureRoles {
-
     my $class = shift;
 
     foreach my $role ( ActiveRoleArray() ) {
@@ -152,6 +151,7 @@ sub ConfigureRole {
 
     my $group_role_method = $role . "RoleGroup";
     my $is_role_method = 'Is' . $role;
+    my $export_role_method = $role . "RoleGroupExportString";
 
     {
 
@@ -199,6 +199,19 @@ sub ConfigureRole {
             my $owner = shift;
 
             return ( $self->IsWatcher( Type => $role, PrincipalId => $owner ) );
+
+        };
+
+        *$export_role_method = sub {
+            my $self  = shift;
+
+            my $export_string = undef;
+            if ($group = $self->LoadAssetRoleGroup(Type => $role)) {
+                my $members = $group->MembersObj->ItemsArrayRef;
+                $export_string = join(",", map { $_->MemberObj->IsGroup ? '@'. $_->MemberObj->Object->Name()
+                                                                        : $_->MemberObj->Object->EmailAddress } @$members);
+            }
+            return $export_string;
 
         };
 

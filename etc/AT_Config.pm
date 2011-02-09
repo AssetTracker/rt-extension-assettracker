@@ -99,4 +99,6 @@ Set(%AT_AdminSearchResultFormat,
 local $rt_comps = RT->Config->Get("HomepageComponents");
 RT->Config->Set("HomepageComponents", [@$rt_comps, qw(AssetQuickSearch)]);
 
+Set ($AssetImportRequiresRights, 1);
+
 1;

@@ -51,6 +51,7 @@ $RT::ACE::OBJECT_TYPES{'RTx::AssetTracker::System'} = 1;
 $RIGHTS = {
 	SuperUser => "Do anything with assets",     # loc_pair
 	BulkUpdate => "Allow educated users to perform bulk updates",     # loc_pair
+	AssetImport => "Allow educated users to import assets",     # loc_pair
 	#ShowConfigTab => "show Configuration tab",     # loc_pair
 };
 

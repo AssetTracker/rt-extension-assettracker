@@ -275,6 +275,18 @@ sub DeleteAllPorts {
 
 }
 
+sub Delete {
+    my $self = shift;
+
+    my ($rv, $msg) = $self->DeleteAllPorts;
+    if ($rv) {
+        return $self->SUPER::Delete();
+    }
+    else {
+        return $rv, $msg;
+    }
+}
+
 ## Shredder methods ##
 use RT::Shredder::Constants;
 use RT::Shredder::Exceptions;

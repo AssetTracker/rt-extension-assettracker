@@ -1,0 +1,10 @@
+<%INIT>
+$tabs->{P} = {
+    title => loc('Asset Import'),
+    path => '/AssetTracker/Tools/Import.html',
+    description => loc('Import assets from an Excel 94 XML formatted file.'),
+};
+</%INIT>
+<%ARGS>
+$tabs
+</%ARGS>

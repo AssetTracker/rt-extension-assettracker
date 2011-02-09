@@ -97,19 +97,28 @@ sub AssetLinkCallback {
     my $mode_uri        = $mode.'URI';
     my $mode_is_local   = $mode.'IsLocal';
     my $local_type      = 'Local'.$mode;
+	use YAML;
 
-    return sub {
-        map {
-            \'<A HREF="',
-            $_->$mode_uri->Resolver->HREF,
-            \'">',
-            ( $_->$mode_uri->IsLocal ?
-              $_->$mode_uri->Resolver->AsString
-             :
-              $_->$mode
-            ),
-            \'</A><BR>',
-        } @{ $_[0]->$method->ItemsArrayRef }
+	{ export_value =>
+        sub {
+            map {
+                $_->$mode_uri->Resolver->HREF;
+            } @{ $_[0]->$method->ItemsArrayRef }
+        },
+	  value =>
+        sub {
+            map {
+                \'<A HREF="',
+                $_->$mode_uri->Resolver->HREF,
+                \'">',
+                ( $_->$mode_uri->IsLocal ?
+                  $_->$mode_uri->Resolver->AsString
+                 :
+                  $_->$mode
+                ),
+                \'</A><BR>',
+            } @{ $_[0]->$method->ItemsArrayRef }
+        }
     }
 }
 
@@ -117,7 +126,8 @@ $ASSET_COLUMN_MAP = {
     IP => {
         attribute => 'IP',
         title     => 'IP Address',
-        value     => sub { return map { ($_, \'<br>') } $_[0]->IPsAsList }
+        value     => sub { return map { ($_, \'<br>') } $_[0]->IPsAsList },
+        export_value     => sub { $_[0]->_export_formatted_IPs() },
     },
     TypeName => {
         attribute => 'AssetType',
@@ -127,6 +137,8 @@ $ASSET_COLUMN_MAP = {
     id => {
         attribute => 'id',
         align     => 'right',
+        type      => 'Number',
+        style     => 's23',
         value     => sub { return $_[0]->id }
     },
     Name => {
@@ -141,7 +153,8 @@ $ASSET_COLUMN_MAP = {
     },
     Description => {
         attribute => 'Description',
-        value => sub { return $_[0]->Description || "(" . loc('No description') . ")" }
+        title     => 'Description',
+        value     => sub { return $_[0]->Description || "(" . loc('No description') . ")" }
     },
     ExtendedStatus => {
         title     => 'Status',
@@ -177,7 +190,10 @@ $ASSET_COLUMN_MAP = {
     },
     Created => {
         attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AsString }
+        type      => 'DateTime',
+        style     => 's21',
+        value     => sub { return $_[0]->CreatedObj->AsString },
+        export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
     },
     CreatedBy => {
         attribute => 'CreatedBy',
@@ -187,7 +203,10 @@ $ASSET_COLUMN_MAP = {
     LastUpdated => {
         attribute => 'LastUpdated',
         title     => 'Last Updated',
-        value     => sub { return $_[0]->LastUpdatedObj->AsString }
+        type      => 'DateTime',
+        style     => 's21',
+        value     => sub { return $_[0]->LastUpdatedObj->AsString },
+        export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
     },
     LastUpdatedBy => {
         attribute => 'LastUpdatedBy',
@@ -202,7 +221,7 @@ $ASSET_COLUMN_MAP = {
 
     # Everything from LINKTYPEMAP
     (map {
-        $_ => { value => AssetLinkCallback( $_ ) }
+        $_ => AssetLinkCallback( $_ )
     } keys %RTx::AssetTracker::Asset::LINKTYPEMAP),
 
     '_CLASS' => {
@@ -213,8 +232,10 @@ $ASSET_COLUMN_MAP = {
 
 for my $role ( ActiveRoleArray() ) {
     my $group_method = $role . 'RoleGroup';
+    my $export_method = $role . 'RoleGroupExportString';
     $ASSET_COLUMN_MAP->{$role} = {
-        value => sub { return $_[0]->$group_method->MemberEmailAddressesAsString }
+        value => sub { return $_[0]->$group_method->MemberEmailAddressesAsString },
+        export_value => sub { return $_[0]->$export_method },
     };
 }
 

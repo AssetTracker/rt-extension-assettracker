@@ -73,9 +73,9 @@ if ( $Asset->CurrentUserHasRight('ShowAsset') ) {
                          #FIELD => 'EffectiveId',
                          #VALUE => $Asset->id() );
     # if the user may not see comments do not return them
-    unless ( $Asset->CurrentUserHasRight('ShowAssetComments') ) {
-        $attachments->Limit( ALIAS    => $transactions, FIELD    => 'Type', OPERATOR => '!=', VALUE    => "Comment" );
-    }
+    #unless ( $Asset->CurrentUserHasRight('ShowAssetComments') ) {
+        #$attachments->Limit( ALIAS    => $transactions, FIELD    => 'Type', OPERATOR => '!=', VALUE    => "Comment" );
+    #}
 
     $attachments->Limit ( FIELD => 'ContentType', OPERATOR => '=', VALUE => 'text/plain');
     $attachments->Limit ( FIELD => 'ContentType', OPERATOR => 'STARTSWITH', VALUE => 'message/');

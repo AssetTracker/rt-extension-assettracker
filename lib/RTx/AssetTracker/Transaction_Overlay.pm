@@ -419,18 +419,18 @@ sub Attachments {
         $self->{'attachments'} = RT::Attachments->new( $self->CurrentUser );
 
         #If it's a comment, return an empty object if they don't have the right to see it
-        if ( $self->Type eq 'Comment' ) {
-            unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
-                return ( $self->{'attachments'} );
-            }
-        }
+        #if ( $self->Type eq 'Comment' ) {
+            #unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
+                #return ( $self->{'attachments'} );
+            #}
+        #}
 
         #if they ain't got rights to see, return an empty object
-        else {
+        #else {
             unless ( $self->CurrentUserHasRight('ShowAsset') ) {
                 return ( $self->{'attachments'} );
             }
-        }
+        #}
 
         $self->{'attachments'}->Limit( FIELD => 'TransactionId',
                                        VALUE => $self->Id );
@@ -500,18 +500,18 @@ sub Description {
     #If it's a comment or a comment email record,
     #  we need to be extra special careful
 
-    if ( $self->__Value('Type') =~ /^Comment/ ) {
-        unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
-            return ( $self->loc("Permission Denied") );
-        }
-    }
+    #if ( $self->__Value('Type') =~ /^Comment/ ) {
+        #unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
+            #return ( $self->loc("Permission Denied") );
+        #}
+    #}
 
     #if they ain't got rights to see, don't let em
-    else {
+    #else {
         unless ( $self->CurrentUserHasRight('ShowAsset') ) {
             return ($self->loc("Permission Denied") );
         }
-    }
+    #}
 
     if ( !defined( $self->Type ) ) {
         return ( $self->loc("No transaction type specified"));
@@ -536,18 +536,18 @@ sub BriefDescription {
 
     #If it's a comment or a comment email record,
     #  we need to be extra special careful
-    if ( $self->__Value('Type') =~ /^Comment/ ) {
-        unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
-            return ( $self->loc("Permission Denied") );
-        }
-    }
+    #if ( $self->__Value('Type') =~ /^Comment/ ) {
+        #unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
+            #return ( $self->loc("Permission Denied") );
+        #}
+    #}
 
     #if they ain't got rights to see, don't let em
-    else {
+    #else {
         unless ( $self->CurrentUserHasRight('ShowAsset') ) {
             return ( $self->loc("Permission Denied") );
         }
-    }
+    #}
 
     my $type = $self->Type; #cache this, rather than calling it 30 times
 
@@ -650,26 +650,27 @@ sub _Value {
     }
 
     #If it's a comment, we need to be extra special careful
-    if ( $self->__Value('Type') eq 'Comment' ) {
-        unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
-            return (undef);
-        }
-    }
-    elsif ( $self->__Value('Type') eq 'CommentEmailRecord' ) {
-        unless ( $self->CurrentUserHasRight('ShowAssetComments')
-            && $self->CurrentUserHasRight('ShowOutgoingEmail') ) {
-            return (undef);
-        }
-
-    }
-    elsif ( $self->__Value('Type') eq 'EmailRecord' ) {
-        unless ( $self->CurrentUserHasRight('ShowOutgoingEmail')) {
-            return (undef);
-        }
-
-    }
+    #if ( $self->__Value('Type') eq 'Comment' ) {
+        #unless ( $self->CurrentUserHasRight('ShowAssetComments') ) {
+            #return (undef);
+        #}
+    #}
+    #elsif ( $self->__Value('Type') eq 'CommentEmailRecord' ) {
+        #unless ( $self->CurrentUserHasRight('ShowAssetComments')
+            #&& $self->CurrentUserHasRight('ShowOutgoingEmail') ) {
+            #return (undef);
+        #}
+#
+    #}
+    #elsif ( $self->__Value('Type') eq 'EmailRecord' ) {
+        #unless ( $self->CurrentUserHasRight('ShowOutgoingEmail')) {
+            #return (undef);
+        #}
+#
+    #}
     # Make sure the user can see the custom field before showing that it changed
-    elsif ( ( $self->__Value('Type') eq 'CustomField' ) && $self->__Value('Field') ) {
+    #elsif ( ( $self->__Value('Type') eq 'CustomField' ) && $self->__Value('Field') ) {
+    if ( ( $self->__Value('Type') eq 'CustomField' ) && $self->__Value('Field') ) {
         my $cf = RT::CustomField->new( $self->CurrentUser );
         $cf->Load( $self->__Value('Field') );
         return (undef) unless ( $cf->CurrentUserHasRight('SeeCustomField') );
@@ -859,6 +860,11 @@ sub _CacheConfig {
 }
 
 %_BriefDescriptions = %RT::Transaction::_BriefDescriptions;
+
+$_BriefDescriptions{Update} = sub {
+        my $self = shift;
+        return $self->loc( "Asset update" );
+    };
 
 $_BriefDescriptions{AddIP} = sub {
         my $self = shift;

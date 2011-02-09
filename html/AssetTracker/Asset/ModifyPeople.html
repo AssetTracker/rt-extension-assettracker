@@ -49,10 +49,12 @@
     current_tab => "AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id, 
     Title => loc('Modify people related to asset #[_1] - ', $Asset->id) . $Asset->Name &>
 
+
 <& /Elements/ListActions, actions => \@results &>
 
 <form method="post" action="ModifyPeople.html">
 <input type="hidden" name="id" value="<%$Asset->Id%>">
+
 <&| /Widgets/TitleBox, title => loc('Modify people related to asset #[_1]', $Asset->Id),   width => "100%", class => 'asset-info-people' &>
 <& Elements/EditPeople, Asset => $Asset, UserField => $UserField, UserString => $UserString, UserOp => $UserOp, GroupString => $GroupString, GroupOp => $GroupOp, GroupField => $GroupField &> 
 </&>
@@ -72,6 +74,7 @@ my $Asset = LoadAsset($id);
 unless ($OnlySearchForPeople or $OnlySearchForGroup) {
     @results = ProcessAssetBasics( AssetObj => $Asset, ARGSRef => \%ARGS);
     @wresults = ProcessAssetWatchers( AssetObj => $Asset, ARGSRef => \%ARGS);
+    #$Asset->ApplyTransactionBatch;
 }
 
 push @results, @wresults;
