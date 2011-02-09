@@ -2376,7 +2376,7 @@ sub ExportExcel {
 
     my $row_data = '';
     my $row_count = $self->Count()+1;
-    my $export_format = [ { attribute => 'id' }, grep { $_->{title} ne 'NEWLINE' && $_->{title} ne 'id' } @$format ];
+    my $export_format = [ { attribute => 'id' }, grep { $_->{title} ne 'NEWLINE' && $_->{attribute} ne 'id' } @$format ];
     my $column_count = @$export_format;
 
     my $i = 1;
