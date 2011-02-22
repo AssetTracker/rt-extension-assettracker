@@ -45,7 +45,7 @@
 %# END BPS TAGGED BLOCK }}}
 <& /Admin/Elements/Header, Title => loc('Modify group rights for type [_1]', $TypeObj->Name) &>
 <& /AssetTracker/Admin/Elements/TypeTabs, id => $id, 
-    TypeObj => $TypeObj,                                                      
+    AssetTypeObj => $TypeObj,                                                      
     current_tab => $current_tab, 
     Title => loc('Modify group rights for type [_1]', $TypeObj->Name) &>
 <& /Elements/ListActions, actions => \@results &>

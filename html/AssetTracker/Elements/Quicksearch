@@ -54,8 +54,9 @@
 % }
 </tr>
 
-% $i++;                                                                         
+% my $i;
 % foreach my $type (sort keys %sql) {
+% $i++;                                                                         
 <tr class="<% $i%2 ? 'oddline' : 'evenline'%>" >                                
 <td align="left">
 <a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{'all'}%>&Rows=50"><%$type%></a>
@@ -76,7 +77,6 @@ my $Types = RTx::AssetTracker::Types->new($session{'CurrentUser'});
 $Types->UnLimit();
 my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
 
-my $i;
 my %status;
 my %sql;
 my %count;
