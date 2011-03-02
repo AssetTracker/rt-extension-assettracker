@@ -49,7 +49,7 @@ $id ? (
     id => $Object->id, 
     current_tab => "/AssetTracker/Admin/$Types/CustomFields.html?$sub_type_url&id=".$id, 
     current_subtab => "/AssetTracker/Admin/$Types/CustomFields.html?$sub_type_url&id=".$id, 
-    "${Type}Obj" => $Object,
+    "Asset${Type}Obj" => $Object,
 ) : (
     current_tab => "/AssetTracker/Admin/Global/CustomFields/${QualifiedType}s.html",
 ),
