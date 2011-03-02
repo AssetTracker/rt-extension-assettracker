@@ -7,8 +7,8 @@ perl_version('5.008003');
 all_from('lib/RTx/AssetTracker.pm');
 requires(
     #'RT'          => '3.008001',
-	'XML::Simple' => 0,
-	'XML::Parser' => 0,
+    'XML::Simple' => 0,
+    'XML::Parser' => 0,
     'Set::Scalar' => 0,
 );
 

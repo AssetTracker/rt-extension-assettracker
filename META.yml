@@ -1,0 +1,30 @@
+---
+abstract: 'RT AssetTracker Extension'
+author:
+  - 'Todd Chapman <todd@chaka.net>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 1.00'
+license: gpl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: RTx-AssetTracker
+no_index:
+  directory:
+    - etc
+    - html
+    - inc
+    - po
+    - t
+requires:
+  Set::Scalar: 0
+  XML::Parser: 0
+  XML::Simple: 0
+  perl: 5.8.3
+resources:
+  license: http://opensource.org/licenses/gpl-license.php
+version: 1.002005
