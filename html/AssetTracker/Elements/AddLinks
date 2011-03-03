@@ -8,13 +8,20 @@
 <&|/l&>Asset</&>
 </td></tr>
 %   while (my $a = $Assets->Next ) {
-    <tr><td><&/AssetTracker/Elements/SelectLinkType, Name => "AddLink-Asset-".$a->URI &></td><td>
+    <tr><td>
+%     if ($TicketLinkTypes) {
+    <&/AssetTracker/Elements/SelectTicketLinkType, Name => "AddLink-Asset-".$a->URI &>
+%      } else {
+    <&/AssetTracker/Elements/SelectLinkType, Name => "AddLink-Asset-".$a->URI &>
+%      }
+    </td><td>
     <a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Asset/Display.html?id=<%$a->Id%>"><%$a->Name%></a>
     (<% substr($a->Description,0,35) %>)</td></tr>
 %   }
 </table>
 % }
 
+% if (!$SearchOnly) {
 <p><&|/l&>Add new links to</&>:<br>
 <table>
 <tr><td>
@@ -24,6 +31,7 @@
 </td></tr>
     <tr><td><&/AssetTracker/Elements/SelectLinkType, Name => "AddLink-Other" &></td> <td><input Name="AddLink-Other-URI"></td></tr>
 </table>
+% }
 
 <%init>
 my ($Assets);
@@ -54,4 +62,6 @@ $AssetString => undef
 $AllowRetired => 0
 $AssetObj => undef
 $ShowFind => 1
+$SearchOnly => 0
+$TicketLinkTypes => 0
 </%ARGS>

@@ -1,7 +1,7 @@
 <TABLE>
 <TR>
 <TD VALIGN=TOP>
-<h3><&|/l&>New links</&></h3>
+%#<h3><&|/l&>New links</&></h3>
 
 % if ($ShowFind) {
 <&|/l&>Find assets whose</&><BR>
@@ -10,7 +10,7 @@
 % }
 
 <& AddLinks, AssetObj => $AssetObj, AssetString => $AssetString,
-        AssetOp => $AssetOp, AssetField => $AssetField, ShowFind => $ShowFind &>
+        AssetOp => $AssetOp, AssetField => $AssetField, ShowFind => $ShowFind, SearchOnly => $SearchOnly, TicketLinkTypes => $TicketLinkTypes &>
 </TD>
 <TD VALIGN=CENTER>
 % if (ref $AssetObj) {
@@ -26,4 +26,6 @@ $AssetOp => undef
 $AssetString => undef
 $AssetObj => undef
 $ShowFind => 1
+$SearchOnly => 0
+$TicketLinkTypes => 0
 </%ARGS>

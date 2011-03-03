@@ -1,0 +1,16 @@
+<SELECT NAME ="<%$Name%>">
+<OPTION VALUE="">-</OPTION>
+% foreach my $link ( sort keys %link_types ) {
+<OPTION VALUE="<% $link %>"><&|/l&><% $link_types{$link} %></&></OPTION>
+% }
+</SELECT>
+
+<%ARGS>
+$Name => "LinkType"
+$Default => undef
+</%ARGS>
+
+<%INIT>
+# TODO handle Default
+my %link_types = ( MemberOf => 'Parent', HasMember => 'Child', RefersTo => 'Refers To', ReferredToBy => 'Referred To By', DependsOn => 'Depends On', DependedOnBy => 'Depended On By');
+</%INIT>

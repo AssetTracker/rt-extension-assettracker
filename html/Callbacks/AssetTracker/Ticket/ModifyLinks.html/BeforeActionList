@@ -1,0 +1,39 @@
+<%INIT>
+if ($ARGSRef->{SubmitTicket}) {
+    my $link_args;
+    my $id = $ARGSRef->{id};
+    my $Ticket = LoadTicket($id);
+    for my $key ( keys %$ARGSRef ) {
+        next unless $key =~ /^AddLink-Asset-(.*)/;
+        my $uri = $1;
+        my $link_type = delete $ARGSRef->{$key};
+        next unless $link_type;
+        
+        if ($link_type eq 'MemberOf') {
+            $link_args->{"$id-MemberOf"} = join(" ", $link_args->{"$id-MemberOf"}, $uri);
+        }
+        elsif ($link_type eq 'HasMember') {
+            $link_args->{"MemberOf-$id"} = join(" ", $link_args->{"MemberOf-$id"}, $uri);
+        }
+        elsif ($link_type eq 'DependsOn') {
+            $link_args->{"$id-DependsOn"} = join(" ", $link_args->{"$id-DependsOn"}, $uri);
+        }
+        elsif ($link_type eq 'DependedOnBy') {
+            $link_args->{"DependsOn-$id"} = join(" ", $link_args->{"DependsOn-$id"}, $uri);
+        }
+        elsif ($link_type eq 'RefersTo') {
+            $link_args->{"$id-RefersTo"} = join(" ", $link_args->{"$id-RefersTo"}, $uri);
+        }
+        elsif ($link_type eq 'ReferredToBy') {
+            $link_args->{"RefersTo-$id"} = join(" ", $link_args->{"RefersTo-$id"}, $uri);
+        }
+
+    }
+    my @results = ProcessTicketLinks( TicketObj => $Ticket, ARGSRef => $link_args );
+    push @$Actions, @results;
+}
+</%INIT>
+<%ARGS>
+$ARGSRef
+$Actions
+</%ARGS>
