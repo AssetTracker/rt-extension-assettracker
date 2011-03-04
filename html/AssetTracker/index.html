@@ -32,7 +32,14 @@ if ( $ARGS{'q'} ) {
         return();
     }
     elsif ( $query =~ /^(\d+)$/ ) {
-        Abort("Don't know how to seach for ports (yet)");
+        my $id = $1;
+        my $asset = RTx::AssetTracker::Asset->new($session{CurrentUser});
+        $asset->Load($id);
+        if ($asset->Status) {
+            $m->comp("/AssetTracker/Asset/Display.html", id => $id);
+            return;
+            Abort("Asset $id not found");
+        }
     }
 
     if ($m->comp('/Elements/Callback', _CallbackName => 'SearchPreFilter',
