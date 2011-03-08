@@ -302,6 +302,12 @@ my %lcfields = map { ( lc($_) => $_ ) } (keys %FIELDS);
  
    die "Unknown field: $key" unless $class;
 
+   # replace __CurrentUser__ with id
+   if ($val eq '__CurrentUser__' && $class eq 'WATCHERFIELD' && ( $op eq '=' || $op eq '!=' )) {
+       $val = $self->CurrentUser->id;
+       $subkey = 'id';
+   }
+
       $self->{_sql_localdepth} = 0;
       die "No such dispatch method: $class"
         unless exists $dispatch{$class};
