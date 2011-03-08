@@ -1,0 +1,69 @@
+# Initial data for a fresh AT Installation.
+use RTx::AssetTracker;
+use RTx::AssetTracker::ScripCondition;
+use RTx::AssetTracker::ScripAction;
+use RTx::AssetTracker::Template;
+
+@Final = ( \&AssetScripConditions, \&AssetScripActions, \&AssetTemplates, );
+
+my $CurrentUser = RT::CurrentUser->new();
+$CurrentUser->LoadByName('RT_System');
+
+sub AssetScripConditions {
+    $DB::single=1;
+    print "Creating default asset scrips conditions...";
+
+	my @Conditions = (
+	    { Name => 'User Defined',
+		  Description => 'Whenever a user-defined condition occurs',
+		  ExecModule => 'UserDefined',
+		  Argument => undef,
+		  ApplicableTransTypes => 'Any' },
+	);
+
+    for $item (@Conditions) {
+        my $new_entry = new RTx::AssetTracker::ScripCondition($CurrentUser);
+        my ( $return, $msg ) = $new_entry->Create(%$item);
+        print "(Error: $msg)" unless ($return);
+        print $return. ".";
+    }
+    print "done.\n";
+}
+
+sub AssetScripActions {
+    print "Creating default asset scrips actions...";
+
+	my @Conditions = (
+	    { Name => 'User Defined',
+		  Description => 'Perform a user-defined action',
+		  ExecModule => 'UserDefined',
+		  Argument => undef },
+	);
+
+    for $item (@Conditions) {
+        my $new_entry = new RTx::AssetTracker::ScripAction($CurrentUser);
+        my ( $return, $msg ) = $new_entry->Create(%$item);
+        print "(Error: $msg)" unless ($return);
+        print $return. ".";
+    }
+    print "done.\n";
+}
+
+sub AssetTemplates {
+    print "Creating default asset templates...";
+
+	my @Conditions = (
+	    { AssetType => 0,
+		  Name => 'Blank',
+		  Description => 'A blank template',
+		  Content => undef },
+	);
+
+    for $item (@Conditions) {
+        my $new_entry = new RTx::AssetTracker::Template($CurrentUser);
+        my ( $return, $msg ) = $new_entry->Create(%$item);
+        print "(Error: $msg)" unless ($return);
+        print $return. ".";
+    }
+    print "done.\n";
+}

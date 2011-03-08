@@ -1,0 +1,81 @@
+
+# {{{ ScripConditions
+
+CREATE TABLE AT_ScripConditions (
+  id INTEGER NOT NULL  AUTO_INCREMENT,
+  Name varchar(200) NULL  ,
+  Description varchar(255) NULL  ,
+  ExecModule varchar(60) CHARACTER SET ascii NULL,
+  Argument VARBINARY(255) NULL  ,
+  ApplicableTransTypes varchar(60) CHARACTER SET ascii NULL  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  PRIMARY KEY (id)
+) TYPE=InnoDB CHARACTER SET utf8;
+
+# }}}
+
+# {{{ Scrips 
+
+CREATE TABLE AT_Scrips (
+  id INTEGER NOT NULL  AUTO_INCREMENT,
+  Description varchar(255),
+  ScripCondition integer NOT NULL DEFAULT 0  ,
+  ScripAction integer NOT NULL DEFAULT 0  ,
+  ConditionRules text NULL  ,
+  ActionRules text NULL  ,
+  CustomIsApplicableCode text NULL  ,
+  CustomPrepareCode text NULL  ,
+  CustomCommitCode text NULL  ,
+  Stage varchar(32) CHARACTER SET ascii NULL  ,
+  AssetType integer NOT NULL DEFAULT 0  ,
+  Template integer NOT NULL DEFAULT 0  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  PRIMARY KEY (id)
+) TYPE=InnoDB CHARACTER SET utf8;
+
+# }}}
+
+# {{{ ScripActions
+
+CREATE TABLE AT_ScripActions (
+  id INTEGER NOT NULL  AUTO_INCREMENT,
+  Name varchar(200) NULL  ,
+  Description varchar(255) NULL  ,
+  ExecModule varchar(60) CHARACTER SET ascii NULL,
+  Argument VARBINARY(255) NULL  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  PRIMARY KEY (id)
+) TYPE=InnoDB CHARACTER SET utf8;
+
+# }}}
+
+# {{{ Templates
+
+CREATE TABLE AT_Templates (
+  id INTEGER NOT NULL  AUTO_INCREMENT,
+  AssetType integer NOT NULL DEFAULT 0 ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Type varchar(16) CHARACTER SET ascii NULL  ,
+  Language varchar(16) CHARACTER SET ascii NULL  ,
+  TranslationOf integer NOT NULL DEFAULT 0  ,
+  Content TEXT NULL  ,
+  LastUpdated DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  PRIMARY KEY (id)
+) TYPE=InnoDB CHARACTER SET utf8;
+
+# }}}
+
