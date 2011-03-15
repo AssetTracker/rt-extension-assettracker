@@ -27,13 +27,45 @@ Add RTx::AssetTracker to your Plugins in etc/RT_SiteConfig.pm and restart your w
 
 UPGRADE
 
-This is the first release of AT for RT 3.8, so there a no upgrade instructions. If you
-already have installed AT under an older RT installation see the instuctions below.
+If you have AT 1.2.4 installed under RT 3.8, do the following:
+
+1. Make a backup of any AT customizations.
+
+2. AT now uses the RT plugins system. Remove all AT files fom the RT directories.
+   After the "make install" step above put any AT customizations in
+   $RTHOME/local/plugins/RTx-AssetTracker, add 
+
+3. Add to RT_SiteConfig: 
+       Set(@Plugins,(qw(RTx::AssetTracker)));
+
+4.  Type:
+
+    ls etc/upgrade
+
+    For each item in that directory whose name is greater than
+    your previously installed AT version, you must run upgrade
+    commands.
+
+    Each step is described below and may have additional instructions.
+    Read them before running upgrade commands.
+
+    Commands you should run to upgrade DB using data
+    from etc/upgrade/<version> directory: If the dir has any schema
+    files then run:
+
+            /opt/rt3/sbin/rt-setup-database --dba <dba> \
+            --prompt-for-dba-password --action schema \
+            --datadir etc/upgrade/<version>
+
+    If the dir has a file named 'content' then run:
+
+        /opt/rt3/sbin/rt-setup-database --dba <dba> \
+            --prompt-for-dba-password --action insert \
+            --datadir etc/upgrade/<version>
 
 UPGRADING FROM an AT installed under RT 3.6.* or older
 
-This is the first release of Asset Tracker for RT 3.8, so there a no upgrade instructions. If
-you installed an older version of AT under RT < 3.8 the best strategy is to remove AT files from
+If you installed an older version of AT under RT < 3.8 the best strategy is to remove AT files from
 your installation and install AT as above, but skipping the rt-setup-database commands. Any AT
 customization will have to be ported to the new version AT, which uses the RT plugins system.
 Also, most AT configuration option have been renamed, and they are all now in the RT namespace.
