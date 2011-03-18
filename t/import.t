@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 
 package T::Import;
 use strict;

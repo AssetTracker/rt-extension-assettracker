@@ -1,4 +1,3 @@
-#!/usr/bin/perl -w
 
 use RTx::AssetTracker::Test tests => 33;
 use strict;
