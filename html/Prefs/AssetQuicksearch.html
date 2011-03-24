@@ -53,11 +53,13 @@
 <form method="post" action="AssetQuicksearch.html" name="Preferences">
 <ul>
 % for my $type (@types) {
-<li><input type="checkbox" class="checkbox" name="Want-<%$type->Name%>" value="1"
+<li><input type="checkbox" class="checkbox" id="Want-<%$type->Name%>" name="Want-<%$type->Name%>" value="1"
 % unless ($unwanted->{$type->Name}) {
 checked="checked"
 % }
-/><%$type->Name%><% $type->Description ? ': '.$type->Description : '' %></li>
+/>
+<label for="Want-<%$type->Name%>"><%$type->Name%><% $type->Description ? ': '.$type->Description : '' %></label>
+</li>
 % }
 </ul>
 
