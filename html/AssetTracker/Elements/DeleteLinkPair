@@ -2,8 +2,8 @@
     <td class="labeltop"><& ShowRelationLabel, uri => $uri, Label => loc($Base_name), Relation => $Base &>:</td>
     <td class="value">
 % while (my $link = $Object->$Base->Next) {
-      <input type="checkbox" class="checkbox" name="DeleteLink--<%$link->Type%>-<%$link->Target%>" value="1" />
-        <& /Elements/ShowLink, URI => $link->TargetURI &><br>
+      <input type="checkbox" class="checkbox" id="DeleteLink--<%$link->Type%>-<%$link->Target%>" name="DeleteLink--<%$link->Type%>-<%$link->Target%>" value="1" />
+      <label for="DeleteLink--<%$link->Type%>-<%$link->Target%>"><& ShowLink, URI => $link->TargetURI &></label><br />
 % }
     </td>
   </tr>
@@ -11,8 +11,8 @@
     <td class="labeltop"><& ShowRelationLabel, uri => $uri, Label => loc($Target_name), Relation => $Target &>:</td>
     <td class="value">
 % while (my $link = $Object->$Target->Next) {
-      <input type="checkbox" class="checkbox" name="DeleteLink-<%$link->Base%>-<%$link->Type%>-" value="1" />
-        <& /Elements/ShowLink, URI => $link->BaseURI &><br>
+      <input type="checkbox" class="checkbox" id="DeleteLink-<%$link->Base%>-<%$link->Type%>-" name="DeleteLink-<%$link->Base%>-<%$link->Type%>-" value="1" />
+      <label for="DeleteLink-<%$link->Base%>-<%$link->Type%>-"><& ShowLink, URI => $link->BaseURI &></label><br />
 % }
     </td>
   </tr>
