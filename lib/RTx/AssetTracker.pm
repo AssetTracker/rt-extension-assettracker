@@ -19,7 +19,7 @@
 package RTx::AssetTracker;
 use strict;
 use warnings;
-use version; our $VERSION = qv(2.0.0b1);
+use version; our $VERSION = version->declare("2.0.0_2");
 
 use RTx::AssetTracker::System;
 use RTx::AssetTracker::Type;
