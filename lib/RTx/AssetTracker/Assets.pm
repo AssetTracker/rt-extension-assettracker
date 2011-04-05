@@ -1952,7 +1952,43 @@ sub LimitStatus {
     );
 }
 
+=head2 LimitActiveStatus
 
+Limits the status to L<RTx::AssetTracker::Type/ActiveStatusArray>
+
+TODO: make this respect lifecycles for the asset type associated with the search
+
+=cut
+
+sub LimitActiveStatus {
+    my $self = shift;
+
+    my @active = RTx::AssetTracker::Type->ActiveStatusArray();
+    for my $active (@active) {
+        $assets->LimitStatus(
+            VALUE => $active,
+        );
+    }
+}
+
+=head2 LimitInactiveStatus
+
+Limits the status to L<RTx::AssetTracker::Type/InactiveStatusArray>
+
+TODO: make this respect lifecycles for the asset types associated with the search
+
+=cut
+
+sub LimitInactiveStatus {
+    my $self = shift;
+
+    my @active = RTx::AssetTracker::Type->InactiveStatusArray();
+    for my $active (@active) {
+        $assets->LimitStatus(
+            VALUE => $active,
+        );
+    }
+}
 
 =head2 IgnoreType
 
