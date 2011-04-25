@@ -220,7 +220,7 @@ my @results;
 my $title = loc("Create a new asset");
 
 my $TypeObj = RTx::AssetTracker::Type->new($session{'CurrentUser'});
-$TypeObj->Load($Type) || Abort(loc("Type could not be loaded."));
+$TypeObj->Load($Type) || Abort(loc("Asset Type [_1] could not be loaded.", $Type));
 
 $m->callback( TypeObj => $TypeObj, title => \$title, results => \@results, ARGSRef => \%ARGS );
 
