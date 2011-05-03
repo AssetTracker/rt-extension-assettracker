@@ -114,7 +114,7 @@ unless ($id || $AssetObj) {
 }
 
 if ($ARGS{'id'} eq 'new') {
-    # {{{ Create a new asset
+    # Create a new asset
     
     my $Type = RTx::AssetTracker::Type->new( $session{'CurrentUser'} );
     $Type->Load($ARGS{'Type'});
