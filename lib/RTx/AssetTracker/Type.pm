@@ -73,9 +73,6 @@ use RT::CustomField;
 use RT::CustomFields;
 use RT::Group;
 
-our @DEFAULT_ACTIVE_STATUS = qw(production development qa pilot dr test);
-our @DEFAULT_INACTIVE_STATUS = qw(retired deleted);
-
 our $RIGHTS = {
     SeeType            => 'Can this principal see this asset type',       # loc_pair
     AdminType          => 'Create, delete and modify asset types',        # loc_pair
