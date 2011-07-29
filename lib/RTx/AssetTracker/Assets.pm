@@ -1965,7 +1965,7 @@ sub LimitToActiveStatus {
 
     my @active = RT::Queue->ActiveStatusArray();
     for my $active (@active) {
-        $tickets->LimitStatus(
+        $self->LimitStatus(
             VALUE => $active,
         );
     }
@@ -1984,7 +1984,7 @@ sub LimitToInactiveStatus {
 
     my @active = RT::Queue->InactiveStatusArray();
     for my $active (@active) {
-        $tickets->LimitStatus(
+        $self->LimitStatus(
             VALUE => $active,
         );
     }
