@@ -1965,7 +1965,7 @@ sub LimitToActiveStatus {
 
     my @active = RTx::AssetTracker::Type->ActiveStatusArray();
     for my $active (@active) {
-        $assets->LimitStatus(
+        $self->LimitStatus(
             VALUE => $active,
         );
     }
@@ -1984,7 +1984,7 @@ sub LimitToInactiveStatus {
 
     my @active = RTx::AssetTracker::Type->InactiveStatusArray();
     for my $active (@active) {
-        $assets->LimitStatus(
+        $self->LimitStatus(
             VALUE => $active,
         );
     }
