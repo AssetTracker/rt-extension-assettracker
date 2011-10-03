@@ -86,7 +86,10 @@ if ($SubType =~/^RTx::AssetTracker::(.*)$/)  {
     $QualifiedType = $Type;
 }
 
-if ($id) { 
+if ($RT::VERSION =~ /^4/) {
+    $ObjectTabs = "/Elements/Tabs";
+}
+elsif ($id) { 
     $Object->Load($id) || Abort(loc("Couldn't load object [_1]", $id));
     $ObjectTabs = "/AssetTracker/Admin/Elements/${Type}Tabs";
 } else {

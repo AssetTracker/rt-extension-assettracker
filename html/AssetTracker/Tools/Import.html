@@ -43,7 +43,6 @@ if ($Import && $XML) {
     eval {
 	    ($rv, $results) = $assets->ImportXML($xml_data, $RunScrips, $Detailed);
         unshift @$results, loc("Asset import errors. No changes were made.") unless $rv;
-        use YAML; warn Dump([$rv, $results]);
     };
     if ($@) {
         unshift @$results, loc("Asset import exception: [_1]", $@) unless $rv;

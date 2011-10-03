@@ -112,10 +112,10 @@ if ($Create) {
        delete $session{'create_in_types'};
        if ($val == 0 ) {
            Abort("$msg");
-	}
-	else {
-		push @results, $msg;
-	}    
+	   }
+	   else {
+	        push @results, $msg;
+	   }    
      }
      else {
         $TypeObj->Load($id) || $TypeObj->Load($Name) || Abort("Couldn't load type '$Name'");
@@ -128,7 +128,7 @@ if ($TypeObj->Id()) {
     delete $session{'create_in_types'};
 my @attribs= qw(Description Name );
 
-  @results = UpdateRecordObject( AttributesRef => \@attribs, 
+  push @results, UpdateRecordObject( AttributesRef => \@attribs, 
 				    Object => $TypeObj, 
 				    ARGSRef => \%ARGS);
 
@@ -155,6 +155,12 @@ my @attribs= qw(Description Name );
 #	     RecordObj => $TypeObj, ARGSRef => \%ARGS, 
 #	     _CallbackName => 'ProcessLinks');
 #    push @results, @linkresults;
+
+# This code does automatic redirection if any updates happen.
+    ATMaybeRedirectForResults(
+        Actions   => \@results,
+        Arguments => { id => $TypeObj->Id },
+    );
 }
 </%INIT>
 

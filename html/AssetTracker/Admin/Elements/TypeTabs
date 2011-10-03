@@ -43,14 +43,24 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
+% if (!$rt4) {
 <& /Admin/Elements/Tabs, 
     subtabs => $tabs, 
     current_tab => 'AssetTracker/Admin/Types/index.html', 
     current_subtab => $current_tab, 
     Title => $Title &>
+% } else {
+    <& /Elements/Tabs &>
+% }
 
 <%INIT>
 my $tabs;
+my $rt4;
+if ($RT::VERSION !~ /^3/) {
+    $rt4 = 1;
+}
+else {
+
 if ($id) {
   $tabs->{'this'}  = {
                 title => $AssetTypeObj->Name,
@@ -101,6 +111,7 @@ foreach my $tab ( sort keys %{$tabs->{'this'}->{'subtabs'}} ) {
     }                                                                           
 }   
   		     	$current_tab = "AssetTracker/Admin/Types/Modify.html?id=".$id if $id;
+}
 </%INIT>
   
 <%ARGS>

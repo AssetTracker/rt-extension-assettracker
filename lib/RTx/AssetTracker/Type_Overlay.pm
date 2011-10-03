@@ -39,6 +39,7 @@ $RIGHTS = {
     AdminType          => 'Create, delete and modify asset types',        # loc_pair
     AssignCustomFields => 'Assign and remove custom fields',              # loc_pair
     ModifyTypeAdmins   => 'Modify administrators for type',              # loc_pair
+    ModifyTypeWatchers   => 'Modify watchers for type',              # loc_pair
     
     ShowAsset      => 'See asset details',                                # loc_pair
     CreateAsset    => 'Create assets of this type',                       # loc_pair
@@ -47,6 +48,19 @@ $RIGHTS = {
 #    OwnAsset       => 'Own assets of this type',                       # loc_pair
 #    WatchAsAdmin   => 'Right to administer type',
 
+};
+
+our $RIGHT_CATEGORIES = {
+        SeeType            => 'General',
+        ShowAsset          => 'General',
+        ModifyAsset        => 'General',
+        CreateAsset        => 'General',
+        AdminType          => 'Admin',
+        ModifyTypeAdmins   => 'Staff',
+        ModifyTypeWatchers   => 'Staff',
+        RetireAsset        => 'Staff',
+        OwnAsset           => 'General',
+        WatchAsAdmin       => 'General',
 };
 
 # Tell RT::ACE that this sort of object can get acls granted
@@ -364,6 +378,10 @@ ts do
 sub AvailableRights {
     my $self = shift;
     return($RIGHTS);
+}
+
+sub RightCategories {
+        return $RIGHT_CATEGORIES;
 }
 
 # {{{ sub Create

@@ -49,7 +49,7 @@
 % }
 % while (my $asset = $Assets->Next) {
 %    next unless $asset->CurrentUserHasRight($CheckTypeRight);
-<OPTION VALUE="<%$asset->Id%>" <%( $asset->Id eq $Default ? 'SELECTED' : '')%>><%$asset->Name%>
+<OPTION VALUE="<%$asset->$Method%>" <%( $asset->Id eq $Default ? 'SELECTED' : '')%>><%$asset->Name%>
 %   if (($Verbose) and ($asset->Description) ){
 (<%$asset->Description%>)
 %   }
@@ -66,6 +66,7 @@ $NamedValues => 0
 $Default => 0
 $Lite => 0
 $Exclude => undef
+$Method => 'id'
 </%ARGS>
 
 <%INIT>
