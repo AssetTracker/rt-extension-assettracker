@@ -4,12 +4,12 @@ The work is released under the GPL
 
 PREREQUISITES
 
-A working RT 3.8 installation. (3.8.1 or greater)
+A working RT 3.8/4 installation. (3.8.1 or greater)
 
 WARNING
 
 Only mysql and SQLite are tested by the author. Feel free to send me a
-schema file for other databases supported by RT 3.8
+schema file for other databases supported by RT.
 
 Oracle schema provided by Joop van de Wege.
 Postgres schema provided by Rolf Schaufelberger.
@@ -27,7 +27,7 @@ Add RTx::AssetTracker to your Plugins in etc/RT_SiteConfig.pm and restart your w
 
 UPGRADE
 
-If you have AT 1.2.4 installed under RT 3.8, do the following:
+If you have AT 1.2.4 installed under RT, do the following:
 
 1. Make a backup of any AT customizations.
 
@@ -53,13 +53,13 @@ If you have AT 1.2.4 installed under RT 3.8, do the following:
     from etc/upgrade/<version> directory: If the dir has any schema
     files then run:
 
-            /opt/rt3/sbin/rt-setup-database --dba <dba> \
+            /opt/rt4/sbin/rt-setup-database --dba <dba> \
             --prompt-for-dba-password --action schema \
             --datadir etc/upgrade/<version>
 
     If the dir has a file named 'content' then run:
 
-        /opt/rt3/sbin/rt-setup-database --dba <dba> \
+        /opt/rt4/sbin/rt-setup-database --dba <dba> \
             --prompt-for-dba-password --action insert \
             --datadir etc/upgrade/<version>
 
