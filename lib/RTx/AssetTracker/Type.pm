@@ -1512,6 +1512,60 @@ sub _CoreAccessible {
  }
 };
 
+sub Dependencies {
+    my $self = shift;
+    my ($walker, $deps) = @_;
+
+    $self->SUPER::Dependencies($walker, $deps);
+
+    # role groups( Owner, Admin )
+    my $objs = RT::Groups->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Type-Role' );
+    $objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
+    $deps->Add( in => $objs );
+
+    # Scrips
+    $objs = RTx::AssetTracker::Scrips->new( $self->CurrentUser );
+    $objs->LimitToAssetType( $self->id );
+    $deps->Add( in => $objs );
+
+    # Templates (global ones have already been dealt with)
+    $objs = RTx::AssetTracker::Templates->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'AssetType', VALUE => $self->Id);
+    $deps->Add( in => $objs );
+
+    # Custom Fields on assets of this type (CFs on the type itself
+    # have already been dealt with)
+    $objs = RT::ObjectCustomFields->new( $self->CurrentUser );
+    $objs->Limit( FIELD           => 'ObjectId',
+                  OPERATOR        => '=',
+                  VALUE           => $self->id,
+                  ENTRYAGGREGATOR => 'OR' );
+    $objs->Limit( FIELD           => 'ObjectId',
+                  OPERATOR        => '=',
+                  VALUE           => 0,
+                  ENTRYAGGREGATOR => 'OR' );
+    my $cfs = $objs->Join(
+        ALIAS1 => 'main',
+        FIELD1 => 'CustomField',
+        TABLE2 => 'CustomFields',
+        FIELD2 => 'id',
+    );
+    $objs->Limit( ALIAS    => $cfs,
+                  FIELD    => 'LookupType',
+                  OPERATOR => 'STARTSWITH',
+                  VALUE    => 'RTx::AssetTracker::Type-' );
+    $deps->Add( in => $objs );
+
+    # Assets
+    $objs = RTx::AssetTracker::Assets->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Type', VALUE => $self->Id );
+    $objs->{allow_deleted_search} = 1;
+    $deps->Add( in => $objs );
+}
+
+
+
 RT::Base->_ImportOverlays();
 
 1;

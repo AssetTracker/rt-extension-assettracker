@@ -2306,6 +2306,32 @@ sub _CoreAccessible {
  }
 };
 
+sub Dependencies {
+    my $self = shift;
+    my ($walker, $deps) = @_;
+
+    $self->SUPER::Dependencies($walker, $deps);
+
+    # Links
+    my $links = RT::Links->new( $self->CurrentUser );
+    $links->Limit(
+        SUBCLAUSE       => "either",
+        FIELD           => $_,
+        VALUE           => $self->URI,
+        ENTRYAGGREGATOR => 'OR'
+    ) for qw/Base Target/;
+    $deps->Add( in => $links );
+
+    # role groups( Owner, Admin )
+    $objs = RT::Groups->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Asset-Role' );
+    $objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
+    $deps->Add( in => $objs );
+
+    # Asset Type
+    $deps->Add( out => $self->TypeObj );
+}
+
 RT::Base->_ImportOverlays();
 
 1;
