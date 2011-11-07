@@ -1031,7 +1031,6 @@ sub PreInflate {
         my $obj = RTx::AssetTracker::Scrip->new( RT->SystemUser );
         $obj->LoadByCols( Queue => 0, Description => $data->{Description} );
         if ($obj->Id) {
-            warn "---------- Skipping global scrip $data->{Description}";
             $importer->Resolve( $uid => ref($obj) => $obj->Id );
             return;
         }
