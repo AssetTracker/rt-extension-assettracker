@@ -964,7 +964,26 @@ sub Dependencies {
 
     $self->SUPER::Dependencies($walker, $deps);
 
-    $deps->Add( out => $self->QueueObj );
+    $deps->Add( out => $self->AssetTypeObj );
+}
+
+sub PreInflate {
+    my $class = shift;
+    my ($importer, $uid, $data) = @_;
+
+    $class->SUPER::PreInflate( $importer, $uid, $data );
+
+    if ($data->{Queue} == 0) {
+        my $obj = RTx::AssetTracker::Template->new( RT->SystemUser );
+        $obj->LoadGlobalTemplate( $data->{Name} );
+        if ($obj->Id) {
+            warn "---------- Skipping global template $data->{Name}";
+            $importer->Resolve( $uid => ref($obj) => $obj->Id );
+            return;
+        }
+    }
+
+    return 1;
 }
 
 RT::Base->_ImportOverlays();

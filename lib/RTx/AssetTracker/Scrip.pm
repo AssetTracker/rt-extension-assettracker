@@ -1017,8 +1017,27 @@ sub Dependencies {
 
     $deps->Add( out => $self->ScripConditionObj );
     $deps->Add( out => $self->ScripActionObj );
-    $deps->Add( out => $self->QueueObj );
+    $deps->Add( out => $self->AssetTypeObj );
     $deps->Add( out => $self->TemplateObj );
+}
+
+sub PreInflate {
+    my $class = shift;
+    my ($importer, $uid, $data) = @_;
+
+    $class->SUPER::PreInflate( $importer, $uid, $data );
+
+    if ($data->{AssetType} == 0) {
+        my $obj = RTx::AssetTracker::Scrip->new( RT->SystemUser );
+        $obj->LoadByCols( Queue => 0, Description => $data->{Description} );
+        if ($obj->Id) {
+            warn "---------- Skipping global scrip $data->{Description}";
+            $importer->Resolve( $uid => ref($obj) => $obj->Id );
+            return;
+        }
+    }
+
+    return 1;
 }
 
 RT::Base->_ImportOverlays();
