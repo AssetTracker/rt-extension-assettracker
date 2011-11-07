@@ -1559,7 +1559,7 @@ sub Dependencies {
 
     # Assets
     $objs = RTx::AssetTracker::Assets->new( $self->CurrentUser );
-    $objs->Limit( FIELD => 'Type', VALUE => $self->Id );
+    $objs->_SQLLimit( FIELD => "Type", VALUE => $self->Id );
     $objs->{allow_deleted_search} = 1;
     $deps->Add( in => $objs );
 }
