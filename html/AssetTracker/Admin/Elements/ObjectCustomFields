@@ -90,15 +90,14 @@ if ($RT::VERSION =~ /^4/) {
     $ObjectTabs = "/Elements/Tabs";
 }
 elsif ($id) { 
-    $Object->Load($id) || Abort(loc("Couldn't load object [_1]", $id));
     $ObjectTabs = "/AssetTracker/Admin/Elements/${Type}Tabs";
 } else {
     $ObjectTabs = "/Admin/Elements/GlobalCustomFieldTabs";
-
 } 
 
 my $title; 
 if ($id) {
+$Object->Load($id) || Abort(loc("Couldn't load object [_1]", $id));
 $title =  loc('Edit Custom Fields for [_1]', $Object->Name);
 }
 elsif ($SubType) {
