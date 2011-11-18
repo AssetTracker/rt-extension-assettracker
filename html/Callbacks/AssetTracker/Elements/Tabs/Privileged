@@ -183,7 +183,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
 
         } else {
             $section = $tabs->child( select => title => loc('Asset Types'),
-                                     path => "/Admin/$type/" );
+                                     path => "/AssetTracker/Admin/$type/" );
         }
 
         $section->child( select => title => loc('Select'),
