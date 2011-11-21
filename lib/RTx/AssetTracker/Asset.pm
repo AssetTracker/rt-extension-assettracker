@@ -2306,11 +2306,11 @@ sub _CoreAccessible {
  }
 };
 
-sub Dependencies {
+sub FindDependencies {
     my $self = shift;
     my ($walker, $deps) = @_;
 
-    $self->SUPER::Dependencies($walker, $deps);
+    $self->SUPER::FindDependencies($walker, $deps);
 
     # Links
     my $links = RT::Links->new( $self->CurrentUser );

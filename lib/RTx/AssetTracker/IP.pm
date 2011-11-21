@@ -516,11 +516,11 @@ sub _CoreAccessible {
  }
 };
 
-sub Dependencies {
+sub FindDependencies {
     my $self = shift;
     my ($walker, $deps) = @_;
 
-    $self->SUPER::Dependencies($walker, $deps);
+    $self->SUPER::FindDependencies($walker, $deps);
 
     # Asset
     $deps->Add( out => $self->AssetObj );
