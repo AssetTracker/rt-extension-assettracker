@@ -964,7 +964,7 @@ sub FindDependencies {
 
     $self->SUPER::FindDependencies($walker, $deps);
 
-    $deps->Add( out => $self->AssetTypeObj );
+    $deps->Add( out => $self->AssetTypeObj ) if $self->AssetTypeObj;
 }
 
 sub PreInflate {

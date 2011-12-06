@@ -1017,7 +1017,7 @@ sub FindDependencies {
 
     $deps->Add( out => $self->ScripConditionObj );
     $deps->Add( out => $self->ScripActionObj );
-    $deps->Add( out => $self->AssetTypeObj );
+    $deps->Add( out => $self->AssetTypeObj ) if $self->AssetTypeObj;
     $deps->Add( out => $self->TemplateObj );
 }
 
