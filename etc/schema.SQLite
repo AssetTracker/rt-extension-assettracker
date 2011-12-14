@@ -101,24 +101,38 @@ CREATE TABLE AT_ScripConditions (
 CREATE TABLE AT_Scrips (
   id INTEGER PRIMARY KEY  ,
   Description varchar(255),
-  ScripCondition integer NULL  ,
-  ScripAction integer NULL  ,
+  ScripCondition integer NULL DEFAULT 0 ,
+  ScripAction integer NULL DEFAULT 0 ,
   ConditionRules text NULL  ,
   ActionRules text NULL  ,
   CustomIsApplicableCode text NULL  ,
   CustomPrepareCode text NULL  ,
   CustomCommitCode text NULL  ,
   Stage varchar(32) NULL  ,
-  AssetType integer NULL  ,
-  Template integer NULL  ,
-  Creator integer NULL  ,
+  Template integer NULL DEFAULT 0 ,
+  Creator integer NULL DEFAULT 0 ,
   Created DATETIME NULL  ,
-  LastUpdatedBy integer NULL  ,
+  LastUpdatedBy integer NULL DEFAULT 0 ,
   LastUpdated DATETIME NULL  
   
 ) ;
 
 --- }}}
+
+CREATE TABLE AT_ObjectScrips (
+  id INTEGER NOT NULL  ,
+  Scrip int NOT NULL  ,
+  ObjectId integer NOT NULL,
+  SortOrder integer NOT NULL DEFAULT 0  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  PRIMARY KEY (id)
+);
+CREATE UNIQUE INDEX AT_ObjectScrips1 ON AT_ObjectScrips (ObjectId, Scrip);
+
 
 --- {{{ ScripActions
 

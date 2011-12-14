@@ -74,6 +74,8 @@ use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Template;
 use RTx::AssetTracker::ScripCondition;
 use RTx::AssetTracker::ScripAction;
+use RTx::AssetTracker::Scrips;
+use RTx::AssetTracker::ObjectScrip;
 
 
 # {{{ sub Create
@@ -169,7 +171,6 @@ sub Create {
         unless $condition->Id;
 
     my ( $id, $msg ) = $self->SUPER::Create(
-        AssetType              => $args{'AssetType'},
         Template               => $template->Id,
         ScripCondition         => $condition->id,
         Stage                  => $args{'Stage'},
@@ -179,12 +180,15 @@ sub Create {
         CustomCommitCode       => $args{'CustomCommitCode'},
         CustomIsApplicableCode => $args{'CustomIsApplicableCode'},
     );
-    if ( $id ) {
-        return ( $id, $self->loc('Scrip Created') );
+    return ( $id, $msg ) unless $id;
+
+    unless ( $args{'Stage'} eq 'Disabled' ) {
+        my ($status, $msg) = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser )
+            ->Add( Scrip => $self, ObjectId => $args{'AssetType'} );
+        $RT::Logger->error( "Couldn't add scrip: $msg" ) unless $status;
     }
-    else {
-        return ( $id, $msg );
-    }
+
+    return ( $id, $self->loc('Scrip Created') );
 }
 
 
@@ -202,29 +206,48 @@ sub Delete {
         return ( 0, $self->loc('Permission Denied') );
     }
 
+    RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser )->DeleteAll( Scrip => $self );
+
     return ( $self->SUPER::Delete(@_) );
 }
 
-
-
-=head2 AssetTypeObj
-
-Retuns an RTx::AssetTracker::Type object with this Scrip's asset type
-
-=cut
-
-sub AssetTypeObj {
+sub IsAdded {
     my $self = shift;
-
-    if ( !$self->{'AssetTypeObj'} ) {
-        require RTx::AssetTracker::Type;
-        $self->{'AssetTypeObj'} = RTx::AssetTracker::Type->new( $self->CurrentUser );
-        $self->{'AssetTypeObj'}->Load( $self->__Value('AssetType') );
-    }
-    return ( $self->{'AssetTypeObj'} );
+    my $record = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
+    $record->LoadByCols( Scrip => $self->id, ObjectId => shift || 0 );
+    return undef unless $record->id;
+    return $record;
 }
 
+sub AddedTo {
+    my $self = shift;
+    return RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser )
+        ->AddedTo( Scrip => $self );
+}
 
+sub NotAddedTo {
+    my $self = shift;
+    return RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser )
+        ->NotAddedTo( Scrip => $self );
+}
+
+sub AddToObject {
+    my $self = shift;
+    my $object = shift;
+
+    my $rec = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
+    return $rec->Add( Scrip => $self, ObjectId => $object );
+}
+
+sub RemoveFromObject {
+    my $self = shift;
+    my $object = shift;
+
+    my $rec = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
+    $rec->LoadByCols( Scrip => $self->id, ObjectId => $object );
+    return (0, $self->loc('Scrip is not added') ) unless $rec->id;
+    return $rec->Delete;
+}
 
 =head2 ActionObj
 
@@ -503,8 +526,7 @@ sub _Set {
     );
 
     unless ( $self->CurrentUserHasRight('ModifyScrips') ) {
-        $RT::Logger->debug(
-                 "CurrentUser can't modify Scrips for " . $self->AssetType . "\n" );
+        $RT::Logger->debug( "CurrentUser can't modify Scrips" );
         return ( 0, $self->loc('Permission Denied') );
     }
 
@@ -549,9 +571,7 @@ sub _Value {
     my $self = shift;
 
     unless ( $self->CurrentUserHasRight('ShowScrips') ) {
-        $RT::Logger->debug( "CurrentUser can't modify Scrips for "
-                            . $self->__Value('AssetType')
-                            . "\n" );
+        $RT::Logger->debug( "CurrentUser can't see scrip #". $self->__Value('id') );
         return (undef);
     }
 
@@ -591,18 +611,20 @@ sub HasRight {
                  Principal => undef,
                  @_ );
 
-    if ( $self->SUPER::_Value('AssetType') ) {
-        return $args{'Principal'}->HasRight(
+    my $assettypes = $self->AddedTo;
+    my $found = 0;
+    while ( my $assettype = $assettypes->Next ) {
+        return 1 if $args{'Principal'}->HasRight(
             Right  => $args{'Right'},
-            Object => $self->AssetTypeObj
+            Object => $assettype,
         );
+        $found = 1;
     }
-    else {
-        return $args{'Principal'}->HasRight(
-            Object => $RT::System,
-            Right  => $args{'Right'},
-        );
-    }
+    return $args{'Principal'}->HasRight(
+        Object => $RT::System,
+        Right  => $args{'Right'},
+    ) unless $found;
+    return 0;
 }
 
 
@@ -897,24 +919,6 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 =cut
 
 
-=head2 AssetType
-
-Returns the current value of AssetType.
-(In the database, AssetType is stored as int(11).)
-
-
-
-=head2 SetAssetType VALUE
-
-
-Set AssetType to VALUE.
-Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
-(In the database, AssetType will be stored as a int(11).)
-
-
-=cut
-
-
 =head2 Template
 
 Returns the current value of Template.
@@ -993,8 +997,6 @@ sub _CoreAccessible {
 		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
         Stage =>
 		{read => 1, write => 1, sql_type => 12, length => 32,  is_blob => 0,  is_numeric => 0,  type => 'varchar(32)', default => ''},
-        AssetType =>
-		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
         Template =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
         Creator =>

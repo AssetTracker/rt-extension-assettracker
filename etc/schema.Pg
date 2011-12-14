@@ -117,7 +117,6 @@ CREATE TABLE AT_Scrips (
   CustomPrepareCode text NULL  ,
   CustomCommitCode text NULL  ,
   Stage varchar(32) NULL  ,
-  AssetType integer NOT NULL DEFAULT 0  ,
   Template integer NOT NULL DEFAULT 0  ,
   Creator integer NOT NULL DEFAULT 0  ,
   Created TIMESTAMP NULL  ,
@@ -126,6 +125,27 @@ CREATE TABLE AT_Scrips (
   PRIMARY KEY (id)
 
 );
+
+
+CREATE SEQUENCE at_objectscrips_id_seq;
+
+CREATE TABLE AT_ObjectScrips (
+  id INTEGER DEFAULT nextval('at_objectscrips_id_seq'),
+  Scrip integer NOT NULL,
+  ObjectId integer NOT NULL,
+  SortOrder integer NOT NULL DEFAULT 0  ,
+
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created TIMESTAMP NULL  ,
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated TIMESTAMP NULL  ,
+  PRIMARY KEY (id)
+
+);
+
+CREATE UNIQUE INDEX AT_ObjectScrips1 ON AT_ObjectScrips (ObjectId, Scrip);
+
+
 
 --
 -- Sequences for table SCRIPACTIONS

@@ -65,9 +65,11 @@ use strict;
 use warnings;
 
 package RTx::AssetTracker::Scrips;
+
 use base 'RT::SearchBuilder';
 
 use RTx::AssetTracker::Scrip;
+use RTx::AssetTracker::ObjectScrips;
 
 sub Table {'AT_Scrips'};
 
@@ -81,14 +83,17 @@ another call to this method
 =cut
 
 sub LimitToAssetType  {
-   my $self = shift;
-  my $assettype = shift;
+    my $self = shift;
+    my $assettype = shift;
+    return unless defined $assettype;
  
-  $self->Limit(ENTRYAGGREGATOR => 'OR',
-               FIELD => 'AssetType',
-               VALUE => "$assettype")
-      if defined $assettype;
-  
+    my $alias = RTx::AssetTracker::ObjectScrips->new( $self->CurrentUser )
+        ->JoinTargetToThis( $self );
+    $self->Limit(
+        ALIAS => $alias,
+        FIELD => 'ObjectId',
+        VALUE => int $assettype,
+    );
 }
 
 
@@ -102,12 +107,20 @@ another call to this method or LimitToAssetType
 
 
 sub LimitToGlobal  {
-   my $self = shift;
- 
-  $self->Limit (ENTRYAGGREGATOR => 'OR',
-		FIELD => 'AssetType',
-		VALUE => 0);
-  
+    my $self = shift;
+    return $self->LimitToAssetType(0);
+}
+
+sub LimitToAdded {
+    my $self = shift;
+    return RTx::AssetTracker::ObjectScrips->new( $self->CurrentUser )
+        ->LimitTargetToAdded( $self => @_ );
+}
+
+sub LimitToNotAdded {
+    my $self = shift;
+    return RTx::AssetTracker::ObjectScrips->new( $self->CurrentUser )
+        ->LimitTargetToNotAdded( $self => @_ );
 }
 
 # {{{ sub Next 
