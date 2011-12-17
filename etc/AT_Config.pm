@@ -104,15 +104,8 @@ Set(%AdminSearchResultFormat,
         .q{,__Description__,__Disabled__},
 
     AT_Scrips =>
-        q{'<a href="__WebPath__/AssetTracker/Admin/Types/Scrip.html?id=__id__&AssetType=__AssetTypeId__">__id__</a>/TITLE:#'}
-        .q{,'<a href="__WebPath__/AssetTracker/Admin/Types/Scrip.html?id=__id__&AssetType=__AssetTypeId__">__Description__</a>/TITLE:Description'
-}
-        .q{,__Stage__, __Condition__, __Action__, __Template__},
-
-    AT_GlobalScrips =>
-        q{'<a href="__WebPath__/AssetTracker/Admin/Global/Scrip.html?id=__id__">__id__</a>/TITLE:#'}
-        .q{,'<a href="__WebPath__/AssetTracker/Admin/Global/Scrip.html?id=__id__">__Description__</a>/TITLE:Description'
-}
+        q{'<a href="__WebPath__/AssetTracker/Admin/Scrips/Modify.html?id=__id__">__id__</a>/TITLE:#'}
+        .q{,'<a href="__WebPath__/AssetTracker/Admin/Scrips/Modify.html?id=__id__">__Description__</a>/TITLE:Description'}
         .q{,__Stage__, __Condition__, __Action__, __Template__},
 
     AT_Templates =>

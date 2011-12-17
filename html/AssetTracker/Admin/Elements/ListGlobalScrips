@@ -61,7 +61,7 @@
 % }
 
 <%init>
-my $Format = RT->Config->Get('AdminSearchResultFormat')->{'AT_GlobalScrips'};
+my $Format = RT->Config->Get('AdminSearchResultFormat')->{'AT_Scrips'};
 
 my $Scrips = RTx::AssetTracker::Scrips->new( $session{'CurrentUser'} );
 $Scrips->LimitToGlobal;

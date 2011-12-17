@@ -87,13 +87,12 @@ if ( $id ) {
     }
 }
 
+$Format ||= RT->Config->Get('AdminSearchResultFormat')->{'AT_Scrips'};
 if ($AssetTypeObj->id) {
     $Scrips->LimitToAssetType($id);
-    $Format ||= RT->Config->Get('AdminSearchResultFormat')->{'AT_Scrips'};
 }
 else {
     $Scrips->LimitToGlobal();
-    $Format ||= RT->Config->Get('AdminSearchResultFormat')->{'AT_GlobalScrips'};
 }
 
 # deal with modifying and deleting existing scrips
