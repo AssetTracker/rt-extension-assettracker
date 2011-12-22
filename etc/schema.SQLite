@@ -108,7 +108,7 @@ CREATE TABLE AT_Scrips (
   CustomIsApplicableCode text NULL  ,
   CustomPrepareCode text NULL  ,
   CustomCommitCode text NULL  ,
-  Stage varchar(32) NULL  ,
+  Disabled int2 NOT NULL DEFAULT 0 ,
   Template integer NULL DEFAULT 0 ,
   Creator integer NULL DEFAULT 0 ,
   Created DATETIME NULL  ,
@@ -122,6 +122,7 @@ CREATE TABLE AT_Scrips (
 CREATE TABLE AT_ObjectScrips (
   id INTEGER NOT NULL  ,
   Scrip int NOT NULL  ,
+  Stage varchar(32) NOT NULL DEFAULT 'TransactionCreate' ,
   ObjectId integer NOT NULL,
   SortOrder integer NOT NULL DEFAULT 0  ,
 

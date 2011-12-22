@@ -116,7 +116,7 @@ CREATE TABLE AT_Scrips (
   CustomIsApplicableCode text NULL  ,
   CustomPrepareCode text NULL  ,
   CustomCommitCode text NULL  ,
-  Stage varchar(32) NULL  ,
+  Disabled integer NOT NULL DEFAULT 0 ,
   Template integer NOT NULL DEFAULT 0  ,
   Creator integer NOT NULL DEFAULT 0  ,
   Created TIMESTAMP NULL  ,
@@ -132,6 +132,7 @@ CREATE SEQUENCE at_objectscrips_id_seq;
 CREATE TABLE AT_ObjectScrips (
   id INTEGER DEFAULT nextval('at_objectscrips_id_seq'),
   Scrip integer NOT NULL,
+  Stage varchar(32) NOT NULL DEFAULT 'TransactionCreate' ,
   ObjectId integer NOT NULL,
   SortOrder integer NOT NULL DEFAULT 0  ,
 

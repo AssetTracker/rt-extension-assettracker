@@ -73,6 +73,13 @@ use RTx::AssetTracker::ObjectScrips;
 
 sub Table {'AT_Scrips'};
 
+sub _Init {
+    my $self = shift;
+
+    $self->{'with_disabled_column'} = 1;
+
+    return ( $self->SUPER::_Init(@_) );
+}
 
 =head2 LimitToAssetType
 
@@ -121,6 +128,20 @@ sub LimitToNotAdded {
     my $self = shift;
     return RTx::AssetTracker::ObjectScrips->new( $self->CurrentUser )
         ->LimitTargetToNotAdded( $self => @_ );
+}
+
+sub LimitByStage  {
+    my $self = shift;
+    my %args = @_%2? (Stage => @_) : @_;
+    return unless defined $args{'Stage'};
+
+    my $alias = RTx::AssetTracker::ObjectScrips->new( $self->CurrentUser )
+        ->JoinTargetToThis( $self, %args );
+    $self->Limit(
+        ALIAS => $alias,
+        FIELD => 'Stage',
+        VALUE => $args{'Stage'},
+    );
 }
 
 sub ApplySortOrder {
@@ -351,12 +372,9 @@ sub _FindScrips {
                  @_ );
 
 
-    $self->LimitToAssetType( $self->{'AssetObj'}->AssetTypeObj->Id );
-      #Limit it to  $Asset->AssetTypeObj->Id
-    $self->LimitToGlobal();
-      # or to "global"
-
-    $self->Limit( FIELD => "Stage", VALUE => $args{'Stage'} );
+    $self->LimitToAssetType( $self->{'AssetObj'}->TypeObj->Id );
+    $self->LimitToGlobal;
+    $self->LimitByStage( $args{'Stage'} );
 
     my $ConditionsAlias = $self->NewAlias('AT_ScripConditions');
 
