@@ -51,14 +51,9 @@
 <%init>
 my $TypeObj = RTx::AssetTracker::Type->new($session{'CurrentUser'});
 $TypeObj->Load($id);
+Abort(loc("Asset Type [_1] not found",$id)) unless $TypeObj->id;
 
-my $title;
-
-if ($TypeObj->id) {
-    $title = loc("Modify scrips for asset type [_1]", $TypeObj->Name);
-} else {
-    Abort(loc("Asset Type [_1] not found",$id));
-}
+my $title = loc("Modify scrips for asset type [_1]", $TypeObj->Name);
 </%init>
 
 <%ARGS>
