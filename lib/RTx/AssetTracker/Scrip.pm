@@ -243,16 +243,42 @@ sub AddToObject {
     my $self = shift;
     my %args = @_%2? (ObjectId => @_) : (@_);
 
+    my $assettype;
+    if ( $args{'ObjectId'} ) {
+        $assettype = RTx::AssetTracker::Type->new( $self->CurrentUser );
+        $assettype->Load( $args{'ObjectId'} );
+        return (0, $self->loc('Invalid asset type'))
+            unless $assettype->id;
+    }
+    return ( 0, $self->loc('Permission Denied') )
+        unless $self->CurrentUser->PrincipalObj->HasRight(
+            Object => $assettype || $RT::System, Right => 'ModifyScrips',
+        )
+    ;
+
     my $rec = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
     return $rec->Add( %args, Scrip => $self );
 }
 
 sub RemoveFromObject {
     my $self = shift;
-    my $object = shift;
+    my %args = @_%2? (ObjectId => @_) : (@_);
+
+    my $assettype;
+    if ( $args{'ObjectId'} ) {
+        $assettype = RTx::AssetTracker::Type->new( $self->CurrentUser );
+        $assettype->Load( $args{'ObjectId'} );
+        return (0, $self->loc('Invalid asset type id'))
+            unless $assettype->id;
+    }
+    return ( 0, $self->loc('Permission Denied') )
+        unless $self->CurrentUser->PrincipalObj->HasRight(
+            Object => $assettype || $RT::System, Right => 'ModifyScrips',
+        )
+    ;
 
     my $rec = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
-    $rec->LoadByCols( Scrip => $self->id, ObjectId => $object );
+    $rec->LoadByCols( Scrip => $self->id, ObjectId => $args{'ObjectId'} );
     return (0, $self->loc('Scrip is not added') ) unless $rec->id;
     return $rec->Delete;
 }
