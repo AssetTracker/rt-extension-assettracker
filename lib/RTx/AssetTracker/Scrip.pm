@@ -254,6 +254,18 @@ sub AddToObject {
         )
     ;
 
+    my $tname = $self->TemplateObj->Name;
+    my $template = RT::Template->new( $self->CurrentUser );
+    $template->LoadAssetTypeTemplate( Assettype => $assettype? $assettype->id : 0, Name => $tname );
+    $template->LoadGlobalTemplate( $tname ) if $assettype && !$template->id;
+    unless ( $template->id ) {
+        if ( $assettype ) {
+            return (0, $self->loc('No template [_1] in the asset type', $tname));
+        } else {
+            return (0, $self->loc('No global template [_1]', $tname));
+        }
+    }
+
     my $rec = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
     return $rec->Add( %args, Scrip => $self );
 }
