@@ -219,6 +219,8 @@ sub Delete {
     return ( $self->SUPER::Delete(@_) );
 }
 
+sub IsGlobal { return shift->IsAdded(0) }
+
 sub IsAdded {
     my $self = shift;
     my $record = RTx::AssetTracker::ObjectScrip->new( $self->CurrentUser );
