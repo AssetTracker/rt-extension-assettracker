@@ -3,47 +3,40 @@ use strict;
 use warnings;
 
 use RTx::AssetTracker::Test tests => 25;
-use RT;
 
+my $assettype = RT::Test->load_or_create_assettype( Name => 'General' );
+ok $assettype && $assettype->id, 'loaded or created asset type';
+
+note 'basic scrips functionality test: create+execute';
 {
-
-ok (require RTx::AssetTracker::Scrip);
-
-
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-$t->Create(Name => 'ScripTest');
-ok($t->Id, "Created a scriptest type");
-
-my $s1 = RTx::AssetTracker::Scrip->new($RT::SystemUser);
-my ($val, $msg) =$s1->Create( AssetType => $t->Id,
-             ScripAction => 'User Defined',
-             ScripCondition => 'User Defined',
-             CustomIsApplicableCode => 'if ($self->AssetObj->Name =~ /fire/) { return (1);} else { return(0)}',
-             CustomPrepareCode => 'return 1',
-             CustomCommitCode => '$self->AssetObj->SetDescription(Value => "firey");',
-             Template => 'Blank'
+    my $s1 = RTx::AssetTracker::Scrip->new(RT->SystemUser);
+    my ($val, $msg) = $s1->Create(
+        Assettype => $assettype->Id,
+        ScripAction => 'User Defined',
+        ScripCondition => 'User Defined',
+        CustomIsApplicableCode => '$self->AssetObj->Name =~ /fire/? 1 : 0',
+        CustomPrepareCode => 'return 1',
+        CustomCommitCode => '$self->AssetObj->SetDescription("87");',
+        Template => 'Blank'
     );
-ok($val,$msg);
+    ok($val,$msg);
 
-my $asset = RTx::AssetTracker::Asset->new($RT::SystemUser);
-my ($av,$atv,$am) = $asset->Create(Type => $t->Id,
-                                    Name => "hair on fire",
-                                    );
-ok($av, $am);
+    my $asset = RTx::AssetTracker::Asset->new(RT->SystemUser);
+    my ($tv,$ttv,$tm) = $asset->Create(
+        Type => $assettype->Id,
+        Name => "hair on fire",
+    );
+    ok($tv, $tm);
 
-is ($asset->Description , 'firey', "Asset description is set right");
+    is ($asset->Description , 'firey', "Asset description is set right");
 
-
-my $asset2 = RTx::AssetTracker::Asset->new($RT::SystemUser);
-my ($t2v,$t2tv,$t2m) = $asset2->Create(Type => $t->Id,
-                                    Name => "hair in water",
-                                    );
-ok($t2v, $t2m);
-
-isnt ($asset2->Description , 'firey', "Asset description is set right");
-
-
-
+    my $asset2 = RT::Asset->new(RT->SystemUser);
+    my ($t2v,$t2tv,$t2m) = $asset2->Create(
+        Type => $assettype->Id,
+        Name => "hair in water",
+    );
+    ok($t2v, $t2m);
+    isnt ($asset2->Description , 'firey', "Asset description is set right");
 }
 
 
