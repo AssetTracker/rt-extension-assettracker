@@ -299,6 +299,16 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
         $types->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Types/index.html" );
         $types->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Types/Modify.html?Create=1" );
 
+        if ( $session{'CurrentUser'}->HasRight( Object => RT->System, Right => 'ModifyScrips' ) ) {
+            my $scrips = $admin->child( 'at_scrips' =>
+                title       => loc('AT Scrips'),
+                description => loc('Manage asset scrips'),
+                path        => '/AssetTracker/Admin/Scrips/',
+            );
+            $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Scrips/" );
+            $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Modify.html?Create=1" );
+        }
+
         my $admin_global = $admin->child("global");
 
         my $scrips = $admin_global->child( at_scrips =>
