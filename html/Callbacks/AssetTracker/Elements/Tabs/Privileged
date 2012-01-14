@@ -255,7 +255,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
 
                 my $scrips = $type->child( scrips => title => loc('Scrips'), path => "/AssetTracker/Admin/Types/Scrips.html?id=" . $id);
                 $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Types/Scrips.html?id=" . $id );
-                $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Modify.html?Create=1;AssetType=" . $id);
+                $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Create.html?AssetType=" . $id);
 
                 my $ticket_cfs = $type->child( 'asset-custom-fields' => title => loc('Asset Custom Fields'),
                     path => '/AssetTracker/Admin/Types/CustomFields.html?SubType=RTx::AssetTracker::Asset&id=' . $id );
@@ -274,7 +274,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
     if ( $request_path =~ m{^/AssetTracker/Admin/Global/Scrips\.html} ) {
         my $tabs = PageMenu();
         $tabs->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Global/Scrips.html" );
-        $tabs->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Modify.html?Create=1" );
+        $tabs->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Create.html" );
     }
 
     if ( $request_path =~ m{^/AssetTracker/Admin/Global/Templates?\.html} ) {
@@ -306,7 +306,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
                 path        => '/AssetTracker/Admin/Scrips/',
             );
             $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Scrips/" );
-            $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Modify.html?Create=1" );
+            $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Create.html" );
         }
 
         my $admin_global = $admin->child("global");
@@ -317,7 +317,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
             path        => '/AssetTracker/Admin/Global/Scrips.html',
         );
         $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Global/Scrips.html" );
-        $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Modify.html?Create=1" );
+        $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Scrips/Create.html" );
 
         my $templates = $admin_global->child( at_templates =>
             title       => loc('AT Templates'),
