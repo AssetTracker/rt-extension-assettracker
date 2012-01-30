@@ -1227,9 +1227,9 @@ sub _CustomFieldJoin {
                  $self->{_sql_cf_alias}{$cfkey} );
     }
 
-    my ($AssetCFs, $CFs);
+    my ($ObjectCFs, $CFs);
     if ( $cfid ) {
-        $AssetCFs = $self->{_sql_object_cfv_alias}{$cfkey} = $self->Join(
+        $ObjectCFs = $self->{_sql_object_cfv_alias}{$cfkey} = $self->Join(
             TYPE   => 'LEFT',
             ALIAS1 => 'main',
             FIELD1 => 'id',
@@ -1237,7 +1237,7 @@ sub _CustomFieldJoin {
             FIELD2 => 'ObjectId',
         );
         $self->SUPER::Limit(
-            LEFTJOIN        => $AssetCFs,
+            LEFTJOIN        => $ObjectCFs,
             FIELD           => 'CustomField',
             VALUE           => $cfid,
             ENTRYAGGREGATOR => 'AND'
@@ -1278,7 +1278,7 @@ sub _CustomFieldJoin {
             VALUE           => $field,
         );
 
-        $AssetCFs = $self->{_sql_object_cfv_alias}{$cfkey} = $self->Join(
+        $ObjectCFs = $self->{_sql_object_cfv_alias}{$cfkey} = $self->Join(
             TYPE   => 'LEFT',
             ALIAS1 => $CFs,
             FIELD1 => 'id',
@@ -1286,7 +1286,7 @@ sub _CustomFieldJoin {
             FIELD2 => 'CustomField',
         );
         $self->SUPER::Limit(
-            LEFTJOIN        => $AssetCFs,
+            LEFTJOIN        => $ObjectCFs,
             FIELD           => 'ObjectId',
             VALUE           => 'main.id',
             QUOTEVALUE      => 0,
@@ -1294,20 +1294,20 @@ sub _CustomFieldJoin {
         );
     }
     $self->SUPER::Limit(
-        LEFTJOIN        => $AssetCFs,
+        LEFTJOIN        => $ObjectCFs,
         FIELD           => 'ObjectType',
         VALUE           => 'RTx::AssetTracker::Asset',
         ENTRYAGGREGATOR => 'AND'
     );
     $self->SUPER::Limit(
-        LEFTJOIN        => $AssetCFs,
+        LEFTJOIN        => $ObjectCFs,
         FIELD           => 'Disabled',
         OPERATOR        => '=',
         VALUE           => '0',
         ENTRYAGGREGATOR => 'AND'
     );
 
-    return ($AssetCFs, $CFs);
+    return ($ObjectCFs, $CFs);
 }
 
 =head2 _CustomFieldLimit
@@ -1433,10 +1433,10 @@ sub _CustomFieldLimit {
         # IS[ NOT] NULL without column is the same as has[ no] any CF value,
         # we can reuse our default joins for this operation
         # with column specified we have different situation
-        my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
+        my ($ObjectCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
         $self->_OpenParen;
         $self->_SQLLimit(
-            ALIAS    => $AssetCFs,
+            ALIAS    => $ObjectCFs,
             FIELD    => 'id',
             OPERATOR => $op,
             VALUE    => $value,
@@ -1496,7 +1496,7 @@ sub _CustomFieldLimit {
     } 
     elsif ( !$negative_op || $single_value ) {
         $cfkey .= '.'. $self->{'_sql_multiple_cfs_index'}++ if !$single_value && !$range_op;
-        my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
+        my ($ObjectCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
 
         $self->_OpenParen;
 
@@ -1507,7 +1507,7 @@ sub _CustomFieldLimit {
         # otherwise search in Content and in LargeContent
         if ( $column ) {
             $self->_SQLLimit( $fix_op->(
-                ALIAS      => $AssetCFs,
+                ALIAS      => $ObjectCFs,
                 FIELD      => $column,
                 OPERATOR   => $op,
                 VALUE      => $value,
@@ -1533,7 +1533,7 @@ sub _CustomFieldLimit {
                     $self->_OpenParen;
 
                     $self->_SQLLimit(
-                        ALIAS    => $AssetCFs,
+                        ALIAS    => $ObjectCFs,
                         FIELD    => 'Content',
                         OPERATOR => ">=",
                         VALUE    => $daystart,
@@ -1541,7 +1541,7 @@ sub _CustomFieldLimit {
                     );
 
                     $self->_SQLLimit(
-                        ALIAS    => $AssetCFs,
+                        ALIAS    => $ObjectCFs,
                         FIELD    => 'Content',
                         OPERATOR => "<",
                         VALUE    => $dayend,
@@ -1554,7 +1554,7 @@ sub _CustomFieldLimit {
             elsif ( $op eq '=' || $op eq '!=' || $op eq '<>' ) {
                 if ( length( Encode::encode_utf8($value) ) < 256 ) {
                     $self->_SQLLimit(
-                        ALIAS    => $AssetCFs,
+                        ALIAS    => $ObjectCFs,
                         FIELD    => 'Content',
                         OPERATOR => $op,
                         VALUE    => $value,
@@ -1565,14 +1565,14 @@ sub _CustomFieldLimit {
                 else {
                     $self->_OpenParen;
                     $self->_SQLLimit(
-                        ALIAS           => $AssetCFs,
+                        ALIAS           => $ObjectCFs,
                         FIELD           => 'Content',
                         OPERATOR        => '=',
                         VALUE           => '',
                         ENTRYAGGREGATOR => 'OR'
                     );
                     $self->_SQLLimit(
-                        ALIAS           => $AssetCFs,
+                        ALIAS           => $ObjectCFs,
                         FIELD           => 'Content',
                         OPERATOR        => 'IS',
                         VALUE           => 'NULL',
@@ -1580,7 +1580,7 @@ sub _CustomFieldLimit {
                     );
                     $self->_CloseParen;
                     $self->_SQLLimit( $fix_op->(
-                        ALIAS           => $AssetCFs,
+                        ALIAS           => $ObjectCFs,
                         FIELD           => 'LargeContent',
                         OPERATOR        => $op,
                         VALUE           => $value,
@@ -1591,7 +1591,7 @@ sub _CustomFieldLimit {
             }
             else {
                 $self->_SQLLimit(
-                    ALIAS    => $AssetCFs,
+                    ALIAS    => $ObjectCFs,
                     FIELD    => 'Content',
                     OPERATOR => $op,
                     VALUE    => $value,
@@ -1602,14 +1602,14 @@ sub _CustomFieldLimit {
                 $self->_OpenParen;
                 $self->_OpenParen;
                 $self->_SQLLimit(
-                    ALIAS           => $AssetCFs,
+                    ALIAS           => $ObjectCFs,
                     FIELD           => 'Content',
                     OPERATOR        => '=',
                     VALUE           => '',
                     ENTRYAGGREGATOR => 'OR'
                 );
                 $self->_SQLLimit(
-                    ALIAS           => $AssetCFs,
+                    ALIAS           => $ObjectCFs,
                     FIELD           => 'Content',
                     OPERATOR        => 'IS',
                     VALUE           => 'NULL',
@@ -1617,7 +1617,7 @@ sub _CustomFieldLimit {
                 );
                 $self->_CloseParen;
                 $self->_SQLLimit( $fix_op->(
-                    ALIAS           => $AssetCFs,
+                    ALIAS           => $ObjectCFs,
                     FIELD           => 'LargeContent',
                     OPERATOR        => $op,
                     VALUE           => $value,
@@ -1651,7 +1651,7 @@ sub _CustomFieldLimit {
 
             if ($negative_op) {
                 $self->_SQLLimit(
-                    ALIAS           => $AssetCFs,
+                    ALIAS           => $ObjectCFs,
                     FIELD           => $column || 'Content',
                     OPERATOR        => 'IS',
                     VALUE           => 'NULL',
@@ -1665,7 +1665,7 @@ sub _CustomFieldLimit {
     }
     else {
         $cfkey .= '.'. $self->{'_sql_multiple_cfs_index'}++;
-        my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
+        my ($ObjectCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
 
         # reverse operation
         $op =~ s/!|NOT\s+//i;
@@ -1674,8 +1674,8 @@ sub _CustomFieldLimit {
         # otherwise search in Content and in LargeContent
         if ( $column ) {
             $self->SUPER::Limit( $fix_op->(
-                LEFTJOIN   => $AssetCFs,
-                ALIAS      => $AssetCFs,
+                LEFTJOIN   => $ObjectCFs,
+                ALIAS      => $ObjectCFs,
                 FIELD      => $column,
                 OPERATOR   => $op,
                 VALUE      => $value,
@@ -1684,8 +1684,8 @@ sub _CustomFieldLimit {
         }
         else {
             $self->SUPER::Limit(
-                LEFTJOIN   => $AssetCFs,
-                ALIAS      => $AssetCFs,
+                LEFTJOIN   => $ObjectCFs,
+                ALIAS      => $ObjectCFs,
                 FIELD      => 'Content',
                 OPERATOR   => $op,
                 VALUE      => $value,
@@ -1694,7 +1694,7 @@ sub _CustomFieldLimit {
         }
         $self->_SQLLimit(
             %rest,
-            ALIAS      => $AssetCFs,
+            ALIAS      => $ObjectCFs,
             FIELD      => 'id',
             OPERATOR   => 'IS',
             VALUE      => 'NULL',
@@ -1775,7 +1775,7 @@ sub OrderByCols {
            my ($type, $field, $cf_obj, $column) = $self->_CustomFieldDecipher( $subkey );
            my $cfkey = $cf_obj ? $cf_obj->id : "$type.$field";
            $cfkey .= ".ordering" if !$cf_obj || ($cf_obj->MaxValues||0) != 1;
-           my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, ($cf_obj ?$cf_obj->id :0) , $field );
+           my ($ObjectCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, ($cf_obj ?$cf_obj->id :0) , $field );
            # this is described in _CustomFieldLimit
            $self->_SQLLimit(
                ALIAS      => $CFs,
@@ -1797,7 +1797,7 @@ sub OrderByCols {
            }
            my $CFvs = $self->Join(
                TYPE   => 'LEFT',
-               ALIAS1 => $AssetCFs,
+               ALIAS1 => $ObjectCFs,
                FIELD1 => 'CustomField',
                TABLE2 => 'CustomFieldValues',
                FIELD2 => 'CustomField',
@@ -1806,12 +1806,12 @@ sub OrderByCols {
                LEFTJOIN        => $CFvs,
                FIELD           => 'Name',
                QUOTEVALUE      => 0,
-               VALUE           => $AssetCFs . ".Content",
+               VALUE           => $ObjectCFs . ".Content",
                ENTRYAGGREGATOR => 'AND'
            );
 
            push @res, { %$row, ALIAS => $CFvs, FIELD => 'SortOrder' };
-           push @res, { %$row, ALIAS => $AssetCFs, FIELD => 'Content' };
+           push @res, { %$row, ALIAS => $ObjectCFs, FIELD => 'Content' };
        }
        else {
            push @res, $row;
