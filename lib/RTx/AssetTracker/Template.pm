@@ -973,13 +973,17 @@ sub PreInflate {
 
     $class->SUPER::PreInflate( $importer, $uid, $data );
 
-    if ($data->{Queue} == 0) {
-        my $obj = RTx::AssetTracker::Template->new( RT->SystemUser );
+    my $obj = RTx::AssetTracker::Template->new( RT->SystemUser );
+    if ($data->{AssetType} == 0) {
         $obj->LoadGlobalTemplate( $data->{Name} );
-        if ($obj->Id) {
-            $importer->Resolve( $uid => ref($obj) => $obj->Id );
-            return;
-        }
+    } else {
+        $obj->LoadAssetTypeTemplate( AssetType => $data->{AssetType}, Name => $data->{Name} );
+    }
+
+    if ($obj->Id) {
+        $importer->Resolve( $uid => ref($obj) => $obj->Id );
+        $importer->MergeValues( $obj, $data ) if $importer->{Overwrite};
+        return;
     }
 
     return 1;
