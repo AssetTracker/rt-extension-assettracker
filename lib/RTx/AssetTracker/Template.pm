@@ -982,7 +982,6 @@ sub PreInflate {
 
     if ($obj->Id) {
         $importer->Resolve( $uid => ref($obj) => $obj->Id );
-        $importer->MergeValues( $obj, $data ) if $importer->{Overwrite};
         return;
     }
 
