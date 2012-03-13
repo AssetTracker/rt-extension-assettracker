@@ -534,7 +534,7 @@ sub SetDisabled {
     my $set_err = $self->_Set( Field =>'Disabled', Value => $val);
     unless ($set_err) {
         $RT::Handle->Rollback();
-        $RT::Logger->warning("Couldn't ".($val == 1) ? "disable" : "enable"." asset type ".$self->PrincipalObj->Id);
+        $RT::Logger->warning("Couldn't ".($val == 1) ? "disable" : "enable"." asset type ".$self->Name);
         return (undef);
     }
     $self->_NewTransaction( Type => ($val == 1) ? "Disabled" : "Enabled" );
