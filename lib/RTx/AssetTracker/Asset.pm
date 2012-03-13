@@ -293,7 +293,7 @@ sub Create {
         $self->CurrentUser->HasRight(
             Right  => 'CreateAsset',
             Object => $TypeObj,
-        )
+        ) and $TypeObj->Disabled != 1
       )
     {
         return (
@@ -1192,7 +1192,8 @@ sub SetType {
     if ( $NewTypeObj->Id == $self->TypeObj->Id ) {
         return ( 0, $self->loc('That is the same value') );
     }
-    unless ( $self->CurrentUser->HasRight( Right    => 'CreateAsset', Object => $NewTypeObj)) {
+    unless ( $self->CurrentUser->HasRight( Right    => 'CreateAsset', Object => $NewTypeObj)
+         and $NewTypeObj->Disabled != 1) {
         return ( 0, $self->loc("You may not create assets of that type.") );
     }
 
