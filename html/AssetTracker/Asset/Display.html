@@ -60,14 +60,11 @@
 <br />
 
 % if ( $RT::ShowAssetHistory ) {
-<& /AssetTracker/Asset/Elements/ShowHistory , 
-      Asset => $AssetObj, 
-      Assets => $Assets, 
-      Collapsed => $ARGS{'Collapsed'}, 
-      ShowHeaders => $ARGS{'ShowHeaders'},
-      MaxRows => $RT::ShowAssetHistory,
-      Attachments => $attachments,
-      AttachmentContent => $attachment_content
+<& /Ticket/Elements/ShowHistory , 
+      Ticket => $AssetObj, 
+      Tickets => $Assets, 
+      ShowDisplayModes => 0,
+      MaxRows => $RT::ShowAssetHistory
       &> 
 % }
 
@@ -104,8 +101,7 @@ if ($ARGS{'id'} eq 'new') {
 	Abort('You have no permission to create assets of that type.');
     }
     ($AssetObj, @Actions) =
-	CreateAsset(Attachments => $session{'Attachments'}, %ARGS);
-    delete $session{'Attachments'};
+	CreateAsset(%ARGS);
     unless ($AssetObj->CurrentUserHasRight('ShowAsset')) {
 	Abort("No permission to view newly created asset #".$AssetObj->id.".");
 	}
@@ -131,15 +127,12 @@ if ($ARGS{'id'} eq 'new') {
 
     #$ARGS{'UpdateContent'} =~ s/\r\n/\n/g;
     #if ( $ARGS{'UpdateTimeWorked'} ||
-	 #$session{'Attachments'} || 
 	 #(   $ARGS{'UpdateContent'} ne ''
 	     #&& $ARGS{'UpdateContent'} ne "-- \n"
 	     #. $session{'CurrentUser'}->UserObj->Signature )) {
-	#$ARGS{UpdateAttachments} = $session{'Attachments'};
 	#ProcessUpdateMessage( ARGSRef   => \%ARGS,
 			      #Actions   => \@Actions,
 			      #AssetObj => $AssetObj );
-	#delete $session{'Attachments'};
     #}
     #Process status updates
     my @BasicActions = ProcessAssetBasics(ARGSRef => \%ARGS, AssetObj=>$AssetObj);
@@ -152,9 +145,5 @@ if ($ARGS{'id'} eq 'new') {
 
 $m->comp('/Elements/Callback', _CallbackName => 'BeforeDisplay',
 	 AssetObj => \$AssetObj, Assets => \$Assets, ARGSRef => \%ARGS);
-
-
-my $attachments = $m->comp('Elements/FindAttachments', Asset => $AssetObj, Assets => $Assets);
-my $attachment_content = $m->comp('Elements/LoadTextAttachments', Asset => $AssetObj);
 
 </%INIT>

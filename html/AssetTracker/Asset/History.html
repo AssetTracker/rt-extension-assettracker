@@ -50,12 +50,9 @@
 
 <BR>
       
-<& /AssetTracker/Asset/Elements/ShowHistory , 
-    Asset => $Asset, 
-    ShowHeaders => $ARGS{'ShowHeaders'}, 
-    URIFile => 'History.html', 
-    Attachments => $attachments,
-    AttachmentContent => $attachment_content
+<& /Ticket/Elements/ShowHistory , 
+    Ticket => $Asset, 
+    ShowDisplayModes => 0
     &> 
 
 
@@ -72,11 +69,6 @@ my $Asset = LoadAsset ($id);
 unless ($Asset->CurrentUserHasRight('ShowAsset')) {
 	Abort("No permission to view ticket");
 }
-
-my $attachments = $m->comp('Elements/FindAttachments', Asset => $Asset);
-my $attachment_content = $m->comp('Elements/LoadTextAttachments', Asset =>
-$Asset);
-
 
 </%INIT>
 
