@@ -303,7 +303,7 @@ sub _SetupSourceObjects {
         $self->{'TransactionObj'}->CurrentUser( $self->CurrentUser );
     }
     else {
-        $self->{'TransactionObj'} = RTx::AssetTracker::Transaction->new( $self->CurrentUser );
+        $self->{'TransactionObj'} = RT::Transaction->new( $self->CurrentUser );
         $self->{'TransactionObj'}->Load( $args{'Transaction'} )
           || $RT::Logger->err( "$self couldn't load transaction $args{'Transaction'}");
     }

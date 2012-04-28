@@ -219,8 +219,8 @@ sub _NewTransaction {
 	$new_ref = $new_ref->Id if ref($new_ref);
     }
 
-    require RTx::AssetTracker::Transaction;
-    my $trans = new RTx::AssetTracker::Transaction( $self->CurrentUser );
+    require RT::Transaction;
+    my $trans = new RT::Transaction( $self->CurrentUser );
     my ( $transaction, $msg ) = $trans->Create(
 	ObjectId  => $self->Id,
 	ObjectType => ref($self),
@@ -267,8 +267,8 @@ sub _NewTransaction {
 sub Transactions {
     my $self = shift;
 
-    use RTx::AssetTracker::Transactions;
-    my $transactions = RTx::AssetTracker::Transactions->new( $self->CurrentUser );
+    use RT::Transactions;
+    my $transactions = RT::Transactions->new( $self->CurrentUser );
 
     #If the user has no rights, return an empty object
     $transactions->Limit(

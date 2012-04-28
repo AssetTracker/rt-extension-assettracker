@@ -135,7 +135,7 @@ $m->flush_buffer();
 % }
 </div>
 <%INIT>
-my $Transactions = new RTx::AssetTracker::Transactions($session{'CurrentUser'});
+my $Transactions = new RT::Transactions($session{'CurrentUser'});
 if ($Assets) {
     while (my $t = $Assets->Next) {
         $Transactions->LimitToAsset($t->id);
