@@ -87,6 +87,9 @@
 <& /Elements/Callback, _CallbackName => 'SearchActions', QueryString => $QueryString&>
 </div>
 <%INIT>
+
+$Page = 1 unless $Page && $Page > 0;
+
 my ($title, $assetcount);
 $session{'i'}++;
 $session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'}) ;
@@ -97,6 +100,7 @@ $session{'assets'}->OrderBy(FIELD => $OrderBy, ORDER => $Order);
 $session{'CurrentAssetSearchHash'} = {
     Format      => $Format,
     Query       => $Query,
+    Page        => $Page,
     Order       => $Order,
     OrderBy     => $OrderBy,
     RowsPerPage => $Rows,
