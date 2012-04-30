@@ -76,7 +76,7 @@ foreach my $col (@Format) {
         $title =~ s/^__(.*)__$/$1/o;
         $title = (
             $m->comp(
-                '/AssetTracker/Elements/RTx__Asset/ColumnMap',
+                '/Elements/RTx__AssetTracker__Asset/ColumnMap',
                 Name => $title,
                 Attr => 'title'
               )
@@ -86,7 +86,7 @@ foreach my $col (@Format) {
                $AllowSorting
             && $col->{'attribute'}
             && $m->comp(
-                '/AssetTracker/Elements/RTx__Asset/ColumnMap',
+                '/Elements/RTx__AssetTracker__Asset/ColumnMap',
                 Name => $col->{'attribute'},
                 Attr => 'attribute'
             )
@@ -100,7 +100,7 @@ foreach my $col (@Format) {
                     %generic_query_args,
                     OrderBy => (
                         $m->comp(
-                            '/AssetTracker/Elements/RTx__Asset/ColumnMap',
+                            '/Elements/RTx__AssetTracker__Asset/ColumnMap',
                             Name => $col->{'attribute'},
                             Attr => 'attribute'
                           )

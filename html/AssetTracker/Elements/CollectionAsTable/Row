@@ -73,7 +73,7 @@ foreach my $column (@Format) {
     foreach my $subcol ( @{ $column->{output} } ) {
         if ( $subcol =~ /^__(.*?)__$/o ) {
             my $col = $1;
-            my $value = $m->comp('/AssetTracker/Elements/RTx__Asset/ColumnMap', Name => $col, Attr => 'value');
+            my $value = $m->comp('/Elements/RTx__AssetTracker__Asset/ColumnMap', Name => $col, Attr => 'value');
 
             if ( $value && ref($value)) {
 		# All HTML snippets are returned by the callback function

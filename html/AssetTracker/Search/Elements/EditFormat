@@ -70,7 +70,7 @@ Format:
 % foreach my $field (@Columns) {
 <option value="<%$field%>"><%
 loc($m->comp(
-                '/AssetTracker/Elements/RTx__Asset/ColumnMap',
+                '/Elements/RTx__AssetTracker__Asset/ColumnMap',
                 Name => $field,
                 Attr => 'title'
               )
@@ -107,7 +107,7 @@ Link:
 % foreach my $field (@$CurrentFormat) {
 <option value="<%$i++%>><%$field->{Column}%>">
 <%loc($m->comp(
-                '/AssetTracker/Elements/RTx__Asset/ColumnMap',
+                '/Elements/RTx__AssetTracker__Asset/ColumnMap',
                 Name => $field->{Column},
                 Attr => 'title'
               ) || $field->{Column}) %></option>
