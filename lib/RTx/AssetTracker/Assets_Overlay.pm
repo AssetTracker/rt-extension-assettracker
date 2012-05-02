@@ -1528,40 +1528,6 @@ sub OrderByCols {
 
            push @res, { %$row, ALIAS => $CFvs, FIELD => 'SortOrder' };
            push @res, { %$row, ALIAS => $AssetCFs, FIELD => 'Content' };
-       } elsif ( $field eq "Custom" && $subkey eq "Ownership") {
-           # PAW logic is "reversed"
-           my $order = "ASC";
-           if (exists $row->{ORDER} ) {
-               my $o = $row->{ORDER};
-               delete $row->{ORDER};
-               $order = "DESC" if $o =~ /asc/i;
-           }
-
-           # Asset.Owner     1 0 X
-           # Unowned Assets  0 1 X
-           # Else            0 0 X
-
-           foreach my $uid ( $self->CurrentUser->Id, RT->Nobody->Id ) {
-               if ( RT->Config->Get('DatabaseType') eq 'Oracle' ) {
-                   my $f = ($row->{'ALIAS'} || 'main') .'.Owner';
-                   push @res, {
-                       %$row,
-                       FIELD => undef,
-                       ALIAS => '',
-                       FUNCTION => "CASE WHEN $f=$uid THEN 1 ELSE 0 END",
-                       ORDER => $order
-                   };
-               } else {
-                   push @res, {
-                       %$row,
-                       FIELD => undef,
-                       FUNCTION => "Owner=$uid",
-                       ORDER => $order
-                   };
-               }
-           }
-
-           push @res, { %$row, FIELD => "Priority", ORDER => $order } ;
        }
        else {
            push @res, $row;
