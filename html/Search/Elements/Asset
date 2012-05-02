@@ -1,1 +1,12 @@
-<& /AssetTracker/Elements/AssetList, %ARGS &>
+<& /Elements/CollectionList,
+   Collection => $Assets,
+   %ARGS,
+   Class => 'RTx::AssetTracker::Assets',
+   BaseURL => $RT::WebPath."/AssetTracker/Search/Results.html?"
+&>
+<%init>
+my $QueryString = '?' . $m->comp('/Elements/QueryString', %ARGS);
+
+my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+$Assets->FromSQL($ARGS{'Query'});
+</%init>

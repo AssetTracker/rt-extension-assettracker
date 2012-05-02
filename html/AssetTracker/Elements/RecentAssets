@@ -46,7 +46,8 @@
 <&| /Widgets/TitleBox, 
 	title => loc('[_1] Most recently updated assets', $rows),
 	title_href => "Search/Results.html".$QueryString &>
-  <& /AssetTracker/Elements/AssetList, 
+  <& /Elements/CollectionList, 
+        Collection => $Assets,
         Format => "'<a href=\"$RT::WebPath/AssetTracker/Asset/Display.html?id=__id__\">__Name__</a>/TITLE:Name', Description, TypeName, Status",
         Query => $Query,
         OrderBy => 'LastUpdated',
@@ -64,6 +65,9 @@ my $QueryString = '?' . $m->comp('/Elements/QueryString',
             Query => $Query,
             Order => 'DESC',
             OrderBy => 'LastUpdated') if ($Query);
+
+my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+$Assets->FromSQL($Query);
 
 </%init>
 
