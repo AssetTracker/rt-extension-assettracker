@@ -70,6 +70,7 @@ use XML::Parser;
     Watcher         => ['WATCHERFIELD'],
     LinkedTo        => ['LINKFIELD',],
     CustomFieldValue =>['CUSTOMFIELD',],
+    CustomField      => [ 'CUSTOMFIELD', ], #loc_left_pair
     CF              => ['CUSTOMFIELD',],
     OwnerGroup      => [ 'MEMBERSHIPFIELD' => 'Owner', ],
     AdminGroup      => [ 'MEMBERSHIPFIELD' => 'Admin', ],
@@ -1054,6 +1055,153 @@ sub _WatcherMembershipLimit {
 
 }
 
+=head2 _CustomFieldDecipher
+
+Try and turn a CF descriptor into (cfid, cfname) object pair.
+
+=cut
+
+sub _CustomFieldDecipher {
+    my ($self, $string) = @_;
+
+    my ($type, $field, $column) = ($string =~ /^(?:(.+?)\.)?{(.+)}(?:\.(Content|LargeContent))?$/);
+    $field ||= ($string =~ /^{(.*?)}$/)[0] || $string;
+
+    my $cf;
+    if ( $type ) {
+        my $q = RTx::AssetTracker::Type->new( $self->CurrentUser );
+        $q->Load( $type );
+
+        if ( $q->id ) {
+            # $type = $q->Name; # should we normalize the type?
+            $cf = $q->CustomField( $field );
+        }
+        else {
+            $RT::Logger->warning("Asset Type '$type' doesn't exist, parsed from '$string'");
+            $type = 0;
+        }
+    }
+    elsif ( $field =~ /\D/ ) {
+        $type = '';
+        my $cfs = RT::CustomFields->new( $self->CurrentUser );
+        $cfs->Limit( FIELD => 'Name', VALUE => $field );
+        $cfs->LimitToLookupType('RTx::AssetTracker::Type-RTx::AssetTracker::Asset');
+
+        # if there is more then one field the current user can
+        # see with the same name then we shouldn't return cf object
+        # as we don't know which one to use
+        $cf = $cfs->First;
+        if ( $cf ) {
+            $cf = undef if $cfs->Next;
+        }
+    }
+    else {
+        $cf = RT::CustomField->new( $self->CurrentUser );
+        $cf->Load( $field );
+    }
+
+    return ($type, $field, $cf, $column);
+}
+
+=head2 _CustomFieldJoin
+
+Factor out the Join of custom fields so we can use it for sorting too
+
+=cut
+
+sub _CustomFieldJoin {
+    my ($self, $cfkey, $cfid, $field) = @_;
+    # Perform one Join per CustomField
+    if ( $self->{_sql_object_cfv_alias}{$cfkey} ||
+         $self->{_sql_cf_alias}{$cfkey} )
+    {
+        return ( $self->{_sql_object_cfv_alias}{$cfkey},
+                 $self->{_sql_cf_alias}{$cfkey} );
+    }
+
+    my ($AssetCFs, $CFs);
+    if ( $cfid ) {
+        $AssetCFs = $self->{_sql_object_cfv_alias}{$cfkey} = $self->Join(
+            TYPE   => 'LEFT',
+            ALIAS1 => 'main',
+            FIELD1 => 'id',
+            TABLE2 => 'ObjectCustomFieldValues',
+            FIELD2 => 'ObjectId',
+        );
+        $self->SUPER::Limit(
+            LEFTJOIN        => $AssetCFs,
+            FIELD           => 'CustomField',
+            VALUE           => $cfid,
+            ENTRYAGGREGATOR => 'AND'
+        );
+    }
+    else {
+        my $ocfalias = $self->Join(
+            TYPE       => 'LEFT',
+            FIELD1     => 'Type',
+            TABLE2     => 'ObjectCustomFields',
+            FIELD2     => 'ObjectId',
+        );
+
+        $self->SUPER::Limit(
+            LEFTJOIN        => $ocfalias,
+            ENTRYAGGREGATOR => 'OR',
+            FIELD           => 'ObjectId',
+            VALUE           => '0',
+        );
+
+        $CFs = $self->{_sql_cf_alias}{$cfkey} = $self->Join(
+            TYPE       => 'LEFT',
+            ALIAS1     => $ocfalias,
+            FIELD1     => 'CustomField',
+            TABLE2     => 'CustomFields',
+            FIELD2     => 'id',
+        );
+        $self->SUPER::Limit(
+            LEFTJOIN        => $CFs,
+            ENTRYAGGREGATOR => 'AND',
+            FIELD           => 'LookupType',
+            VALUE           => 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset',
+        );
+        $self->SUPER::Limit(
+            LEFTJOIN        => $CFs,
+            ENTRYAGGREGATOR => 'AND',
+            FIELD           => 'Name',
+            VALUE           => $field,
+        );
+
+        $AssetCFs = $self->{_sql_object_cfv_alias}{$cfkey} = $self->Join(
+            TYPE   => 'LEFT',
+            ALIAS1 => $CFs,
+            FIELD1 => 'id',
+            TABLE2 => 'ObjectCustomFieldValues',
+            FIELD2 => 'CustomField',
+        );
+        $self->SUPER::Limit(
+            LEFTJOIN        => $AssetCFs,
+            FIELD           => 'ObjectId',
+            VALUE           => 'main.id',
+            QUOTEVALUE      => 0,
+            ENTRYAGGREGATOR => 'AND',
+        );
+    }
+    $self->SUPER::Limit(
+        LEFTJOIN        => $AssetCFs,
+        FIELD           => 'ObjectType',
+        VALUE           => 'RTx::AssetTracker::Asset',
+        ENTRYAGGREGATOR => 'AND'
+    );
+    $self->SUPER::Limit(
+        LEFTJOIN        => $AssetCFs,
+        FIELD           => 'Disabled',
+        OPERATOR        => '=',
+        VALUE           => '0',
+        ENTRYAGGREGATOR => 'AND'
+    );
+
+    return ($AssetCFs, $CFs);
+}
+
 sub _LinkFieldLimit {
     my $restriction;
     my $self;
@@ -1275,6 +1423,155 @@ sub _CustomFieldLimit {
 # End Helper Functions
 
 # End of SQL Stuff -------------------------------------------------
+
+
+=head2 OrderByCols ARRAY
+
+A modified version of the OrderBy method which automatically joins where
+C<ALIAS> is set to the name of a watcher type.
+
+=cut
+
+sub OrderByCols {
+    my $self = shift;
+    my @args = @_;
+    my $clause;
+    my @res   = ();
+    my $order = 0;
+
+    foreach my $row (@args) {
+        if ( $row->{ALIAS} ) {
+            push @res, $row;
+            next;
+        }
+        if ( $row->{FIELD} !~ /\./ ) {
+            my $meta = $self->FIELDS->{ $row->{FIELD} };
+            unless ( $meta ) {
+                push @res, $row;
+                next;
+            }
+
+            if ( $meta->[0] eq 'ENUM' && ($meta->[1]||'') eq 'Type' ) {
+                my $alias = $self->Join(
+                    TYPE   => 'LEFT',
+                    ALIAS1 => 'main',
+                    FIELD1 => $row->{'FIELD'},
+                    TABLE2 => 'AT_Types',
+                    FIELD2 => 'id',
+                );
+                push @res, { %$row, ALIAS => $alias, FIELD => "Name" };
+            } elsif ( ( $meta->[0] eq 'ENUM' && ($meta->[1]||'') eq 'User' )
+                || ( $meta->[0] eq 'WATCHERFIELD' && ($meta->[1]||'') eq 'Owner' )
+            ) {
+                my $alias = $self->Join(
+                    TYPE   => 'LEFT',
+                    ALIAS1 => 'main',
+                    FIELD1 => $row->{'FIELD'},
+                    TABLE2 => 'Users',
+                    FIELD2 => 'id',
+                );
+                push @res, { %$row, ALIAS => $alias, FIELD => "Name" };
+            } else {
+                push @res, $row;
+            }
+            next;
+        }
+
+        my ( $field, $subkey ) = split /\./, $row->{FIELD}, 2;
+        my $meta = $self->FIELDS->{$field};
+        if ( defined $meta->[0] && $meta->[0] eq 'WATCHERFIELD' ) {
+            # cache alias as we want to use one alias per watcher type for sorting
+            my $users = $self->{_sql_u_watchers_alias_for_sort}{ $meta->[1] };
+            unless ( $users ) {
+                $self->{_sql_u_watchers_alias_for_sort}{ $meta->[1] }
+                    = $users = ( $self->_WatcherJoin( $meta->[1] ) )[2];
+            }
+            push @res, { %$row, ALIAS => $users, FIELD => $subkey };
+       } elsif ( defined $meta->[0] && $meta->[0] eq 'CUSTOMFIELD' ) {
+           my ($type, $field, $cf_obj, $column) = $self->_CustomFieldDecipher( $subkey );
+           my $cfkey = $cf_obj ? $cf_obj->id : "$type.$field";
+           $cfkey .= ".ordering" if !$cf_obj || ($cf_obj->MaxValues||0) != 1;
+           my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, ($cf_obj ?$cf_obj->id :0) , $field );
+           # this is described in _CustomFieldLimit
+           $self->_SQLLimit(
+               ALIAS      => $CFs,
+               FIELD      => 'Name',
+               OPERATOR   => 'IS NOT',
+               VALUE      => 'NULL',
+               QUOTEVALUE => 1,
+               ENTRYAGGREGATOR => 'AND',
+           ) if $CFs;
+           unless ($cf_obj) {
+               # For those cases where we are doing a join against the
+               # CF name, and don't have a CFid, use Unique to make sure
+               # we don't show duplicate assets.  NOTE: I'm pretty sure
+               # this will stay mixed in for the life of the
+               # class/package, and not just for the life of the object.
+               # Potential performance issue.
+               require DBIx::SearchBuilder::Unique;
+               DBIx::SearchBuilder::Unique->import;
+           }
+           my $CFvs = $self->Join(
+               TYPE   => 'LEFT',
+               ALIAS1 => $AssetCFs,
+               FIELD1 => 'CustomField',
+               TABLE2 => 'CustomFieldValues',
+               FIELD2 => 'CustomField',
+           );
+           $self->SUPER::Limit(
+               LEFTJOIN        => $CFvs,
+               FIELD           => 'Name',
+               QUOTEVALUE      => 0,
+               VALUE           => $AssetCFs . ".Content",
+               ENTRYAGGREGATOR => 'AND'
+           );
+
+           push @res, { %$row, ALIAS => $CFvs, FIELD => 'SortOrder' };
+           push @res, { %$row, ALIAS => $AssetCFs, FIELD => 'Content' };
+       } elsif ( $field eq "Custom" && $subkey eq "Ownership") {
+           # PAW logic is "reversed"
+           my $order = "ASC";
+           if (exists $row->{ORDER} ) {
+               my $o = $row->{ORDER};
+               delete $row->{ORDER};
+               $order = "DESC" if $o =~ /asc/i;
+           }
+
+           # Asset.Owner     1 0 X
+           # Unowned Assets  0 1 X
+           # Else            0 0 X
+
+           foreach my $uid ( $self->CurrentUser->Id, RT->Nobody->Id ) {
+               if ( RT->Config->Get('DatabaseType') eq 'Oracle' ) {
+                   my $f = ($row->{'ALIAS'} || 'main') .'.Owner';
+                   push @res, {
+                       %$row,
+                       FIELD => undef,
+                       ALIAS => '',
+                       FUNCTION => "CASE WHEN $f=$uid THEN 1 ELSE 0 END",
+                       ORDER => $order
+                   };
+               } else {
+                   push @res, {
+                       %$row,
+                       FIELD => undef,
+                       FUNCTION => "Owner=$uid",
+                       ORDER => $order
+                   };
+               }
+           }
+
+           push @res, { %$row, FIELD => "Priority", ORDER => $order } ;
+       }
+       else {
+           push @res, $row;
+       }
+    }
+    return $self->SUPER::OrderByCols(@res);
+}
+
+
+
 
 # {{{ Limit the result set based on content
 
