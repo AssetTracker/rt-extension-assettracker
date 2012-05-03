@@ -85,8 +85,10 @@
 <tr>
 <td colspan=2 class="boxcontainer">
 
+<span id="display-options">
 <& Elements/DisplayOptions, %ARGS, Format=> $Format,
 AvailableColumns => $AvailableColumns,  CurrentFormat => $CurrentFormat, RowsPerPage => $RowsPerPage, OrderBy => $OrderBy, Order => $Order &>
+</span>
 </td>
 </tr>
 <tr>
@@ -127,6 +129,13 @@ if ( $NewQuery or $ARGS{'Delete'} ) {
 }
 
 # }}}
+
+if (ref $OrderBy eq "ARRAY") {
+    $OrderBy = join("|", @$OrderBy);
+}
+if (ref $Order eq "ARRAY") {
+    $Order = join("|", @$Order);
+}
 
 # {{{ Attempt to load what we can from the session, set defaults
 

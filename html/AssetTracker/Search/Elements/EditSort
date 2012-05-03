@@ -45,78 +45,92 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<table class="edit-columns">
+<table valign="top">
 
+% for my $o (0..3) {
+% $Order[$o] ||= ''; $OrderBy[$o] ||= '';
 <tr>
-<th><&|/l&>Add Columns</&>:</th>
-<th><&|/l&>Format</&>:</th>
-<th></th>
-<th><&|/l&>Show Columns</&>:</th>
+<td class="label">
+% if ($o == 0) {
+<&|/l&>Order by</&>:
+% }
+</td>
+<td class="value">
+<select name="OrderBy">
+% if ($o > 0) {
+<option value=""><&|/l&>~[none~]</&></option>
+% }
+% # %fields maps display name to SQL column/function
+% foreach my $field (sort keys %fields) {
+%    next unless $field;
+%    my $fieldval = $fields{$field};
+<option value="<%$fieldval%>"
+% if (defined $OrderBy[$o] and $fieldval eq $OrderBy[$o]) {
+selected="selected"
+% }
+><% loc($field) %></option>
+% }
+</select>
+<select name="Order">
+<option value="ASC"
+% unless ( ($Order[$o]||'') eq "DESC" ) {
+selected="selected"
+% }
+><&|/l&>Asc</&></option>
+<option value="DESC"
+% if ( ($Order[$o]||'') eq "DESC" ) {
+selected="selected"
+% }
+><&|/l&>Desc</&></option>
+</select>
+</td>
 </tr>
-
+% }
 <tr>
-
-<td valign="top"><select size="6" name="SelectDisplayColumns" multiple="multiple">
-% my %seen;
-% foreach my $field ( grep !$seen{lc $_}++, @$AvailableColumns) {
-<option value="<% $field %>"><% loc($field) %></option>
-% }
-</select></td>
-<td>
-<div class="row">
-<span class="label"><&|/l&>Link</&>:</span>
-<span class="value">
-<select name="Link">
-<option value="None">-</option>
-<option value="Display"><&|/l&>Display</&></option>
-</select>
-</span>
-</div>
-<div class="row">
-<span class="label"><&|/l&>Title</&>:</span>
-<span class="value"><input name="Title" size="10" /></span>
-</div>
-<div class="row">
-<span class="label"><&|/l&>Size</&>:</span>
-<span class="value"><select name="Size">
-<option value="">-</option>
-<option value="Small"><&|/l&>Small</&></option>
-<option value="Large"><&|/l&>Large</&></option>
-</select>
-</span>
-</div>
-<div class="row">
-<span class="label"><&|/l&>Style</&>:</span>
-<span class="value"><select name="Face">
-<option value="">-</option>
-<option value="Bold"><&|/l&>Bold</&></option>
-<option value="Italic"><&|/l&>Italic</&></option>
-</select>
-</span>
-</div>
+<td class="label">
+<&|/l&>Rows per page</&>:
+</td><td class="value">
+<& /Elements/SelectResultsPerPage, 
+    Name => "RowsPerPage", 
+    Default => $RowsPerPage &>
 </td>
-
-<td><input type="submit" class="button" name="AddCol" value=" &rarr; " /></td>
-
-<td valign="top">
-<select size="4" name="CurrentDisplayColumns">
-% my $i=0;
-% foreach my $field ( @$CurrentFormat ) {
-<option value="<% $i++ %>><% $field->{Column} %>"><% loc( $field->{Column} ) %></option>
-% }
-</select>
-<br />
-<center>
-<input type="submit" class="button" name="ColUp" value=" &uarr; " />
-<input type="submit" class="button" name="ColDown" value=" &darr; " />
-<input type="submit" class="button" name="RemoveCol" value="<%loc('Delete')%>" />
-</center>
-</td>
-
 </tr>
 </table>
 
+<%INIT>
+my $assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+my %FieldDescriptions = %{$assets->FIELDS};
+my %fields;
+
+for my $field (keys %FieldDescriptions) {
+    next if $field eq 'EffectiveId';
+    next unless $FieldDescriptions{$field}->[0] =~ /^(?:ENUM|INT|DATE|STRING|ID)$/;
+    $fields{$field} = $field;
+}
+
+$fields{ $_ . '.EmailAddress' } = $_ . '.EmailAddress'
+    for qw(Owner Admin);
+
+# Add all available CustomFields to the list of sortable columns.
+my @cfs = grep /^CustomField/, @{$ARGS{AvailableColumns}};
+$fields{$_} = $_ for @cfs;
+
+$m->callback(CallbackName => 'MassageSortFields', Fields => \%fields );
+
+my @Order = split /\|/, $Order;
+my @OrderBy = split /\|/, $OrderBy;
+if ($Order =~ /\|/) {
+    @Order = split /\|/, $Order;
+} else {
+    @Order = ( $Order );
+}
+
+</%INIT>
+
 <%ARGS>
-$CurrentFormat => undef
-$AvailableColumns => undef
+$Order => ''
+$OrderBy => ''
+$RowsPerPage => undef
+$Format => undef
+$GroupBy => 'id'
 </%ARGS>
