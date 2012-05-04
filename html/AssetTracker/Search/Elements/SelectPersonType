@@ -69,7 +69,7 @@ elsif ($Suffix eq 'Group') {
    @types = ( ActiveRoleArray(), qw(Watcher) );
 }
 else { 
-   @types = ( ActiveRoleArray(), qw(Watcher), map( { "Type$_" } ActiveRoleArray() ), qw(TypeWatcher) );
+   @types = ( ActiveRoleArray(), qw(Watcher) ); #, map( { "Type$_" } ActiveRoleArray() ), qw(TypeWatcher) );
 }
 
 my @subtypes = @{ $RTx::AssetTracker::Assets::SEARCHABLE_SUBFIELDS{'User'} };
