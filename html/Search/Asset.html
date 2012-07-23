@@ -1,1 +1,5 @@
-<& /AssetTracker/Search/Results.html, %ARGS &>
+<%init>
+RT::Interface::Web::Redirect(RT->Config->Get('WebURL').
+        'AssetTracker/Search/Results.html?' . $m->comp( '/Elements/QueryString',
+            %ARGS, Load => 'Load', CurrentSearch => $ARGS{LoadSavedSearch} ) );
+</%init>
