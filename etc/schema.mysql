@@ -10,7 +10,7 @@ CREATE TABLE AT_Types (
   LastUpdated DATETIME NULL  ,
   Disabled int2 NOT NULL DEFAULT 0 ,
   PRIMARY KEY (id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 CREATE UNIQUE INDEX AT_Types1 ON AT_Types (Name) ;
 CREATE INDEX AT_Types2 ON AT_Types (Disabled) ;
 
@@ -31,7 +31,7 @@ CREATE TABLE AT_Assets (
   Creator integer NOT NULL DEFAULT 0  ,
   Created DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX AT_Assets1 ON AT_Assets (Type, Status) ;
 CREATE INDEX AT_Assets2 ON AT_Assets (Name, Type, Status) ;
@@ -51,7 +51,7 @@ CREATE TABLE AT_IPs (
   LastUpdatedBy integer NOT NULL DEFAULT 0  ,
   LastUpdated DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 CREATE UNIQUE INDEX AT_IPs1 ON AT_IPs (IP) ;
 CREATE INDEX AT_IPs2 ON AT_IPs (Asset) ;
 
@@ -69,7 +69,7 @@ CREATE TABLE AT_Ports (
   LastUpdatedBy integer NOT NULL DEFAULT 0  ,
   LastUpdated DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 CREATE INDEX AT_Ports1 ON AT_Ports (Port) ;
 CREATE UNIQUE INDEX AT_Ports2 ON AT_Ports (Transport,Port,IP) ;
 CREATE INDEX AT_Ports3 ON AT_Ports (IP) ;
@@ -92,7 +92,7 @@ CREATE TABLE AT_ScripConditions (
   LastUpdatedBy integer NOT NULL DEFAULT 0  ,
   LastUpdated DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB CHARACTER SET utf8;
+) ENGINE=InnoDB CHARACTER SET utf8;
 
 # }}}
 
@@ -116,7 +116,7 @@ CREATE TABLE AT_Scrips (
   LastUpdatedBy integer NOT NULL DEFAULT 0  ,
   LastUpdated DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB CHARACTER SET utf8;
+) ENGINE=InnoDB CHARACTER SET utf8;
 
 # }}}
 
@@ -133,7 +133,7 @@ CREATE TABLE AT_ScripActions (
   LastUpdatedBy integer NOT NULL DEFAULT 0  ,
   LastUpdated DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB CHARACTER SET utf8;
+) ENGINE=InnoDB CHARACTER SET utf8;
 
 # }}}
 
@@ -153,7 +153,7 @@ CREATE TABLE AT_Templates (
   Creator integer NOT NULL DEFAULT 0  ,
   Created DATETIME NULL  ,
   PRIMARY KEY (id)
-) TYPE=InnoDB CHARACTER SET utf8;
+) ENGINE=InnoDB CHARACTER SET utf8;
 
 # }}}
 
