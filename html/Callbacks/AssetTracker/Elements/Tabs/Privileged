@@ -99,7 +99,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         my $search = $assets; #->child('search');
         my $args      = '';
         my $has_query = '';
-        my $current_search = $session{"CurrentSearchHash"} || {};
+        my $current_search = $session{"CurrentAssetSearchHash"} || {};
         my $search_id = $m->request_args->{'SavedSearchLoad'} || $m->request_args->{'SavedSearchId'} || $search->{'SearchId'} || '';
 
         $has_query = 1 if ( $m->request_args->{'Query'} or $current_search->{'Query'} );

@@ -1442,6 +1442,26 @@ sub LimitStatus {
 
 # }}}
 
+=head2 IgnoreType
+
+Stub. AT doesn't use this flag because assets don't have an equivalent
+to "ticket types")
+
+=cut
+
+sub IgnoreType {
+    my $self = shift;
+
+    # Instead of faking a Limit that later gets ignored, fake up the
+    # fact that we're already looking at type, so that the check in
+    # Tickets_SQL/FromSQL goes down the right branch
+
+    #  $self->LimitType(VALUE => '__any');
+    #$self->{looking_at_type} = 1;
+}
+
+
+
 # {{{ sub LimitDescription
 
 =head2 LimitDescription
