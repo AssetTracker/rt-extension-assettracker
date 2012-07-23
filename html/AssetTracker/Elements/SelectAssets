@@ -48,7 +48,7 @@
 <option value="<% $col->[0] %>"><% loc($col->[1]) %>
 % }
 % while (my $CF = $CFs->Next) {
-<option value="CustomField-<% $CF->Id %>"><&|/l&>CustomField</&>: <% $CF->Name %>
+<option value="<% $CF->Id %>"><&|/l&>CustomField</&>: <% $CF->Name %>
 % }
 </select>
 <& /Elements/SelectMatch, Name=> 'AssetOp' &>

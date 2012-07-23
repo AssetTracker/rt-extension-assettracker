@@ -725,8 +725,9 @@ sub AssetObj {
 
 sub OldValue {
     my $self = shift;
-    if (my $type = $self->__Value('ReferenceType')) {
-	my $Object = $type->new($self->CurrentUser);
+    if (my $type = $self->__Value('ReferenceType')
+       and my $id = $self->__Value('OldReference')) {
+ 	my $Object = $type->new($self->CurrentUser);
 	$Object->Load($self->__Value('OldReference'));
 	return $Object->Content;
     }
@@ -737,10 +738,11 @@ sub OldValue {
 
 sub NewValue {
     my $self = shift;
-    if (my $type = $self->__Value('ReferenceType')) {
-	my $Object = $type->new($self->CurrentUser);
-	$Object->Load($self->__Value('NewReference'));
-	return $Object->Content;
+    if (my $type = $self->__Value('ReferenceType')
+       and my $id = $self->__Value('NewReference') ) {
+        my $Object = $type->new($self->CurrentUser);
+        $Object->Load($self->__Value('NewReference'));
+        return $Object->Content;
     }
     else {
 	return $self->__Value('NewValue');
@@ -995,21 +997,25 @@ $_BriefDescriptions{CustomField} = sub {
         my $self = shift;
         my $field = $self->loc('CustomField');
 
+	$field = $self->loc('a custom field') if !defined($field);
+
         if ( $self->Field ) {
             my $cf = RT::CustomField->new( $self->CurrentUser );
             $cf->Load( $self->Field );
             $field = $cf->Name();
         }
 
-        if ( (not defined $self->OldValue) or ($self->OldValue eq '') ) {
-            return ( $self->loc("[_1] [_2] added", $field, $self->NewValue) );
-        }
-        elsif ( (not defined $self->NewValue) or ($self->NewValue eq '') ) {
-            return ( $self->loc("[_1] [_2] deleted", $field, $self->OldValue) );
+        my $new = $self->NewValue;
+        my $old = $self->OldValue;
 
+        if ( !defined($old) || $old eq '' ) {
+            return $self->loc("[_1] [_2] added", $field, $new);
+        }
+        elsif ( !defined($new) || $new eq '' ) {
+            return $self->loc("[_1] [_2] deleted", $field, $old);
         }
         else {
-            return $self->loc("[_1] [_2] changed to [_3]", $field, $self->OldValue, $self->NewValue );
+            return $self->loc("[_1] [_2] changed to [_3]", $field, $old, $new);
         }
     };
 
