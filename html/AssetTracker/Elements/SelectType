@@ -62,8 +62,6 @@
 </LABEL>
 
 <%INIT>
-unless ($session{'see_in_types'}) { 
-
 @{$session{'see_in_types'}} = ();
 my $t=new RTx::AssetTracker::Types($session{'CurrentUser'});
 $t->UnLimit;
@@ -72,7 +70,6 @@ while (my $type=$t->Next) {
                 my $ds = { Name => $type->Name, Description => $type->Description, id => $type->id };
                 push (@{$session{'see_in_types'}}, $ds);
         }        
-}
 }
 </%INIT>
 

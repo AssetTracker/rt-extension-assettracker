@@ -45,8 +45,11 @@ if ($AssetString) {
             $Assets->Limit(FIELD => 'Type', VALUE => $type->Id) if $type->Id;
         }
     }
-    else {
+    elseif (($AssetField eq 'Name') or ($AssetField eq 'Description') or ($AssetField eq 'Status') ) {
         $Assets->Limit(FIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp);
+    }
+    else {
+        $Assets->LimitCustomField(CUSTOMFIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp );
     }
     $Assets->Limit(FIELD => 'Status', VALUE => 'retired', OPERATOR => '!=') unless $AllowRetired;
     #eliminate the assets own id
