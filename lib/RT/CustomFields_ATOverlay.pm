@@ -7,12 +7,11 @@ no warnings qw(redefine);
 
 =head2 LimitToAssetType ASSETTYPEID
 
-This is a copy of LimitToQueue which is
-DEPRECATED since CFs are applicable not only to tickets these days.
+Takes a numeric C<ASSETTYPEID>, and limits the Custom Field collection to
+those only applied directly to it; this limit is OR'd with other
+L</LimitToAssetType> and L</LimitToGlobal> limits.
 
-Takes an asset type id (numerical) as its only argument. Makes sure that
-Scopes it pulls out apply to this asset type (or another that you've selected with
-another call to this method
+Note that this will cause the collection to only return asset CFs.
 
 =cut
 
@@ -31,12 +30,10 @@ sub LimitToAssetType {
 
 =head2 LimitToGlobalAsset
 
-This is a copy of LimitToGlobal which is
-DEPRECATED since CFs are applicable not only to tickets these days.
+Limits the Custom Field collection to global asset CFs; this limit is
+OR'd with L</LimitToAssetType> limits.
 
-Makes sure that Scopes it pulls out apply to all asset types
-(or another that you've selected with
-another call to this method or LimitToAssetType)
+Note that this will cause the collection to only return asset CFs.
 
 =cut
 
