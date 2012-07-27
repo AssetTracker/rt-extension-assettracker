@@ -464,7 +464,7 @@ sub Create {
 
         if ( $self->Id && $Trans ) {
 
-            $TransObj->UpdateCustomFields(ARGSRef => \%args);
+            $TransObj->UpdateCustomFields( %args );
 
             $RT::Logger->info( "Asset " . $self->Id . " created of type '" . $TypeObj->Name . "' by " . $self->CurrentUser->Name );
             $ErrStr = $self->loc( "Asset [_1] created of type '[_2]'", $self->Id, $TypeObj->Name );
