@@ -224,7 +224,6 @@ while ( my $asset = $Assets->Next ) {
 
 #Iterate through each asset we've been handed
 my @linkresults;
-my %types;
 
 $Assets->RedoSearch();
 
@@ -240,7 +239,6 @@ while ( my $Asset = $Assets->Next ) {
 
     #Update the links
     $ARGS{'id'} = $Asset->id;
-    $types{ $Asset->TypeObj->Id }++;
 
     #Update the basics.
     my @basicresults =
@@ -330,7 +328,7 @@ while ( my $Asset = $Assets->Next ) {
 
 #my $TxnCFs = RT::CustomFields->new( $session{CurrentUser} );
 #$TxnCFs->LimitToLookupType( "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction" );
-#$TxnCFs->LimitToGlobalOrObjectId( sort keys %types );
+#$TxnCFs->LimitToGlobalOrObjectId( sort keys %seen_types );
 
 </%INIT>
 <%args>
