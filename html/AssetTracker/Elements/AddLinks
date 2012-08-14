@@ -45,7 +45,7 @@ if ($AssetString) {
             $Assets->Limit(FIELD => 'Type', VALUE => $type->Id) if $type->Id;
         }
     }
-    elseif (($AssetField eq 'Name') or ($AssetField eq 'Description') or ($AssetField eq 'Status') ) {
+    elsif (($AssetField eq 'Name') or ($AssetField eq 'Description') or ($AssetField eq 'Status') ) {
         $Assets->Limit(FIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp);
     }
     else {
