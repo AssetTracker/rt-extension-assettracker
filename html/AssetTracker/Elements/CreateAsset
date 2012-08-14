@@ -46,5 +46,5 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <form action="<% RT->Config->Get('WebPath') %>/AssetTracker/Asset/ModifyAll.html" name="CreateAssetOfType" id="CreateAssetOfType">
-<&|/l, $m->scomp('/AssetTracker/Elements/SelectNewAssetType', OnChange => 'document.CreateAssetOfType.submit()')&><input type="submit" class="button" value="New Asset of type" />&nbsp;[_1]</&>
+<&|/l_unsafe, $m->scomp('/AssetTracker/Elements/SelectNewAssetType', OnChange => 'document.CreateAssetOfType.submit()')&><input type="submit" class="button" value="New Asset of type" />&nbsp;[_1]</&>
 </form>
