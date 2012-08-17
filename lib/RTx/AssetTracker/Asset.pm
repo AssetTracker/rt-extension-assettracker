@@ -72,6 +72,7 @@ sub Table {'AT_Assets'};
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Assets;
 use RT::Group;
+use RT::Link;
 use RT::URI::at;
 use RTx::AssetTracker::IPs;
 use RTx::AssetTracker::Ports;
@@ -79,16 +80,6 @@ use RT::URI;
 use RT::CustomField;
 
 RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' => "Assets" );
-
-
-# A helper table for links mapping to make it easier
-# to build and parse links between assets
-
-our %LINKMAP     = ();
-our @LINKORDER   = ();
-our %LINKTYPEMAP = ();
-our %LINKDIRMAP  = ();
-
 
 sub RegisterLinkType {
     my $class = shift;
@@ -165,11 +156,6 @@ sub RegisterLinkType {
 
 }
 
-
-sub LINKMAP       { return \%LINKMAP   }
-sub LINKTYPEMAP   { return \%LINKTYPEMAP   }
-sub LINKDIRMAP    { return \%LINKDIRMAP   }
-sub LINKORDER     { return  @LINKORDER   }
 
 sub ConfigureLinks {
     my $class = shift;
@@ -500,7 +486,7 @@ sub _AddLinksOnCreateOrUpdate {
     my @errors;
 
     #Add links
-    foreach my $type ( keys %LINKTYPEMAP ) {
+    foreach my $type ( keys %RT::Link::TYPEMAP ) {
         next unless ( defined $args{$type} );
         foreach my $link (
             ref( $args{$type} ) ? @{ $args{$type} } : ( $args{$type} ) )
@@ -527,10 +513,10 @@ sub _AddLinksOnCreateOrUpdate {
             }
 
             my ( $wval, $wmsg ) = $self->_AddLink(
-                Type                          => $LINKTYPEMAP{$type}->{'Type'},
-                $LINKTYPEMAP{$type}->{'Mode'} => $link,
+                Type                          => $RT::Link::TYPEMAP{$type}->{'Type'},
+                $RT::Link::TYPEMAP{$type}->{'Mode'} => $link,
                 Silent                        => !$args{'_RecordTransaction'},
-                'Silent'. ( $LINKTYPEMAP{$type}->{'Mode'} eq 'Base'? 'Target': 'Base' )
+                'Silent'. ( $RT::Link::TYPEMAP{$type}->{'Mode'} eq 'Base'? 'Target': 'Base' )
                                               => 1,
             );
 

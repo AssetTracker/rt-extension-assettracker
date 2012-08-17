@@ -67,6 +67,8 @@ use warnings;
 package RTx::AssetTracker::Record;
 use base 'RT::Record';
 
+use RT::Link;
+
 
 =head2 URI
 
@@ -254,8 +256,6 @@ sub _AddLink {
         @_
     );
 
-    my $LINKDIRMAP = RTx::AssetTracker::Asset->LINKDIRMAP();
-
     # Remote_link is the URI of the object that is not this ticket
     my $remote_link;
     my $direction;
@@ -319,7 +319,7 @@ sub _AddLink {
     unless ( $args{ 'Silent'. $direction } ) {
         my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
             Type      => 'AddLink',
-            Field     => $LINKDIRMAP->{$args{'Type'}}->{$direction},
+            Field     => $RT::Link::DIRMAP{$args{'Type'}}->{$direction},
             NewValue  => $remote_uri->URI || $remote_link,
             TimeTaken => 0,
 	    Data      => $args{'TransactionData'},
@@ -331,7 +331,7 @@ sub _AddLink {
         my $OtherObj = $remote_uri->Object;
         my ( $val, $msg ) = $OtherObj->_NewTransaction(
             Type           => 'AddLink',
-            Field          => $LINKDIRMAP->{$args{'Type'}}->{$opposite_direction},
+            Field          => $RT::Link::DIRMAP{$args{'Type'}}->{$opposite_direction},
             NewValue       => $self->URI,
             ActivateScrips => !RT->Config->Get('LinkTransactionsRun1Scrip'),
             TimeTaken      => 0,
@@ -366,8 +366,6 @@ sub _DeleteLink {
         TransactionData => undef,
         @_
     );
-
-    my $LINKDIRMAP = RTx::AssetTracker::Asset->LINKDIRMAP();
 
     # We want one of base and target. We don't care which but we only want _one_.
     my $direction;
@@ -434,7 +432,7 @@ sub _DeleteLink {
     unless ( $args{ 'Silent'. $direction } ) {
         my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
             Type      => 'DeleteLink',
-            Field     => $LINKDIRMAP->{$args{'Type'}}->{$direction},
+            Field     => $RT::Link::DIRMAP->{$args{'Type'}}->{$direction},
             OldValue  => $remote_uri->URI || $remote_link,
             TimeTaken => 0,
 	    Data      => $args{'TransactionData'},
@@ -446,7 +444,7 @@ sub _DeleteLink {
         my $OtherObj = $remote_uri->Object;
         my ( $val, $msg ) = $OtherObj->_NewTransaction(
             Type           => 'DeleteLink',
-            Field          => $LINKDIRMAP->{$args{'Type'}}->{$opposite_direction},
+            Field          => $RT::Link::DIRMAP->{$args{'Type'}}->{$opposite_direction},
             OldValue       => $self->URI,
             ActivateScrips => !RT->Config->Get('LinkTransactionsRun1Scrip'),
             TimeTaken      => 0,

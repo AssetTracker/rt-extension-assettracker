@@ -54,8 +54,8 @@
 % # Allow people to add more rows to the table                                       % $m->callback( %ARGS );
 </table>
 <%INIT>
-my $link_types = RTx::AssetTracker::Asset::LINKTYPEMAP();
-my $link_dir   = RTx::AssetTracker::Asset::LINKDIRMAP();
+my $link_types = \%RT::Link::TYPEMAP;
+my $link_dir   = \%RT::Link::DIRMAP;
 </%INIT>
 
 <%ARGS>
