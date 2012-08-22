@@ -713,6 +713,9 @@ sub ProcessATObjectCustomFieldUpdates {
                 }
                 push @results,
                     _ProcessATObjectCustomFieldUpdates(
+                    # XXX FIXME: Prefix is not quite right, as $id almost
+                    # certainly started as blank for new objects and is now 0.
+                    # Only Image/Binary CFs on new objects should be affected.
                     Prefix      => "Object-$class-$id-CustomField-$cf-",
                     Object      => $Object,
                     CustomField => $CustomFieldObj,
@@ -764,22 +767,14 @@ sub _ProcessATObjectCustomFieldUpdates {
             $args{'ARGS'}->{'Values'} = undef;
         }
 
-        my @values = ();
-        if ( ref $args{'ARGS'}->{$arg} eq 'ARRAY' ) {
-            @values = @{ $args{'ARGS'}->{$arg} };
-        } elsif ( $cf_type =~ /text/i ) {    # Both Text and Wikitext
-            @values = ( $args{'ARGS'}->{$arg} );
-        } else {
-            @values = split /\r*\n/, $args{'ARGS'}->{$arg}
-                if defined $args{'ARGS'}->{$arg};
-        }
-        @values = grep length, map {
-            s/\r+\n/\n/g;
-            s/^\s+//;
-            s/\s+$//;
-            $_;
-            }
-            grep defined, @values;
+        my @values = _NormalizeObjectCustomFieldValue(
+            CustomField => $cf,
+            Param       => $args{'Prefix'} . $arg,
+            Value       => $args{'ARGS'}->{$arg}
+        );
+
+        # "Empty" values still don't mean anything for Image and Binary fields
+        next if $cf_type =~ /^(?:Image|Binary)$/ and not @values;
 
         if ( $arg eq 'AddValue' || $arg eq 'Value' ) {
             foreach my $value (@values) {
@@ -791,8 +786,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                 push ( @results, $msg );
             }
         } elsif ( $arg eq 'Upload' ) {
-            my $value_hash = _UploadedFile( $args{'Prefix'} . $arg ) or next;
-            my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue( %$value_hash, Field => $cf,
+            my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue( %{$values[0]}, Field => $cf,
                 Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},);
             push ( @results, $msg );
         } elsif ( $arg eq 'DeleteValues' ) {
