@@ -445,37 +445,19 @@ sub CreateAsset {
         TransactionData => $ARGS{'GlobalComment'},
     );
     foreach my $arg (keys %ARGS) {
-            next if ($arg =~ /-Magic$/);
-       #Object-RT::Ticket--CustomField-3-Values
-        if ($arg =~ /^Object-RT::Transaction--CustomField-/) {
-            $create_args{$arg} = $ARGS{$arg};
-        }
-        elsif ($arg =~ /^Object-RTx::AssetTracker::Asset--CustomField-(\d+)(.*?)$/) {
-            my $cfid = $1;
-            my $cf = RT::CustomField->new( $session{'CurrentUser'});
-            $cf->Load($cfid);
-
-            if ($cf->Type eq 'FreeformMultiple') {
-                $ARGS{$arg} =~ s/\r\n/\n/g;
-                $ARGS{$arg} = [split('\n', $ARGS{$arg})];
-            }
-
-            if ( $arg =~ /-Upload$/ ) {
-                $create_args{"CustomField-".$cfid} = _UploadedFile($arg);
-            }
-            else {
-                $create_args{"CustomField-".$cfid} = $ARGS{"$arg"};
-            }
-        }
-        elsif ($arg =~ /^AddWatcher-Type-(\w+)$/) {
+        if ($arg =~ /^AddWatcher-Type-(\w+)$/) {
             my $role = $1;
             push(@{$create_args{$role}}, map { s/Principal-//; $_ } 
                  ref( $ARGS{$arg} ) ? @{ $ARGS{$arg} } : ( $ARGS{$arg} ) );
         }
     }
 
+    my %cfs = ProcessObjectCustomFieldUpdatesForCreate(
+        ARGSRef         => \%ARGS,
+        ContextObject   => $Type,
+    );
 
-    my ( $id, $Trans, $ErrMsg ) = $Asset->Create(%create_args);
+    my ( $id, $Trans, $ErrMsg ) = $Asset->Create(%create_args, %cfs);
     unless ( $id && $Trans ) {
         Abort($ErrMsg);
     }
