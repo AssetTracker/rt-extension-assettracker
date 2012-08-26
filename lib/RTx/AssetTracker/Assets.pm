@@ -2404,7 +2404,7 @@ sub Next {
         # if we found an asset with this option enabled then
         # all assets we found are ACLed, cache this fact
         my $key = join ";:;", $self->CurrentUser->id, 'ShowAsset', 'RTx::AssetTracker::Asset-'. $Asset->id;
-        $RT::Principal::_ACL_CACHE->set( $key => 1 );
+        $RT::Principal::_ACL_CACHE->{ $key } = 1;
         return $Asset;
     }
     elsif ( $Asset->CurrentUserHasRight('ShowAsset') ) {
@@ -2435,7 +2435,7 @@ sub _RolesCanSee {
 
     my $cache_key = 'RolesHasRight;:;ShowAsset';
  
-    if ( my $cached = $RT::Principal::_ACL_CACHE->fetch( $cache_key ) ) {
+    if ( my $cached = $RT::Principal::_ACL_CACHE->{ $cache_key } ) {
         return %$cached;
     }
 
@@ -2465,7 +2465,7 @@ sub _RolesCanSee {
             $RT::Logger->error('ShowAsset right is granted on unsupported object');
         }
     }
-    $RT::Principal::_ACL_CACHE->set( $cache_key => \%res );
+    $RT::Principal::_ACL_CACHE->{ $cache_key } = \%res;
     return %res;
 }
 
@@ -2474,7 +2474,7 @@ sub _DirectlyCanSeeIn {
     my $id = $self->CurrentUser->id;
 
     my $cache_key = 'User-'. $id .';:;ShowAsset;:;DirectlyCanSeeIn';
-    if ( my $cached = $RT::Principal::_ACL_CACHE->fetch( $cache_key ) ) {
+    if ( my $cached = $RT::Principal::_ACL_CACHE->{ $cache_key } ) {
         return @$cached;
     }
 
@@ -2502,7 +2502,7 @@ sub _DirectlyCanSeeIn {
         if ( $type eq 'RT::System' ) {
             # If user is direct member of a group that has the right
             # on the system then he can see any ticket
-            $RT::Principal::_ACL_CACHE->set( $cache_key => [-1] );
+            $RT::Principal::_ACL_CACHE->{ $cache_key } = [-1];
             return (-1);
         }
         elsif ( $type eq 'RTx::AssetTracker::Type' ) {
@@ -2512,7 +2512,7 @@ sub _DirectlyCanSeeIn {
             $RT::Logger->error('ShowAsset right is granted on unsupported object');
         }
     }
-    $RT::Principal::_ACL_CACHE->set( $cache_key => \@res );
+    $RT::Principal::_ACL_CACHE->{ $cache_key } = \@res;
     return @res;
 }
 
