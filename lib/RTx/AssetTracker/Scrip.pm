@@ -245,10 +245,8 @@ sub AddToObject {
 
     my $assettype;
     if ( $args{'ObjectId'} ) {
-        $assettype = RTx::AssetTracker::Type->new( $self->CurrentUser );
-        $assettype->Load( $args{'ObjectId'} );
-        return (0, $self->loc('Invalid asset type'))
-            unless $assettype->id;
+
+        $args{'ObjectId'} = $assettype->id;
     }
     return ( 0, $self->loc('Permission Denied') )
         unless $self->CurrentUser->PrincipalObj->HasRight(
