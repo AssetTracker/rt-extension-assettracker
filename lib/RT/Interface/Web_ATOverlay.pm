@@ -457,6 +457,17 @@ sub CreateAsset {
         ContextObject   => $Type,
     );
 
+    # turn new link lists into arrays, and pass in the proper arguments
+    foreach my $type ( keys %RT::Link::DIRMAP ) {
+        for ([Base => "new-$type"], [Target => "$type-new"]) {
+            my ($direction, $key) = @$_;
+            next unless $ARGS{$key};
+            $create_args{ $RT::Link::DIRMAP{$type}->{$direction} } = [
+                grep $_, split ' ', $ARGS{$key}
+            ];
+        }
+    }
+
     my ( $id, $Trans, $ErrMsg ) = $Asset->Create(%create_args, %cfs);
     unless ( $id && $Trans ) {
         Abort($ErrMsg);
