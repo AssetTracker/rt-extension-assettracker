@@ -68,7 +68,7 @@ foreach my $col (@Format) {
         $title =~ s/^__(.*)__$/$1/o;
         $title = (
             $m->comp(
-                '/AssetTracker/Elements/RTx__Asset/ColumnMap',
+                '/Elements/RTx__AssetTracker__Asset/ColumnMap',
                 Name => $title,
                 Attr => 'title'
               )

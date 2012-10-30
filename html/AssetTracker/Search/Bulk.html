@@ -50,55 +50,31 @@
 
 
 <& /Elements/ListActions, actions => \@results &>
-<FORM METHOD="POST" ACTION="<%$RT::WebPath%>/AssetTracker/Search/Bulk.html" >
-<input type="hidden" name="Query" value="<%$ARGS{'Query'}%>">
-<TABLE WIDTH=100% border=0 cellpadding=3 CELLSPACING=0>
-<TR>
-<TH><&|/l&>Update</&></TH>
-%foreach my $col (@cols) {
-% my $colalias = $col;
-% $colalias =~ s/(Obj\-\>)(Name|AsString)//;
-
-<TH><% loc($colalias) %>&nbsp;</TH>
+<form method="post" action="<% RT->Config->Get('WebPath') %>/AssetTracker/Search/Bulk.html" enctype="multipart/form-data" name="BulkUpdate" id="BulkUpdate">
+% foreach my $var (qw(Query Format OrderBy Order Rows Page SavedChartSearchId)) {
+<input type="hidden" class="hidden" name="<%$var%>" value="<%$ARGS{$var} || ''%>" />
 %}
-</TR>
+<& /Elements/CollectionList, 
+    Collection => $Assets,
+    Query => $Query,
+    DisplayFormat => $Format,
+    Format => $ARGS{'Format'},
+    Verbatim => 1,
+    AllowSorting => 1,
+    OrderBy => $OrderBy,
+    Order => $Order,
+    Rows => $Rows,
+    Page => $Page,
+    BaseURL => RT->Config->Get('WebPath')."/AssetTracker/Search/Bulk.html?",
+    Class => 'RTx::AssetTracker::Assets'
+   &>
 
-<%PERL>
+% $m->callback(CallbackName => 'AfterAssetList', ARGSRef => \%ARGS);
 
-my $i;
+<hr />
 
-$Assets->RedoSearch();
-while (my $Asset = $Assets->Next) {
- $i++;
- if ($i % 2) {
-     $bgcolor = "#dddddd";
- }
- else {
-     $bgcolor = "#ffffff";
- }
-      </%PERL>
-<TR bgcolor="<%$bgcolor%>">
-<TD><input type=checkbox name="UpdateAsset<%$Asset->Id%>" CHECKED></TD>
-%foreach my $col (@cols) {
-<TD>
-% if ($col eq 'id') {
-<A HREF="<% $RT::WebPath%>/AssetTracker/Asset/Display.html?id=<%$Asset->Id%>"><%$Asset->Id()%></A>
-% }
-%else {
-<% eval "\$Asset->$col()" %>&nbsp;
-%}
-</TD>
-%}
-</TR>
-%}
-
-
-
-</TABLE>
-
-<HR>
-
-
+<& /Elements/Submit, Label => loc('Update'), CheckboxNameRegex => '/^UpdateAsset\d+$/', CheckAll => 1, ClearAll => 1 &>
+<br />
 <& /Elements/TitleBoxStart, title => loc('Update selected assets') &>
 <TABLE>
 <TR>
@@ -210,25 +186,51 @@ Delete Values<br>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment" &>
 <& /Elements/TitleBoxEnd &>
 
-<& /Elements/Submit, Label => loc('Update All') &>
+<& /Elements/Submit, Label => loc('Update') &>
 
 
-</FORM>
+</form>
 <%INIT>
 
 unless ($session{'CurrentUser'}->HasRight( Object => $RTx::AssetTracker::System, Right => 'BulkUpdate')) {
     Abort(loc("No permission to perform bulk updates of assets."));
 }
 
+unless ( defined $Rows ) {
+    $Rows = $RowsPerPage;
+    $ARGS{Rows} = $RowsPerPage;
+}
+my $title = loc("Update multiple assets");
+
 # Iterate through the ARGS hash and remove anything with a null value.
 map ($ARGS{$_} =~ /^$/ && (delete $ARGS{$_}), keys %ARGS);
 
-my ($bgcolor, @results);
-my @cols = qw(id Name Status Description TypeObj->Name );
+my (@results);
 
+$Page ||= 1;
+
+$Format ||= RT->Config->Get('DefaultAssetSearchResultFormat');
+
+# inject _CHECKBOX to the first field.
+$Format =~ s/'?([^']+)'?,/'___CHECKBOX__$1',/;
 
 my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
-$Assets->FromSQL($ARGS{'Query'});
+$Assets->FromSQL($Query);
+if ( $OrderBy =~ /\|/ ) {
+
+  # Multiple Sorts
+  my @OrderBy = split /\|/, $OrderBy;
+  my @Order   = split /\|/, $Order;
+  $Assets->OrderByCols(
+    map { { FIELD => $OrderBy[$_], ORDER => $Order[$_] } }
+      ( 0 .. $#OrderBy ) );
+}
+else {
+  $Assets->OrderBy( FIELD => $OrderBy, ORDER => $Order );
+}
+
+$Assets->RowsPerPage($Rows) if ($Rows);
+$Assets->GotoPage( $Page - 1 );    # SB uses page 0 as the first page
 
 Abort(loc("No search to operate on.")) unless ($Assets);
 
@@ -328,3 +330,14 @@ while (my $Asset = $Assets->Next) {
 #$TxnCFs->LimitToGlobalOrObjectId(sort keys %queues);
 
 </%INIT>
+<%args>
+$Format => undef
+$Page => 1
+$Rows => undef
+$RowsPerPage => undef
+$Order => 'ASC'
+$OrderBy => 'id'
+$Query => undef
+$SavedSearchId => undef
+$SavedChartSearchId => undef
+</%args>
