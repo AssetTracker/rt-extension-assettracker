@@ -116,7 +116,6 @@
 </table>
 <%ARGS>
 $Asset => undef
-$Attachments => undef
 </%ARGS>
 
 

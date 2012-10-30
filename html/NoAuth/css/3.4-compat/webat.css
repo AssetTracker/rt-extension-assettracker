@@ -57,94 +57,16 @@
     list-style: none;
 }
 
-.asset-transaction {
-		margin: 0;
-    border: none;
-}
-
-#asset-history .asset-transaction {
-    border-bottom-color: #ccc;
-}
-
-.asset-transaction.even {
-    background: #eee;
-}
-
-.asset-transaction .date {
-    font-size: 0.9em;
-    width: 10em;
-}
-
-.asset-transaction .description {
-    font-weight: bold;
-    font-size: 0.9em;
-    text-align: left;
-}
-
-.asset-transaction .actions {
-    text-align: right;
-    font-weight: bold;
-}
-
-.asset-transaction .type {
-    background: #888;
-    width: 1em;
-    color: white;
-    text-align: center;
-    font-size: 1em;
-}
-
-#body .asset-transaction .type :link,
-#body .asset-transaction .type :visited
-{
-    color: white;
-    font-weight: normal;
-}
-
-.asset-transaction.basics { border-color: #9c3031; }
-.asset-transaction.basics .type { background: #9c3031; }
 .asset-summary .asset-info-basics .titlebox-content { border-left: none: }
 .asset-summary .ticket-info-basics .titlebox-title { background: #9c3031; }
 
-.asset-transaction.people { border-color: #31309c; }
-.asset-transaction.people .type { background: #31309c; }
 .asset-summary .asset-info-people .titlebox-content { border-left: none; }
 .asset-summary .ticket-info-people .titlebox-title { background: #31309c; }
 
 %# light green - #ad8
-.asset-transaction.links { border-color: #316531; }
-.asset-transaction.links .type { background: #316531; }
 .asset-summary .asset-info-links .titlebox-content  { border-left: none; }
 .asset-summary .ticket-info-links .titlebox-title  { background: #316531; }
 
 %# orange - #d71
-.asset-transaction.dates { border-color: #633063; }
-.asset-transaction.dates .type { background: #633063; }
 .asset-summary .asset-info-dates .titlebox-content  { border-left: none; }
 .asset-summary .ticket-info-dates .titlebox-title  { background: #633063; }
-
-.asset-transaction.message { border-color: #069; }
-.asset-transaction.message .type { background: #069; }
-
-.asset-transaction.other { border-color: #888; }
-
-.asset-transaction td .message-header-value {
-    padding: 0;
-}
-
-.asset-transaction td .message-header-key {
-    padding: 0 1em 0 1.5em;
-    font-weight: bold;
-}
-
-.asset-transaction .downloadattachment {
-    float: right;
-    font-size: 0.9em;
-    text-align: right;
-}
-
-.asset-transaction .messagebody {
-    clear: both;
-    padding-left: 3em;
-    padding-bottom: 1em;
-}

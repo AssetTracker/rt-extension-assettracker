@@ -505,7 +505,7 @@ sub CreateAsset {
     foreach my $arg (keys %ARGS) {
             next if ($arg =~ /-Magic$/);
        #Object-RT::Ticket--CustomField-3-Values
-        if ($arg =~ /^Object-RTx::AssetTracker::Transaction--CustomField-/) {
+        if ($arg =~ /^Object-RT::Transaction--CustomField-/) {
             $create_args{$arg} = $ARGS{$arg};
         }
         elsif ($arg =~ /^Object-RTx::AssetTracker::Asset--CustomField-(\d+)(.*?)$/) {
