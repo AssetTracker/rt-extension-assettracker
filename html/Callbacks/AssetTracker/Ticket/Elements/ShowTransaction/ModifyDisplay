@@ -1,0 +1,9 @@
+<%args>
+$Transaction
+$text => undef
+</%args>
+<%init>
+if ( $Transaction->Data && $Transaction->ObjectType eq 'RTx::AssetTracker::Asset' ) {
+    $$text .= ' (' . $Transaction->Data . ')'
+}
+</%init>

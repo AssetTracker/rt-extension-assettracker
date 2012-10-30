@@ -7,8 +7,11 @@ use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Interface::Web;
 use RT::CustomFields;
 use RT::CustomField;
-use RTx::AssetTracker::Transaction;
-use RTx::AssetTracker::Transactions;
+
+# Load this explicitly, since RT's Plugin facility doesn't seem to be
+# running by the time Transaction.pm loads its overlays.
+require 'RT/Transaction_Vendor.pm';
+
 return(1);
 </%init>
 <%once>
