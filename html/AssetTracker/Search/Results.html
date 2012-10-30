@@ -52,7 +52,8 @@
     Rows => $Rows,
     OrderBy => $OrderBy,
     Order => $Order &>
-<& /AssetTracker/Elements/AssetList, 
+<& /Elements/CollectionList, 
+    Collection => $session{'assets'},
     Query => $Query,
     AllowSorting => 1,
     OrderBy => $OrderBy,
@@ -60,6 +61,7 @@
     Rows => $Rows,
     Page => $Page,
     Format => $Format,
+    Class => 'RTx::AssetTracker::Assets',
     BaseURL => $RT::WebPath."/AssetTracker/Search/Results.html?"
 
    &>

@@ -226,6 +226,12 @@ $ASSET_COLUMN_MAP = {
     '_CLASS' => {
         value => sub { return $_[1] % 2 ? 'oddline' : 'evenline' }
     },
+    '_CHECKBOX' => {
+        attribute => 'checkbox',
+        title => 'Update',
+        align     => 'right',
+        value     => sub { return \('<input type="checkbox" class="checkbox" name="UpdateAsset'.$_[0]->id.'" value="1" checked="checked" />') }
+    },
 
 };
 
