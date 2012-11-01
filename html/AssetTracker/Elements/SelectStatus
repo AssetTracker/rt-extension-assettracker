@@ -48,6 +48,7 @@
 <OPTION <% !$Default && "SELECTED" %> VALUE=""><%$DefaultLabel%></OPTION>
 %}
 %foreach my $status (@status) {
+%next if ($SkipDeleted && $status eq 'deleted');
 %next if ($SkipRetired && $status eq 'retired');
 <OPTION <% ($status eq $Default) && "SELECTED" %> VALUE="<%$status%>"><%loc($status)%></OPTION>
 % }
@@ -59,6 +60,7 @@ my @status = $type->StatusArray();
 <%ARGS>
 $Name => undef
 $Default => ''
+$SkipDeleted => 0
 $SkipRetired => 0
 $DefaultValue => 1
 $DefaultLabel => "-"

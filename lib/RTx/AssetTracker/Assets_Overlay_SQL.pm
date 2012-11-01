@@ -483,12 +483,13 @@ sub FromSQL {
         return(0,$@);
     }
 
+  # We never ever want to show deleted assets
+  $self->SUPER::Limit(FIELD => 'Status' , OPERATOR => '!=', VALUE => 'deleted');
+
+
   # set SB's dirty flag
   $self->{'must_redo_search'} = 1;
   $self->{'RecalcAssetLimits'} = 0;                                           
-
-  # We never ever want to show retired assets
-  #$self->SUPER::Limit(FIELD => 'Status' , OPERATOR => '!=', VALUE => 'retired');
 
   return (1,$self->loc("Valid Query"));
 
