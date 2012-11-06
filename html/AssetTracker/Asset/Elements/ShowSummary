@@ -46,6 +46,7 @@
 <table width="100%" class="asset-summary">
     <tr>
       <td valign="top" width="40%" class="boxcontainer">
+% $m->callback( %ARGS, CallbackName => 'LeftColumnTop' );
       <table width="100%" class="asset-summary">
           <tr>
             <td valign="top" class="boxcontainer">
@@ -88,6 +89,7 @@
             <td valign="top" class="boxcontainer">
 % my (@extra);
 % push @extra, titleright_raw => '<a href="'. RT->Config->Get('WebPath'). '/AssetTracker/Asset/Graphs/index.html?id='.$Asset->id.'">'.loc('Graph').'</a>' unless RT->Config->Get('DisableGraphViz');
+% $m->callback( %ARGS, CallbackName => 'LinksExtra', extra => \@extra );
 				<&| /Widgets/TitleBox, title => loc('Links'),
                 title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id,
                 class => 'asset-info-links', @extra &>
@@ -96,8 +98,10 @@
             </td>
           </tr>
       </table>
+% $m->callback( %ARGS, CallbackName => 'LeftColumn' );
       </td>
       <td valign="top" width="60%" class="boxcontainer">
+% $m->callback( %ARGS, CallbackName => 'RightColumnTop' );
 % if ($Asset->TypeObj->AssetCustomFields->First) {
       <table width="100%" class="asset-summary">
           <tr>
@@ -111,6 +115,7 @@
           </tr>
       </table>
 % }  
+% $m->callback( %ARGS, CallbackName => 'RightColumn' );
       </td>
     </tr>
 </table>
