@@ -195,4 +195,50 @@ sub add_rights {
     return 1;
 }
 
+=head2 object_scrips_are
+
+Takes an L<RTx::AssetTracker::Scrip> object or ID as the first argument and an arrayref of
+L<RTx::AssetTracker::Type> objects and/or Type IDs as the second argument.
+
+The scrip's applications (L<RTx::AssetTracker::ObjectScrip> records) are tested to ensure they
+exactly match the arrayref.
+
+An optional third arrayref may be passed to enumerate and test the asset types the
+scrip is B<not> added to.  This is most useful for testing the API returns the
+correct results.
+
+=cut
+
+sub object_scrips_are {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    my $self    = shift;
+    my $scrip   = shift;
+    my $to      = shift || [];
+    my $not_to  = shift;
+
+    unless (blessed($scrip)) {
+        my $id = $scrip;
+        $scrip = RTx::AssetTracker::Scrip->new( RT->SystemUser );
+        $scrip->Load($id);
+    }
+
+    $to = [ map { blessed($_) ? $_->id : $_ } @$to ];
+    Test::More::ok($scrip->IsAdded($_), "added to asset type $_" ) foreach @$to;
+    Test::More::is_deeply(
+        [sort map $_->id, @{ $scrip->AddedTo->ItemsArrayRef }],
+        [sort grep $_, @$to ],
+        'correct list of added to asset types',
+    );
+
+    if ($not_to) {
+        $not_to = [ map { blessed($_) ? $_->id : $_ } @$not_to ];
+        Test::More::ok(!$scrip->IsAdded($_), "not added to asset type $_" ) foreach @$not_to;
+        Test::More::is_deeply(
+            [sort map $_->id, @{ $scrip->NotAddedTo->ItemsArrayRef }],
+            [sort grep $_, @$not_to ],
+            'correct list of not added to asset types',
+        );
+    }
+}
+
 1;
