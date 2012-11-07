@@ -50,14 +50,19 @@
     current_tab => 'Asset/Display.html?id='.$AssetObj->id,
     Title => $AssetObj->Name &>
 
+% $m->callback(CallbackName => 'BeforeActionList', %ARGS, Actions => \@Actions, ARGSRef => \%ARGS, Asset => $AssetObj);
+
 <& /Elements/ListActions, actions => \@Actions &>
 
+% $m->callback( %ARGS, Asset => $AssetObj, CallbackName => 'BeforeShowSummary' );
 <div class="summary">
 <&| /Widgets/TitleBox, title => loc('Asset metadata') &>
 <& /AssetTracker/Asset/Elements/ShowSummary,  Asset => $AssetObj &>
 </&>
 </div>
 <br />
+
+% $m->callback( Asset => $AssetObj, %ARGS, CallbackName => 'BeforeShowHistory' );
 
 % if ( $RT::ShowAssetHistory ) {
 <& /Ticket/Elements/ShowHistory , 
@@ -68,6 +73,10 @@
       &> 
 % }
 
+% $m->callback( %ARGS,
+%     Asset        => $AssetObj,
+%     CallbackName => 'AfterShowHistory',
+% );
   
 <%ARGS>
 $id => undef
@@ -80,7 +89,7 @@ $Actions => undef
 
 <%INIT>
 
-$m->comp('/Elements/Callback', _CallbackName => 'Initial', AssetObj => $AssetObj, ARGSRef => \%ARGS);
+$m->callback( AssetObj => $AssetObj, ARGSRef => \%ARGS, CallbackName => 'Initial' );
 
 my ($linkid, $message, @Actions, $tid, $Assets);  
 push(@Actions, @$Actions) if $Actions;
@@ -117,6 +126,10 @@ if ($ARGS{'id'} eq 'new') {
 	}
     }
 
+    $m->callback( CallbackName => 'BeforeProcessArguments',
+        AssetObj => $AssetObj, Assets => $Assets,
+        ActionsRef => \@Actions, ARGSRef => \%ARGS );
+
     #if (defined $ARGS{'Action'}) {
 	#if ($ARGS{'Action'} =~ /^(Steal|Kill|Take|SetTold)$/) {
 	    #my $action = $1;
@@ -125,6 +138,11 @@ if ($ARGS{'id'} eq 'new') {
 	#}
     #}
 
+    $m->callback(CallbackName => 'ProcessArguments',
+        Asset => $AssetObj,
+        ARGSRef => \%ARGS,
+        Actions => \@Actions);
+        
     #$ARGS{'UpdateContent'} =~ s/\r\n/\n/g;
     #if ( $ARGS{'UpdateTimeWorked'} ||
 	 #(   $ARGS{'UpdateContent'} ne ''
@@ -143,7 +161,12 @@ if ($ARGS{'id'} eq 'new') {
 
 
 
-$m->comp('/Elements/Callback', _CallbackName => 'BeforeDisplay',
-	 AssetObj => \$AssetObj, Assets => \$Assets, ARGSRef => \%ARGS);
+$m->callback(
+    CallbackName => 'BeforeDisplay',
+    AssetObj => \$AssetObj,
+    Assets => \$Assets,
+    Actions => \@Actions,
+    ARGSRef => \%ARGS,
+);
 
 </%INIT>
