@@ -86,7 +86,7 @@
 <a href="<%$RT::WebPath%>/AssetTracker/Search/Export.html<%$QueryString%>"><&|/l&>Importable Spreadsheet</&></a><br>
 <a href="<%$RT::WebPath%>/AssetTracker/Search/Results.rdf<%$QueryString%>"><&|/l&>RSS Feed</&></a>
 %# | <a href="<%$RT::WebPath%>/AssetTracker/Tools/Offline.html<%$QueryString%>"><&|/l&>Work offline</&></a><br>
-<& /Elements/Callback, _CallbackName => 'SearchActions', QueryString => $QueryString&>
+% $m->callback( QueryString => $QueryString, CallbackName => 'SearchActions' );
 </div>
 <%INIT>
 

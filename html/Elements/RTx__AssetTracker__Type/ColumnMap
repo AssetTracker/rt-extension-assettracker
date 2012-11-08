@@ -149,6 +149,6 @@ $ASSET_COLUMN_MAP = {
 # }}}
 </%ONCE>
 <%init>
-$m->comp( '/Elements/Callback', COLUMN_MAP    => $ASSET_COLUMN_MAP, _CallbackName => 'ColumnMap');
+$m->callback( COLUMN_MAP => $ASSET_COLUMN_MAP, CallbackName => 'ColumnMap', CallbackOnce => 1 );
 return AssetTypeColumnMap($Name, $Attr) || GetColumnMapEntry( Map => $ASSET_COLUMN_MAP, Name => $Name, Attribute => $Attr );
 </%init>

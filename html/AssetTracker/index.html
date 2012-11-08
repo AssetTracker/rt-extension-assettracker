@@ -42,8 +42,7 @@ if ( $ARGS{'q'} ) {
         }
     }
 
-    if ($m->comp('/Elements/Callback', _CallbackName => 'SearchPreFilter',
-                 query => $query, %ARGS)) {
+    if ($m->callback( query => $query, %ARGS, CallbackName => 'SearchPreFilter' )) {
         return();
     }
 

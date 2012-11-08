@@ -64,7 +64,7 @@
     <td class="label atype"><&|/l&>Asset Type</&>:</td>
     <td class="value atype"><%$Asset->TypeObj->Name%></td>
   </tr>
-<& /Elements/Callback, _CallbackName => 'EndOfList', AssetObj => $Asset, %ARGS &>
+% $m->callback( %ARGS, CallbackName => 'EndOfList', AssetObj => $Asset );
 </table>
 <%ARGS>
 $Asset => undef
