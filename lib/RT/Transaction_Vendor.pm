@@ -48,7 +48,7 @@ my $Orig_BriefDescriptions_AddLink = $_BriefDescriptions{AddLink};
 $_BriefDescriptions{AddLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_AddLink->($self)
-	    unless ( $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
+	    unless ( $self->Data && $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
         my $value;
         if ( $self->NewValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -99,7 +99,7 @@ my $Orig_BriefDescriptions_DeleteLink = $_BriefDescriptions{DeleteLink};
 $_BriefDescriptions{DeleteLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_DeleteLink->($self)
-	    unless ( $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
+	    unless ( $self->Data && $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
         my $value;
         if ( $self->OldValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
