@@ -123,6 +123,18 @@ sub LimitToNotAdded {
         ->LimitTargetToNotAdded( $self => @_ );
 }
 
+sub ApplySortOrder {
+    my $self = shift;
+    my $order = shift || 'ASC';
+    $self->OrderByCols( {
+        ALIAS => RTx::AssetTracker::ObjectScrips->new( $self->CurrentUser )
+            ->JoinTargetToThis( $self => @_ )
+        ,
+        FIELD => 'SortOrder',
+        ORDER => $order,
+    } );
+}
+
 # {{{ sub Next 
 
 =head2 Next
@@ -376,8 +388,7 @@ sub _FindScrips {
         ENTRYAGGREGATOR => 'OR',
     );
 
-    # Promise some kind of ordering
-    $self->OrderBy( FIELD => 'Description' );
+    $self->ApplySortOrder;
 
     # we call Count below, but later we always do search
     # so just do search and get count from results
