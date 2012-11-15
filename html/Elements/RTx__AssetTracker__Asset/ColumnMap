@@ -99,7 +99,7 @@ $COLUMN_MAP = {
         attribute => 'id',
         align     => 'right',
         type      => 'Number',
-        style     => 's23',
+        export_style     => 's23',
         value     => sub { return $_[0]->id }
     },
     Name => {
@@ -142,7 +142,7 @@ $COLUMN_MAP = {
     Created => {
         attribute => 'Created',
         type      => 'DateTime',
-        style     => 's21',
+        export_style   => 's21',
         value     => sub { return $_[0]->CreatedObj->AsString },
         export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
     },
@@ -150,7 +150,7 @@ $COLUMN_MAP = {
         attribute => 'LastUpdated',
         title     => 'Last Updated',
         type      => 'DateTime',
-        style     => 's21',
+        export_style   => 's21',
         value     => sub { return $_[0]->LastUpdatedObj->AsString },
         export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
     },
