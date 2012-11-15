@@ -139,27 +139,12 @@ $COLUMN_MAP = {
 
           }
     },
-    CreatedRelative => {
-        title     => 'Created',
-        attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AgeAsString }
-    },
-    LastUpdatedRelative => {
-        title     => 'Last Updated',
-        attribute => 'LastUpdated',
-        value     => sub { return $_[0]->LastUpdatedObj->AgeAsString }
-    },
     Created => {
         attribute => 'Created',
         type      => 'DateTime',
         style     => 's21',
         value     => sub { return $_[0]->CreatedObj->AsString },
         export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
-    },
-    CreatedBy => {
-        attribute => 'CreatedBy',
-        title => 'Created By',
-        value     => sub { return $_[0]->CreatorObj->Name }
     },
     LastUpdated => {
         attribute => 'LastUpdated',
@@ -168,11 +153,6 @@ $COLUMN_MAP = {
         style     => 's21',
         value     => sub { return $_[0]->LastUpdatedObj->AsString },
         export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
-    },
-    LastUpdatedBy => {
-        attribute => 'LastUpdatedBy',
-        title     => 'Last Updated By',
-        value     => sub { return $_[0]->LastUpdatedByObj->Name }
     },
     LastTransaction => {
         attribute => 'LastTransaction',

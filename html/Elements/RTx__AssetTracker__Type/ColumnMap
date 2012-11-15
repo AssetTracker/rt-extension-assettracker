@@ -65,35 +65,6 @@ my $COLUMN_MAP = {
         attribute => 'Description',
         value => sub { return $_[0]->Description || "(" . loc('No description') . ")" }
     },
-    CreatedRelative => {
-        title     => 'Created',
-        attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AgeAsString }
-    },
-    LastUpdatedRelative => {
-        title     => 'Last Updated',
-        attribute => 'LastUpdated',
-        value     => sub { return $_[0]->LastUpdatedObj->AgeAsString }
-    },
-    Created => {
-        attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AsString }
-    },
-    CreatedBy => {
-        attribute => 'CreatedBy',
-        title => 'Created By',
-        value     => sub { return $_[0]->CreatorObj->Name }
-    },
-    LastUpdated => {
-        attribute => 'LastUpdated',
-        title     => 'Last Updated',
-        value     => sub { return $_[0]->LastUpdatedObj->AsString }
-    },
-    LastUpdatedBy => {
-        attribute => 'LastUpdatedBy',
-        title     => 'Last Updated By',
-        value     => sub { return $_[0]->LastUpdatedByObj->Name }
-    },
     LastTransaction => {
         attribute => 'LastTransaction',
         title     => 'Last Transaction',
