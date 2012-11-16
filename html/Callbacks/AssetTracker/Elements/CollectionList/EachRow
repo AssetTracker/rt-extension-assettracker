@@ -1,0 +1,63 @@
+<%perl>
+
+my $request_path = $HTML::Mason::Commands::r->path_info;
+
+if ( $request_path =~ m{^/AssetTracker/Search/Grid.html} ) {
+    foreach my $column (@Format) {
+        my $col = $column->{'attribute'} || $column->{'last_attribute'};
+        if ( $col eq 'Name' ) {
+            $column->{output} = [ '<input name="Asset-'.$Record->Id.'-Name" size="20" value="'.$Record->Name.'" />' ];
+        }
+        elsif ( $col eq 'Description' ) {
+            $column->{output} = [ '<input name="Asset-'.$Record->Id.'-Description" size="40" value="'.$Record->Description.'" />' ];
+        }
+        elsif ( $col eq 'Status' ) {
+            $column->{output} = [ $m->scomp( '/AssetTracker/Elements/SelectStatus', Name => "Asset-".$Record->Id."-Status", Default => $Record->Status ) ];
+            $column->{output}->[0] =~ s/\n//g;
+        }
+        elsif ( $col eq 'TypeName' ) {
+            $column->{output} = [ $m->scomp( '/AssetTracker/Elements/SelectType', Name => "Asset-".$Record->Id."-Type", Default => $Record->Type ) ];
+            $column->{output}->[0] =~ s/\n//g;
+        }
+        elsif ( grep { $col eq $_ } RTx::AssetTracker::Type->ActiveRoleArray() ) {
+            $column->{output} = [ '<textarea cols="30" rows="3" name="Asset-'.$Record->Id.'-'.$col.'">' ];
+            my $method = $col . 'RoleGroup';
+            my $members = $Record->$method->MembersObj;
+            while (my $member = $members->Next) {
+                if ($member->MemberObj->IsGroup) {
+                    $column->{output}[0] .= 'Group:'.$member->MemberObj->Object->Name;
+                }
+                else {
+                    $column->{output}[0] .= $member->MemberObj->Object->EmailAddress ? $member->MemberObj->Object->EmailAddress : $member->MemberObj->Object->Name;
+                }
+            }
+            $column->{output}[0] .= '</textarea>';
+        }
+        elsif ( $col =~ /^CustomField\.\{(.+)\}$/ ) {
+            my $cfname = $1;
+            # See if it is a CF for this Asset type
+            if( $m->notes->{TypeCFs}{$Record->Type}{$cfname} ) {
+                my $CustomField = RT::CustomField->new($session{CurrentUser});
+                my ($rv, $msg) = $CustomField->LoadByName(Name => $cfname);
+                if ( $CustomField->CurrentUserHasRight("ModifyCustomField") ) {
+                    $column->{output} = [ $m->scomp( '/Elements/EditCustomField', Object => $Record, CustomField => $CustomField ) ];
+                    $column->{output}->[0] =~ s/\n//g;
+                }
+            }
+            else {
+                $column->{output} = [ 'n/a' ];
+            }
+        }
+    }
+
+    unshift @{$Format[0]{output}}, '___CHECKBOX__' unless $Format[0]{output}->[0] eq '___CHECKBOX__';
+
+}
+
+</%perl>
+<%args>
+$Record => undef
+$Warning => undef
+$Classes => undef
+@Format => undef
+</%args>
