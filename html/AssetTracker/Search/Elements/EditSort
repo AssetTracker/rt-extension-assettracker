@@ -109,7 +109,7 @@ for my $field (keys %FieldDescriptions) {
 }
 
 $fields{ $_ . '.EmailAddress' } = $_ . '.EmailAddress'
-    for qw(Owner Admin);
+    for ActiveRoleArray();
 
 # Add all available CustomFields to the list of sortable columns.
 my @cfs = grep /^CustomField/, @{$ARGS{AvailableColumns}};
