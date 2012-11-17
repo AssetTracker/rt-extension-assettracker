@@ -157,7 +157,7 @@ my @attribs= qw(Description Name );
 #    push @results, @linkresults;
 
 # This code does automatic redirection if any updates happen.
-    ATMaybeRedirectForResults(
+    MaybeRedirectForResults(
         Actions   => \@results,
         Arguments => { id => $TypeObj->Id },
     );

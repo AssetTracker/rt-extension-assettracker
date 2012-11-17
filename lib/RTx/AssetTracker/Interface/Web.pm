@@ -939,40 +939,6 @@ sub ActiveRoleArray {
 
 }
 
-sub ATMaybeRedirectForResults {
-    my %args = (
-        Path      => $HTML::Mason::Commands::m->request_comp->path,
-        Arguments => {},
-        Anchor    => undef,
-        Actions   => undef,
-        Force     => 0,
-        @_
-    );
-    my $has_actions = $args{'Actions'} && grep( defined, @{ $args{'Actions'} } );
-
-    return unless $has_actions || $args{'Force'};
-
-    my %arguments = %{ $args{'Arguments'} };
-
-    if ( $has_actions ) {
-        my $key = Digest::MD5::md5_hex( rand(1024) );
-        push @{ $session{"Actions"}{ $key } ||= [] }, @{ $args{'Actions'} };
-        $session{'i'}++;
-        $arguments{'results'} = $key;
-    }
-
-    $args{'Path'} =~ s!^/+!!;
-    my $url = RT->Config->Get('WebURL') . $args{Path};
-
-    if ( keys %arguments ) {
-        $url .= '?'. $m->comp( '/Elements/QueryString', %arguments );
-    }
-    if ( $args{'Anchor'} ) {
-        $url .= "#". $args{'Anchor'};
-    }
-    return RT::Interface::Web::Redirect($url);
-}
-
 eval "require RTx::AssetTracker::Interface::Web_Vendor";
 die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Interface/Web_Vendor.pm});
 eval "require RTx::AssetTracker::Interface::Web_Local";
