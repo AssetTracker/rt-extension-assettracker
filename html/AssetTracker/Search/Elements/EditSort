@@ -103,7 +103,6 @@ my %FieldDescriptions = %{$assets->FIELDS};
 my %fields;
 
 for my $field (keys %FieldDescriptions) {
-    next if $field eq 'EffectiveId';
     next unless $FieldDescriptions{$field}->[0] =~ /^(?:ENUM|INT|DATE|STRING|ID)$/;
     $fields{$field} = $field;
 }

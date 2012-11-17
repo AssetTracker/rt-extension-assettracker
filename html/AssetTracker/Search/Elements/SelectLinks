@@ -53,5 +53,5 @@ $Name => 'LinksField'
 </%ARGS>
 
 <%INIT>
-my @fields = ( keys %{ RTx::AssetTracker::Asset::LINKTYPEMAP() }, 'LinkedTo' );
+my @fields = ( RTx::AssetTracker::Asset::LINKORDER(), 'LinkedTo' );
 </%INIT>
