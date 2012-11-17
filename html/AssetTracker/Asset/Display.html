@@ -73,7 +73,6 @@
 % if ( $RT::ShowAssetHistory ) {
 <& /Ticket/Elements/ShowHistory , 
       Ticket => $AssetObj, 
-      Tickets => $Assets, 
       Transactions => $transactions,
       ShowDisplayModes => 0,
       DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$AssetObj->id
@@ -106,7 +105,7 @@ $m->callback( AssetObj => $AssetObj, ARGSRef => \%ARGS, CallbackName => 'Initial
 #}
 
 
-my (@Actions, $Assets, $title);
+my (@Actions, $title);
 push(@Actions, @$Actions) if $Actions;
 
 unless ($id || $AssetObj) {
@@ -140,7 +139,7 @@ if ($ARGS{'id'} eq 'new') {
     my $SkipProcessing;
 
     $m->callback( CallbackName => 'BeforeProcessArguments',
-        AssetObj => $AssetObj, Assets => $Assets,
+        AssetObj => $AssetObj,
         ActionsRef => \@Actions, ARGSRef => \%ARGS,
         SkipProcessing => \$SkipProcessing );
 
@@ -172,7 +171,6 @@ $title = loc("Asset #[_1]: [_2]", $AssetObj->Id, $AssetObj->Name || '');
 $m->callback(
     CallbackName => 'BeforeDisplay',
     AssetObj => \$AssetObj,
-    Assets => \$Assets,
     Actions => \@Actions,
     title => \$title,
     ARGSRef => \%ARGS,
@@ -186,7 +184,7 @@ MaybeRedirectForResults(
     Arguments => { id => $AssetObj->id },
 );
 
-my $transactions = $m->comp('Elements/FindTransactions',Asset => $AssetObj, Assets => $Assets || undef);
+my $transactions = $m->comp('Elements/FindTransactions',Asset => $AssetObj);
 
 my %link_rel;
 if (defined $session{'assets'} and ($ARGS{'Query'} or $session{'CurrentAssetSearchHash'}->{'Query'})) {
