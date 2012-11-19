@@ -83,3 +83,11 @@ div.asset-info-basics div.titlebox-content .labeltop{
   color: #666
 }
 
+
+#comp-AssetTracker-Search-Build .submit {
+ width: 58%;
+}
+
+#display-options .submit {
+ width: 100%;
+}
