@@ -67,8 +67,11 @@
 %#
 <& /Elements/Header, Title => $title &>
 <& /AssetTracker/Elements/Tabs, 
+    current_tab => "Search/Build.html".$QueryString,
     Title => $title,
-    %TabArgs
+    %query,
+    SavedSearchId => $saved_search{'Id'},
+    SavedChartSearchId => $ARGS{SavedChartSearchId},
 &>
 
 <form method="post" action="Build.html" name="BuildQuery" id="BuildQuery">
@@ -317,12 +320,12 @@ if ( $ARGS{'DoSearch'} ) {
 
 # Build a querystring for the tabs
 
-my %TabArgs = ();
+my $QueryString = '';
 if ($NewQuery) {
-    $TabArgs{QueryString} = 'NewQuery=1';
+    $QueryString = 'NewQuery=1';
 }
 elsif ( $query{'Query'} ) {
-    $TabArgs{QueryArgs} = \%query;
+    $QueryString = $m->comp('/Elements/QueryString', %query );
 }
 
 </%INIT>
