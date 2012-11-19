@@ -43,11 +43,11 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc("Bulk asset update") &>
-%#<& /Elements/Tabs, Title => loc("Bulk asset update") &>
+<& /Elements/Header, Title => $title &>
 <& /AssetTracker/Elements/Tabs,
-    current_tab => "AssetTracker/Search/Bulk.html" &>
-
+    current_tab => "AssetTracker/Search/Bulk.html",
+    Title => $title,
+    &>
 
 <& /Elements/ListActions, actions => \@results &>
 <form method="post" action="<% RT->Config->Get('WebPath') %>/AssetTracker/Search/Bulk.html" enctype="multipart/form-data" name="BulkUpdate" id="BulkUpdate">
