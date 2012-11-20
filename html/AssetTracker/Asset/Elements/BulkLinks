@@ -1,0 +1,135 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%#
+%# COPYRIGHT:
+%#
+%# This software is Copyright (c) 1996-2012 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
+%# (Except where explicitly superseded by other copyright notices)
+%#
+%#
+%# LICENSE:
+%#
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%#
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%#
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
+%# CONTRIBUTION SUBMISSION POLICY:
+%#
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%#
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%#
+%# END BPS TAGGED BLOCK }}}
+<table width="100%">
+  <tr>
+    <td valign="top" width="50%">
+      <h3><&|/l&>Current Links</&></h3>
+<table>
+
+%foreach my $type ( @link_order ) {
+  <tr>
+    <td class="labeltop"><&|/l&><% $link_types{$type}{Name} %></&>:</td>
+    <td class="value">
+% if ( $hash{$type} && $link_types{$type}{Mode} eq 'Target' ) {
+% for my $link ( values %{$hash{$type}} ) {
+      <input type="checkbox" class="checkbox" name="DeleteLink--<%$link->Type%>-<%$link->Target%>" value="1" />
+        <& /Elements/ShowLink, URI => $link->TargetURI &><br />
+% } }
+% elsif ( $hash{$type} && $link_types{$type}{Mode} eq 'Base' ) {
+% for my $link ( values %{$hash{$type}} ) {
+      <input type="checkbox" class="checkbox" name="DeleteLink-<%$link->Base%>-<%$link->Type%>-" value="1" />
+        <& /Elements/ShowLink, URI => $link->BaseURI &><br />
+% } }
+    </td>
+  </tr>
+%}
+
+  <tr>
+    <td></td>
+    <td><i><&|/l&>(Check box to delete)</&></i></td>
+  </tr>
+</table>
+</td>
+<td valign="top">
+<h3><&|/l&>New Links</&></h3>
+<i><&|/l&>Enter tickets or URIs to link assets to. Separate multiple entries with spaces.</&>
+</i><br />
+<table>
+
+%foreach my $type ( @link_order ) {
+  <tr>
+    <td class="label"><&|/l&><% $link_types{$type}{Name} %></&>:</td>
+% if ( $link_types{$type}{Mode} eq 'Target' ) {
+    <td class="entry"><input name="Asset-<% $link_types{$type}{Type} %>" value="<% $ARGS{"Asset-$link_types{$type}{Type}"} || '' %>" /></td>
+% } elsif ( $link_types{$type}{Mode} eq 'Base' ) {
+    <td class="entry"><input name="<% $link_types{$type}{Type} %>-Asset" value="<% $ARGS{"$link_types{$type}{Type}-Asset"} || '' %>" /></td>
+% }
+  </tr>
+%}
+
+</table>
+</td>
+</tr>
+</table>
+
+<%ARGS>
+$Assets => undef
+</%ARGS>
+
+<%INIT>
+my %link_types = %{ RTx::AssetTracker::Asset::LINKTYPEMAP() };
+my @link_order =    RTx::AssetTracker::Asset::LINKORDER();
+
+my %hash;
+if ( $Assets && $Assets->Count ) {
+    my $first_asset = $Assets->Next;
+    # we only show current links that exist on all the assets
+    for my $type ( @link_order ) {
+        my $target_or_base = $link_types{$type}{Mode};
+        while ( my $link = $first_asset->$type->Next ) {
+            $hash{$type}{$link->$target_or_base} = $link;
+        }
+    }
+
+    while ( my $asset = $Assets->Next ) {
+        for my $type ( @link_order ) {
+            my $target_or_base = $link_types{$type}{Mode};
+            # if $hash{$type} is empty, no need to check any more
+            next unless $hash{$type} && keys %{$hash{$type}};
+            my %exists;
+            while ( my $link = $asset->$type->Next ) {
+                $exists{$link->$target_or_base}++;
+            }
+
+            for ( keys %{$hash{$type}} ) {
+                delete $hash{$type}{$_} unless $exists{$_};
+            }
+        }
+    }
+}
+</%INIT>

@@ -131,11 +131,9 @@
 %#
 %#<& /Elements/TitleBoxEnd &>
 
-
-%#<& /Elements/TitleBoxStart, title => loc('Edit Links'), color => "#336633"&>
-%#<i><&|/l&>Enter assets or URIs to link assets to. Separate multiple entries with spaces.</&></i><br>
-%#<& /Ticket/Elements/BulkLinks &>
-%#<& /Elements/TitleBoxEnd &>
+<&|/Widgets/TitleBox, title => loc('Edit Links'), color => "#336633"&>
+<& /AssetTracker/Asset/Elements/BulkLinks, Assets => $Assets &>
+</&>
 
 <& /Elements/TitleBoxStart, title => loc('Edit Fields'), color => "#336633"&>
 <table>
@@ -297,29 +295,22 @@ while (my $Asset = $Assets->Next) {
 
     #Update the links
     $ARGS{'id'} = $Asset;
-    #$ARGS{$Asset->Id.'-MergeInto'} = $ARGS{'Asset-MergeInto'};
-    #$ARGS{$Asset->Id.'-DependsOn'} = $ARGS{'Asset-DependsOn'};
-    #$ARGS{'DependsOn-'.$Asset->Id} = $ARGS{'DependsOn-Asset'};
-    #$ARGS{$Asset->Id.'-MemberOf'} = $ARGS{'Asset-MemberOf'};
-    #$ARGS{'MemberOf-'.$Asset->Id} = $ARGS{'MemberOf-Asset'};
-    #$ARGS{$Asset->Id.'-RefersTo'} = $ARGS{'Asset-RefersTo'};
-    #$ARGS{'RefersTo-'.$Asset->Id} = $ARGS{'RefersTo-Asset'};
-    #@linkresults = ProcessAssetLinks( AssetObj => $Asset, ARGSRef => \%ARGS);
-    #delete $ARGS{'id'};
-    #delete $ARGS{$Asset->Id.'-MergeInto'};
-    #delete $ARGS{$Asset->Id.'-DependsOn'};
-    #delete $ARGS{'DependsOn-'.$Asset->Id};
-    #delete $ARGS{$Asset->Id.'-MemberOf'};
-    #delete $ARGS{'MemberOf-'.$Asset->Id};
-    #delete $ARGS{$Asset->Id.'-RefersTo'};
-    #delete $ARGS{'RefersTo-'.$Asset->Id};
-    my @tempresults = ( @watchresults,
-			@basicresults,
-			@cfresults,
-			#@dateresults,
-    			@updateresults,
-			#@linkresults,
-			);
+
+    foreach my $type ( keys %{ RTx::AssetTracker::Asset::LINKDIRMAP() } ) {
+        $ARGS{ $Asset->id . "-" . $type } = $ARGS{"Asset-$type"};
+        $ARGS{ $type . "-" . $Asset->id } = $ARGS{"$type-Asset"};
+    }
+    @linkresults = ProcessAssetLinks( AssetObj => $Asset, ARGSRef => \%ARGS );
+    foreach my $type ( keys %{ RTx::AssetTracker::Asset::LINKDIRMAP() } ) {
+        delete $ARGS{ $type . "-" . $Asset->id };
+        delete $ARGS{ $Asset->id . "-" . $type };
+    }
+
+    my @tempresults = (
+        @watchresults, @basicresults,
+        @updateresults, @linkresults, @cfresults,
+    );
+
     @tempresults = map { loc("Asset #[_1] [_2]: [_3]",$Asset->Id,$Asset->Name,$_) } @tempresults;
 
     @results = (@results, @tempresults);
