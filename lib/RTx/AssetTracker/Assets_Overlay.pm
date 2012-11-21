@@ -38,8 +38,8 @@ use XML::Parser;
   ( Name            => ['STRING',],
     Status          => ['ENUM'],
     Type            => ['ENUM' => 'Type',],
-    Creator         => ['ENUM' => 'User',],
-    LastUpdatedBy   => ['ENUM' => 'User',],
+    Creator         => ['ENUM' => 'RT::User',],
+    LastUpdatedBy   => ['ENUM' => 'RT::User',],
     id              => ['INT',],
     URI             => ['STRING',],
 #    ComponentOf     => [ 'LINK' => To => 'ComponentOf', ],
@@ -269,7 +269,7 @@ sub _EnumLimit {
 
     my $meta = $FIELDS{$field};
     if ( defined $meta->[1] ) {
-        my $class = "RTx::AssetTracker::" . $meta->[1];
+        my $class = ( $meta->[1] =~ /::/ ? '' : "RTx::AssetTracker::" ) . $meta->[1];
         my $o     = $class->new( $sb->CurrentUser );
         $o->Load($value);
         $value = $o->Id;
