@@ -71,12 +71,12 @@
 % $m->callback( Asset => $AssetObj, %ARGS, Transactions => $transactions, CallbackName => 'BeforeShowHistory' );
 
 % if ( $RT::ShowAssetHistory ) {
-<& /Ticket/Elements/ShowHistory , 
-      Ticket => $AssetObj, 
-      Transactions => $transactions,
-      ShowDisplayModes => 0,
-      DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$AssetObj->id
-      &> 
+    <& /Elements/ShowHistory , 
+          Object => $AssetObj, 
+          Transactions => $transactions,
+          ShowDisplayModes => 0,
+          DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$AssetObj->id
+    &> 
 % }
 
 % $m->callback( %ARGS,
@@ -89,7 +89,6 @@
 $id => undef
 $Create => undef
 $ShowHeaders => 0
-$Collapsed => undef
 $AssetObj => undef
 $Actions => undef
 </%ARGS>
