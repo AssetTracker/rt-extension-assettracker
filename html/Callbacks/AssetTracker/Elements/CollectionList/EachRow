@@ -38,7 +38,9 @@ if ( $request_path =~ m{^/AssetTracker/Search/Grid.html} ) {
             # See if it is a CF for this Asset type
             if( $m->notes->{TypeCFs}{$Record->Type}{$cfname} ) {
                 my $CustomField = RT::CustomField->new($session{CurrentUser});
-                my ($rv, $msg) = $CustomField->LoadByName(Name => $cfname);
+                my ($rv, $msg) = $CustomField->LoadByName( Name => $cfname, Type => $Record->Type );
+                # This must be a global CF
+                $CustomField->LoadByName( Name => $cfname, Type => 0 ) unless $CustomField->Id;
                 if ( $CustomField->CurrentUserHasRight("ModifyCustomField") ) {
                     $column->{output} = [ $m->scomp( '/Elements/EditCustomField', Object => $Record, CustomField => $CustomField ) ];
                     $column->{output}->[0] =~ s/\n//g;
