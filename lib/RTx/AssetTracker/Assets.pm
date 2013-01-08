@@ -1808,16 +1808,31 @@ sub OrderByCols {
 }
 
 
+sub Limit {
+    my $self = shift;
+    my %args = @_;
+    $self->{'must_redo_search'} = 1;
+    delete $self->{'raw_rows'};
+    delete $self->{'count_all'};
+
+    $args{ALIAS} ||= 'main';
+
+    if ($self->{'using_restrictions'}) {
+        RT->Deprecated( Message => "Mixing old-style LimitFoo methods with Limit is deprecated" );
+        $self->LimitField(@_);
+    }
+    $self->SUPER::Limit(@_);
+}
 
 
-=head2 Limit
+=head2 LimitField
 
 Takes a paramhash with the fields FIELD, OPERATOR, VALUE and DESCRIPTION
 Generally best called from LimitFoo methods
 
 =cut
 
-sub Limit {
+sub LimitField {
     my $self = shift;
     my %args = (
         FIELD       => undef,
@@ -1831,6 +1846,12 @@ sub Limit {
         $args{'OPERATOR'}, $args{'VALUE'}
         )
         if ( !defined $args{'DESCRIPTION'} );
+
+
+    if ($self->_isLimited > 1) {
+        RT->Deprecated( Message => "Mixing old-style LimitFoo methods with Limit is deprecated" );
+    }
+    $self->{using_restrictions} = 1;
 
     my $index = $self->_NextIndex;
 
@@ -1875,9 +1896,9 @@ sub LimitType {
 
     #TODO check for a valid queue here
 
-    $self->Limit(
+    $self->LimitField(
         FIELD       => 'Type',
-        VALUE       => $args{VALUE},
+        VALUE       => $args{'VALUE'},
         OPERATOR    => $args{'OPERATOR'},
         DESCRIPTION => join(
             ' ', $self->loc('Type'), $args{'OPERATOR'}, $args{'VALUE'},
@@ -1907,7 +1928,7 @@ sub LimitStatus {
         OPERATOR => '=',
         @_
     );
-    $self->Limit(
+    $self->LimitField(
         FIELD       => 'Status',
         VALUE       => $args{'VALUE'},
         OPERATOR    => $args{'OPERATOR'},
@@ -1950,7 +1971,7 @@ VALUE is a string to search for in the description of the asset.
 sub LimitDescription {
     my $self = shift;
     my %args = (@_);
-    $self->Limit(
+    $self->LimitField(
         FIELD       => 'Description',
         VALUE       => $args{'VALUE'},
         OPERATOR    => $args{'OPERATOR'},
@@ -1977,7 +1998,7 @@ sub LimitId {
         @_
     );
 
-    $self->Limit(
+    $self->LimitField(
         FIELD       => 'id',
         VALUE       => $args{'VALUE'},
         OPERATOR    => $args{'OPERATOR'},
@@ -2003,7 +2024,7 @@ sub LimitURI {
         @_
     );
 
-    $self->Limit(
+    $self->LimitField(
         FIELD => 'URI',
         VALUE => $args{'VALUE'},
         OPERATOR => $args{'OPERATOR'},
@@ -2043,7 +2064,7 @@ sub LimitWatcher {
         $watcher_type = "Watcher";
     }
 
-    $self->Limit(
+    $self->LimitField(
         FIELD       => $watcher_type,
         VALUE       => $args{'VALUE'},
         OPERATOR    => $args{'OPERATOR'},
@@ -2079,7 +2100,7 @@ sub LimitLinkedTo {
         @_
     );
 
-    $self->Limit(
+    $self->LimitField(
         FIELD       => 'LinkedTo',
         BASE        => undef,
         TARGET      => $args{'TARGET'},
@@ -2114,7 +2135,7 @@ sub LimitLinkedFrom {
         @_
     );
 
-    $self->Limit(
+    $self->LimitField(
         FIELD       => 'LinkedTo',
         TARGET      => undef,
         BASE        => $args{'BASE'},
@@ -2161,7 +2182,7 @@ sub LimitDate {
             . $args{'VALUE'} . " GMT";
     }
 
-    $self->Limit(%args);
+    $self->LimitField(%args);
 
 }
 
@@ -2207,7 +2228,7 @@ sub LimitTransactionDate {
             . $args{'VALUE'} . " GMT";
     }
 
-    $self->Limit(%args);
+    $self->LimitField(%args);
 
 }
 
@@ -2281,7 +2302,7 @@ sub LimitCustomField {
     @rest = ( ENTRYAGGREGATOR => 'AND' )
         if ( $CF->Type eq 'SelectMultiple' );
 
-    $self->Limit(
+    $self->LimitField(
         VALUE => $args{VALUE},
         FIELD => "CF"
             .(defined $args{'ASSETTYPE'}? ".$args{'ASSETTYPE'}" : '' )
@@ -2524,6 +2545,8 @@ sub CurrentUserCanSee {
         if $self->CurrentUser->UserObj->HasRight(
             Right => 'SuperUser', Object => $RT::System
         );
+
+    local $self->{using_restrictions};
 
     my $id = $self->CurrentUser->id;
 
@@ -2868,6 +2891,7 @@ sub _ProcessRestrictions {
     my $sql = $self->Query;    # Violating the _SQL namespace
     if ( !$sql || $self->{'RecalcAssetLimits'} ) {
 
+        local $self->{using_restrictions};
         #  "Restrictions to Clauses Branch\n";
         my $clauseRef = eval { $self->_RestrictionsToClauses; };
         if ($@) {

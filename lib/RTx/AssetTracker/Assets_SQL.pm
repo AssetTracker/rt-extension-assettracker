@@ -77,7 +77,7 @@ sub _SQLLimit {
 
   # All SQL stuff goes into one SB subclause so we can deal with all
   # the aggregation
-  $self->SUPER::Limit(%args,
+  $self->Limit(%args,
                       SUBCLAUSE => 'assetsql');
 }
 
