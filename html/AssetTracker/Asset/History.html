@@ -52,7 +52,8 @@
       
 <& /Ticket/Elements/ShowHistory , 
     Ticket => $Asset, 
-    ShowDisplayModes => 0
+    ShowDisplayModes => 0,
+    DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$Asset->id
     &> 
 
 
