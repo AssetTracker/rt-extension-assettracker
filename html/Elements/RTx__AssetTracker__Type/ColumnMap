@@ -50,47 +50,7 @@ $Attr => undef
 
 
 <%ONCE>
-our ( $ASSET_COLUMN_MAP );
-
-sub AssetTypeColumnMap {
-    my $name = shift;
-    my $attr = shift;
-
-    # First deal with the simple things from the map
-    if ( $ASSET_COLUMN_MAP->{$name} ) {
-        return ( $ASSET_COLUMN_MAP->{$name}->{$attr} );
-    }
-
-    # now, let's deal with harder things, like Custom Fields
-
-    elsif ( $name =~ /^(?:CF|CustomField)\.\{(.+)\}$/ ) {
-        my $field = $1;
-
-        if ( $attr eq 'attribute' ) {
-            return (undef);
-        }
-        elsif ( $attr eq 'title' ) {
-            return ( $field );
-        }
-        elsif ( $attr eq 'value' ) {
-	    # Display custom field contents, separated by newlines.
-            # For Image custom fields we also show a thumbnail here.
-            return sub {
-                my $values = $_[0]->CustomFieldValues($field);
-                return map {
-                    (
-                        ($_->CustomFieldObj->Type eq 'Image')
-                            ? \($m->scomp( '/Elements/ShowCustomFieldImage', Object => $_ ))
-                            : $_->Content
-                    ),
-                    \'<br>',
-                } @{ $values->ItemsArrayRef }
-	    };
-        }
-    }
-}
-
-$ASSET_COLUMN_MAP = {
+my $COLUMN_MAP = {
     id => {
         attribute => 'id',
         align     => 'right',
@@ -104,35 +64,6 @@ $ASSET_COLUMN_MAP = {
     Description => {
         attribute => 'Description',
         value => sub { return $_[0]->Description || "(" . loc('No description') . ")" }
-    },
-    CreatedRelative => {
-        title     => 'Created',
-        attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AgeAsString }
-    },
-    LastUpdatedRelative => {
-        title     => 'Last Updated',
-        attribute => 'LastUpdated',
-        value     => sub { return $_[0]->LastUpdatedObj->AgeAsString }
-    },
-    Created => {
-        attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AsString }
-    },
-    CreatedBy => {
-        attribute => 'CreatedBy',
-        title => 'Created By',
-        value     => sub { return $_[0]->CreatorObj->Name }
-    },
-    LastUpdated => {
-        attribute => 'LastUpdated',
-        title     => 'Last Updated',
-        value     => sub { return $_[0]->LastUpdatedObj->AsString }
-    },
-    LastUpdatedBy => {
-        attribute => 'LastUpdatedBy',
-        title     => 'Last Updated By',
-        value     => sub { return $_[0]->LastUpdatedByObj->Name }
     },
     LastTransaction => {
         attribute => 'LastTransaction',
@@ -149,6 +80,6 @@ $ASSET_COLUMN_MAP = {
 # }}}
 </%ONCE>
 <%init>
-$m->comp( '/Elements/Callback', COLUMN_MAP    => $ASSET_COLUMN_MAP, _CallbackName => 'ColumnMap');
-return AssetTypeColumnMap($Name, $Attr) || GetColumnMapEntry( Map => $ASSET_COLUMN_MAP, Name => $Name, Attribute => $Attr );
+$m->comp( '/Elements/Callback', COLUMN_MAP    => $COLUMN_MAP, _CallbackName => 'ColumnMap');
+return GetColumnMapEntry( Map => $COLUMN_MAP, Name => $Name, Attribute => $Attr );
 </%init>
