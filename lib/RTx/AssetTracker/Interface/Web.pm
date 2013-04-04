@@ -357,7 +357,7 @@ $RT::Logger->debug("Processing asset watchers");
             my $watchers = [split('\n', $ARGSRef->{"Asset-$id-$role"})];
             push @results,
                 SetWatchers(
-                   Asset => $Asset, Watchers => $watchers, Type => '$role',
+                   Asset => $Asset, Watchers => $watchers, Type => $role,
                    TransactionData => $ARGSRef->{PeopleComment}
                                    || $ARGSRef->{GlobalComment} );
         }
@@ -402,7 +402,7 @@ sub SetWatchers {
         }
         else {
             push @results, "Error adding user: $watcher to $TypeGroup: $msg"
-                unless $msg =~ /already has member/;
+                unless $msg =~ /principal is already/;
         }
     }
 
@@ -426,7 +426,7 @@ sub SetWatchers {
         }
         else {
             push @results, "Error adding group: '$watcher_name' to $TypeGroup: $msg"
-                unless $msg =~ /already has member/;
+                unless $msg =~ /principal is already/;
         }
     }
 
