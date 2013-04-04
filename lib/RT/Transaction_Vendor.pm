@@ -166,4 +166,23 @@ $_BriefDescriptions{Set} = sub {
 };
 
 
+=head2 CustomFieldLookupType
+
+Returns the RT::Transaction lookup type, which can 
+be passed to RT::CustomField->Create() via the 'LookupType' hash key.
+
+=cut
+
+
+sub CustomFieldLookupType {
+    my $self=shift;
+    
+    if ( $self->{values}->{objecttype} eq 'RTx::AssetTracker::Asset' ) {
+	"RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
+    } else {
+	"RT::Queue-RT::Ticket-RT::Transaction";
+    }
+}
+
+
 1;
