@@ -64,7 +64,7 @@
       Ticket => $AssetObj, 
       Tickets => $Assets, 
       ShowDisplayModes => 0,
-      MaxRows => $RT::ShowAssetHistory
+      DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$AssetObj->id
       &> 
 % }
 
