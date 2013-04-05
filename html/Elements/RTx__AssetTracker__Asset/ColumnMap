@@ -190,6 +190,6 @@ for my $role ( ActiveRoleArray() ) {
 # }}}
 </%ONCE>
 <%init>
-$m->comp( '/Elements/Callback', COLUMN_MAP    => $COLUMN_MAP, _CallbackName => 'ColumnMap');
+$m->callback( COLUMN_MAP => $COLUMN_MAP, CallbackName => 'ColumnMap' );
 return GetColumnMapEntry( Map => $COLUMN_MAP, Name => $Name, Attribute => $Attr );
 </%init>

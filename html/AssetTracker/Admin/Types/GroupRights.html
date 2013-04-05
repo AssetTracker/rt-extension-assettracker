@@ -56,7 +56,7 @@
       
 <h1><&|/l&>System groups</&></h1>
 <TABLE>
-<& /Elements/Callback, TypeObj => $TypeObj, results => \@results, %ARGS &>
+% $m->callback( %ARGS, TypeObj => $TypeObj, results => \@results );
 % $Groups = RT::Groups->new($session{'CurrentUser'});
 % $Groups->LimitToSystemInternalGroups();
 %	while (my $Group = $Groups->Next()) {
