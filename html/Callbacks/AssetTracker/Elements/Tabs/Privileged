@@ -240,6 +240,8 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
     }
 
     PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset'), sort_order => 99 );
+    PageWidgets()->child( AT_simple_search => raw_html => $m->scomp('/AssetTracker/Elements/SimpleSearch'), sort_order => 98 );
+
 </%INIT>
 <%ARGS>
 $show_menu => 1
