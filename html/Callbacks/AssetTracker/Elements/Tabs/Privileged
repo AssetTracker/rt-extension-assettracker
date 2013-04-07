@@ -95,7 +95,8 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         }
     }
 
-    if ( $request_path =~ m{^/AssetTracker/(?:Asset|Search)/} && $request_path !~ m{^/Search/index\.html}) {
+    if ( $request_path =~ m{^/AssetTracker/(?:Asset|Search)/}
+        || ( $request_path =~ m{^/AssetTracker/index\.html} && $DECODED_ARGS->{'q'} ) ) {
         my $search = $assets; #->child('search');
         my $args      = '';
         my $has_query = '';
