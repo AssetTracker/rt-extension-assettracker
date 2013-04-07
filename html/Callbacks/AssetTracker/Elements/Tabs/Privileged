@@ -226,6 +226,13 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
     }
 
     my $tools = Menu->child("tools");
+
+    $tools->child( asset_import =>
+        title       => loc('Asset Import'),
+        description => loc('Import assets from an Excel 94 XML formatted file'),
+        path        => '/AssetTracker/Tools/Import.html',
+    );
+
     my $admin = $tools->child("config");
     if ($admin) {
         my $types = $admin->child( 'asset-types' => title => loc('Asset Types'), path => '/AssetTracker/Admin/Types/', description => loc('Manage asset types and asset-specific properties') );
