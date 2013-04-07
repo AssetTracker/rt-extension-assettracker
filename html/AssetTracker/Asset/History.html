@@ -68,7 +68,7 @@ $id => undef
 my $Asset = LoadAsset ($id);
 
 unless ($Asset->CurrentUserHasRight('ShowAsset')) {
-	Abort("No permission to view ticket");
+    Abort("No permission to view asset");
 }
 
 </%INIT>
