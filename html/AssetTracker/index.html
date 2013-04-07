@@ -31,15 +31,8 @@ if ( $ARGS{'q'} ) {
         $m->comp("/AssetTracker/Search/Results.html", Query => "IP = '$query'", AutoForwardSingleResult => 1);
         return();
     }
-    elsif ( $query =~ /^(\d+)$/ ) {
-        my $id = $1;
-        my $asset = RTx::AssetTracker::Asset->new($session{CurrentUser});
-        $asset->Load($id);
-        if ($asset->Status) {
-            $m->comp("/AssetTracker/Asset/Display.html", id => $id);
-            return;
-            Abort("Asset $id not found");
-        }
+    elsif ( $query =~ /^#?(\d+)$/ ) {
+        RT::Interface::Web::Redirect(RT->Config->Get('WebURL')."AssetTracker/Asset/Display.html?id=".$1);
     }
 
     if ($m->callback( query => $query, %ARGS, CallbackName => 'SearchPreFilter' )) {

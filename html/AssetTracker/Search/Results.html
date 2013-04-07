@@ -114,8 +114,8 @@ $session{'CurrentAssetSearchHash'} = {
 if ( $session{'assets'}->Query()) {
     $assetcount = $session{assets}->CountAll();
     if ($assetcount == 1 and $AutoForwardSingleResult) {
-        $m->comp('/AssetTracker/Asset/Display.html', id => $session{'assets'}->First->Id);
-        return;
+        RT::Interface::Web::Redirect( RT->Config->Get('WebURL')
+            ."AssetTracker/Asset/Display.html?id=". $session{assets}->First->id );
     }
     $title = loc('Found [quant,_1,asset]', $assetcount);
 } else {
