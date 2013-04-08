@@ -257,7 +257,7 @@ Returns either a localized string 'asset #23' or the full URI if the object is n
 sub AsString {
     my $self = shift;
     if ($self->IsLocal && $self->Object) {
-	    return $self->loc("[_1] #[_2] " . $self->Object->Name, $self->ObjectType, $self->Object->Id);
+        return $self->loc("[_1] #[_2]", $self->ObjectType, $self->Object->Id);
     }
     else {
 	    return $self->URI;
