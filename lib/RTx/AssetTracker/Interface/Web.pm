@@ -357,7 +357,7 @@ $RT::Logger->debug("Processing asset watchers");
             my $watchers = [split('\n', $ARGSRef->{"Asset-$id-$role"})];
             push @results,
                 SetWatchers(
-                   Asset => $Asset, Watchers => $watchers, Type => '$role',
+                   Asset => $Asset, Watchers => $watchers, Type => $role,
                    TransactionData => $ARGSRef->{PeopleComment}
                                    || $ARGSRef->{GlobalComment} );
         }
@@ -402,7 +402,7 @@ sub SetWatchers {
         }
         else {
             push @results, "Error adding user: $watcher to $TypeGroup: $msg"
-                unless $msg =~ /already has member/;
+                unless $msg =~ /principal is already/;
         }
     }
 
@@ -426,7 +426,7 @@ sub SetWatchers {
         }
         else {
             push @results, "Error adding group: '$watcher_name' to $TypeGroup: $msg"
-                unless $msg =~ /already has member/;
+                unless $msg =~ /principal is already/;
         }
     }
 
@@ -885,6 +885,9 @@ sub _ProcessATObjectCustomFieldUpdates {
                 $values_hash{ $val } = 1 if $val;
             }
 
+            # For Date Cfs, @values is empty when there is no changes (no datas in form input)
+            return @results if ( $cf->Type =~ /^Date(?:Time)?$/ && ! @values );
+
             $cf_values->RedoSearch;
             while ( my $cf_value = $cf_values->Next ) {
                 next if $values_hash{ $cf_value->id };
@@ -933,126 +936,10 @@ sub _ProcessATObjectCustomFieldUpdates {
     return @results;
 }
 
-# {{{ sub ProcessTicketWatchers
-
-=head2 ProcessTicketWatchers ( TicketObj => $Ticket, ARGSRef => \%ARGS );
-
-Returns an array of results messages.
-
-=cut
-
-sub ProcessTicketWatchers {
-    my %args = (
-        TicketObj => undef,
-        ARGSRef   => undef,
-        @_
-    );
-    my (@results);
-
-    my $Ticket  = $args{'TicketObj'};
-    my $ARGSRef = $args{'ARGSRef'};
-
-    # Munge watchers
-
-    foreach my $key ( keys %$ARGSRef ) {
-
-        # Delete deletable watchers
-        if ( $key =~ /^Ticket-DeleteWatcher-Type-(.*)-Principal-(\d+)$/ ) {
-            my ( $code, $msg ) = $Ticket->DeleteWatcher(
-                PrincipalId => $2,
-                Type        => $1
-            );
-            push @results, $msg;
-        }
-
-        # Delete watchers in the simple style demanded by the bulk manipulator
-        elsif ( $key =~ /^Delete(Requestor|Cc|AdminCc)$/ ) {
-            my ( $code, $msg ) = $Ticket->DeleteWatcher(
-                Email => $ARGSRef->{$key},
-                Type  => $1
-            );
-            push @results, $msg;
-        }
-
-        # Add new wathchers by email address
-        elsif ( ( $ARGSRef->{$key} || '' ) =~ /^(?:AdminCc|Cc|Requestor)$/
-            and $key =~ /^WatcherTypeEmail(\d*)$/ )
-        {
-
-            #They're in this order because otherwise $1 gets clobbered :/
-            my ( $code, $msg ) = $Ticket->AddWatcher(
-                Type  => $ARGSRef->{$key},
-                Email => $ARGSRef->{ "WatcherAddressEmail" . $1 }
-            );
-            push @results, $msg;
-        }
-
-        #Add requestors in the simple style demanded by the bulk manipulator
-        elsif ( $key =~ /^Add(Requestor|Cc|AdminCc)$/ ) {
-            my ( $code, $msg ) = $Ticket->AddWatcher(
-                Type  => $1,
-                Email => $ARGSRef->{$key}
-            );
-            push @results, $msg;
-        }
-
-        # Add new  watchers by owner
-        elsif ( $key =~ /^Ticket-AddWatcher-Principal-(\d*)$/ ) {
-            my $principal_id = $1;
-            my $form = $ARGSRef->{$key};
-            foreach my $value ( ref($form) ? @{$form} : ($form) ) {
-                next unless $value =~ /^(?:AdminCc|Cc|Requestor)$/i;
-
-                my ( $code, $msg ) = $Ticket->AddWatcher(
-                    Type        => $value,
-                    PrincipalId => $principal_id
-                );
-                push @results, $msg;
-            }
-        }
-
-    }
-    return (@results);
-}
-
 sub ActiveRoleArray {
 
     return RTx::AssetTracker::Type->ActiveRoleArray();
 
-}
-
-sub ATMaybeRedirectForResults {
-    my %args = (
-        Path      => $HTML::Mason::Commands::m->request_comp->path,
-        Arguments => {},
-        Anchor    => undef,
-        Actions   => undef,
-        Force     => 0,
-        @_
-    );
-    my $has_actions = $args{'Actions'} && grep( defined, @{ $args{'Actions'} } );
-
-    return unless $has_actions || $args{'Force'};
-
-    my %arguments = %{ $args{'Arguments'} };
-
-    if ( $has_actions ) {
-        my $key = Digest::MD5::md5_hex( rand(1024) );
-        push @{ $session{"Actions"}{ $key } ||= [] }, @{ $args{'Actions'} };
-        $session{'i'}++;
-        $arguments{'results'} = $key;
-    }
-
-    $args{'Path'} =~ s!^/+!!;
-    my $url = RT->Config->Get('WebURL') . $args{Path};
-
-    if ( keys %arguments ) {
-        $url .= '?'. $m->comp( '/Elements/QueryString', %arguments );
-    }
-    if ( $args{'Anchor'} ) {
-        $url .= "#". $args{'Anchor'};
-    }
-    return RT::Interface::Web::Redirect($url);
 }
 
 eval "require RTx::AssetTracker::Interface::Web_Vendor";

@@ -85,7 +85,7 @@
 </TD>
 <TD COLSPAN=4><INPUT TYPE=HIDDEN NAME="SetEnabled" VALUE="1">
 <INPUT TYPE=CHECKBOX NAME="Enabled" VALUE="1" <%$EnabledChecked%>> <&|/l&>Enabled (Unchecking this box disables this type)</&><BR>
-<& /Elements/Callback, TypeObj => $TypeObj, results => \@results, %ARGS &>
+% $m->callback( %ARGS, TypeObj => $TypeObj, results => \@results );
 </TD>
 </TR>
 
@@ -151,13 +151,16 @@ my @attribs= qw(Description Name );
 
     push @results, ProcessObjectCustomFieldUpdates( ARGSRef => \%ARGS, Object => $TypeObj );
 #    my @linkresults;
-#    $m->comp('/Elements/Callback', results => \@linkresults, 
-#	     RecordObj => $TypeObj, ARGSRef => \%ARGS, 
-#	     _CallbackName => 'ProcessLinks');
+#    $m->callback(
+#        results      => \@linkresults,
+#        RecordObj    => $TypeObj,
+#        ARGSRef      => \%ARGS, 
+#        CallbackName => 'ProcessLinks'
+#    );
 #    push @results, @linkresults;
 
 # This code does automatic redirection if any updates happen.
-    ATMaybeRedirectForResults(
+    MaybeRedirectForResults(
         Actions   => \@results,
         Arguments => { id => $TypeObj->Id },
     );

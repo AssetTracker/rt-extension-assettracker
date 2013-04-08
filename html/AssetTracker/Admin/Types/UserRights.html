@@ -55,7 +55,7 @@
       
       
 <TABLE>
-<& /Elements/Callback, TypeObj => $TypeObj, results => \@results, %ARGS &>
+% $m->callback( %ARGS, TypeObj => $TypeObj, results => \@results );
 %	while (my $Member = $Users->Next()) {
 % my $UserObj = $Member->MemberObj->Object();
 % my $group = RT::Group->new($session{'CurrentUser'});
