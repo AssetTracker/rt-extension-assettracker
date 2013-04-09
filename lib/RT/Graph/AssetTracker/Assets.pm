@@ -1,40 +1,40 @@
 # BEGIN BPS TAGGED BLOCK {{{
-# 
+#
 # COPYRIGHT:
-# 
-# This software is Copyright (c) 1996-2010 Best Practical Solutions, LLC
-#                                          <jesse@bestpractical.com>
-# 
+#
+# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+#                                          <sales@bestpractical.com>
+#
 # (Except where explicitly superseded by other copyright notices)
-# 
-# 
+#
+#
 # LICENSE:
-# 
+#
 # This work is made available to you under the terms of Version 2 of
 # the GNU General Public License. A copy of that license should have
 # been provided with this software, but in any event can be snarfed
 # from www.gnu.org.
-# 
+#
 # This work is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 or visit their web page on the internet at
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
-# 
-# 
+#
+#
 # CONTRIBUTION SUBMISSION POLICY:
-# 
+#
 # (The following paragraph is not intended to limit the rights granted
 # to you to modify and distribute this software under the terms of
 # the GNU General Public License and is only of importance to you if
 # you choose to contribute your changes and enhancements to the
 # community by submitting them to Best Practical Solutions, LLC.)
-# 
+#
 # By intentionally submitting any modifications, corrections or
 # derivatives to this work, or any other work intended for use with
 # Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -43,7 +43,7 @@
 # royalty-free, perpetual, license to use, copy, create derivative
 # works based on those contributions, and sublicense and distribute
 # those contributions and any derivatives thereof.
-# 
+#
 # END BPS TAGGED BLOCK }}}
 
 package RT::Graph::AssetTracker::Assets;
@@ -67,20 +67,20 @@ unless ($RT::DisableGraphViz) {
 }
 
 our %asset_status_style = (
-    production      => { fontcolor => '#FF0000', fontsize => 10 },
-    development     => { fontcolor => '#000000', fontsize => 10 },
-    qa  => { fontcolor => '#DAA520', fontsize => 10 },
-    dr => { fontcolor => '#00FF00', fontsize => 10 },
-    pilot => { fontcolor => '#808080', fontsize => 10 },
-    test  => { fontcolor => '#898989', fontsize => 10 },
-    retired  => { fontcolor => '#A9A9A9', fontsize => 10 },
+    production  => { fontcolor => '#FF0000', fontsize => 10 },
+    development => { fontcolor => '#000000', fontsize => 10 },
+    qa          => { fontcolor => '#DAA520', fontsize => 10 },
+    dr          => { fontcolor => '#00FF00', fontsize => 10 },
+    pilot       => { fontcolor => '#808080', fontsize => 10 },
+    test        => { fontcolor => '#898989', fontsize => 10 },
+    retired     => { fontcolor => '#A9A9A9', fontsize => 10 },
 );
 
 our %link_style = (
-    RunsOn  => { style => 'solid' },
-    DependsOn => { style => 'dashed' },
-    RefersTo  => { style => 'dotted' },
-    ComponentOf  => { style => 'bold' },
+    RunsOn      => { style => 'solid' },
+    DependsOn   => { style => 'dashed' },
+    RefersTo    => { style => 'dotted' },
+    ComponentOf => { style => 'bold' },
 );
 
 # We don't use qw() because perl complains about "possible attempt to put comments in qw() list"
@@ -106,7 +106,7 @@ EOT
 
 sub gv_escape($) {
     my $value = shift;
-    $value =~ s{(?=")}{\\}g;
+    $value =~ s{(?=["\\])}{\\}g;
     return $value;
 }
 
@@ -191,7 +191,7 @@ sub _SplitProperty {
 sub _PropertiesToFields {
     my $self = shift;
     my %args = (
-        Asset       => undef,
+        Asset        => undef,
         Graph        => undef,
         CurrentDepth => 1,
         @_
@@ -218,7 +218,7 @@ sub _PropertiesToFields {
 sub AddAsset {
     my $self = shift;
     my %args = (
-        Asset       => undef,
+        Asset        => undef,
         Properties   => [],
         Graph        => undef,
         CurrentDepth => 1,
@@ -268,7 +268,7 @@ sub AddAsset {
 sub AssetLinks {
     my $self = shift;
     my %args = (
-        Asset               => undef,
+        Asset                => undef,
 
         Graph                => undef,
         Direction            => 'TB',
@@ -284,6 +284,14 @@ sub AssetLinks {
         ShowLinkDescriptions => 0,
         @_
     );
+
+    my %valid_links = map { $_ => 1 }
+        qw(RunsOn IsRunning DependsOn DependedOnBy RefersTo ReferredToBy ComponentOf HasComponent);
+
+    # Validate our link types
+    $args{ShowLinks}   = [ grep { $valid_links{$_} } @{$args{ShowLinks}} ];
+    $args{LeadingLink} = 'Members' unless $valid_links{ $args{LeadingLink} };
+
     unless ( $args{'Graph'} ) {
         $args{'Graph'} = GraphViz->new(
             name    => 'asset_links_'. $args{'Asset'}->id,
@@ -347,14 +355,6 @@ sub AssetLinks {
     return $args{'Graph'};
 }
 
-eval "require RT::Graph::AssetTracker::Assets_Vendor";
-if ($@ && $@ !~ qr{^Can't locate RT/Graph/AssetTracker/Assets_Vendor.pm}) {
-    die $@;
-};
-
-eval "require RT::Graph::AssetTracker::Assets_Local";
-if ($@ && $@ !~ qr{^Can't locate RT/Graph/AssetTracker/Assets_Local.pm}) {
-    die $@;
-};
+RT::Base->_ImportOverlays();
 
 1;
