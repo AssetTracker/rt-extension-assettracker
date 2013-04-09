@@ -97,23 +97,7 @@ sub NewItem {
     return(RTx::AssetTracker::Port->new($self->CurrentUser));
 }
 
-        eval "require RTx::AssetTracker::Ports_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Ports_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Ports_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Ports_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Ports_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Ports_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 

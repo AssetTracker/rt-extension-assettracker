@@ -707,9 +707,6 @@ sub UnresolvedDependencies {
 
 # }}}
 
-eval "require RTx::AssetTracker::Record_Vendor";
-die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Record_Vendor.pm});
-eval "require RTx::AssetTracker::Record_Local";
-die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Record_Local.pm});
+RT::Base->_ImportOverlays();
 
 1;

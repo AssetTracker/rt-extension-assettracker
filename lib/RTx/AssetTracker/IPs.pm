@@ -97,24 +97,7 @@ sub NewItem {
     return(RTx::AssetTracker::IP->new($self->CurrentUser));
 }
 
-
-        eval "require RTx::AssetTracker::IPs_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IPs_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::IPs_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IPs_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::IPs_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IPs_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 

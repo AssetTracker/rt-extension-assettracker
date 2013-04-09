@@ -286,24 +286,7 @@ sub _CoreAccessible {
  }
 };
 
-
-        eval "require RTx::AssetTracker::ScripCondition_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/ScripCondition_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::ScripCondition_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/ScripCondition_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::ScripCondition_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/ScripCondition_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 

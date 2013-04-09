@@ -260,24 +260,7 @@ sub _CoreAccessible {
  }
 };
 
-
-        eval "require RTx::AssetTracker::IP_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IP_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::IP_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IP_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::IP_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/IP_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 
