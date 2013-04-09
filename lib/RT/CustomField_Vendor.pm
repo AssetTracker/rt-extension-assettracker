@@ -9,15 +9,18 @@ use RT::CurrentUser;
 
 # {{{ sub LoadByName
 
-=head2  LoadByName (Type => QUEUEID, Name => NAME)
+=head2 LoadByName (Queue => QUEUEID, Type => TYPEID, Name => NAME)
 
 Loads the Custom field named NAME.
 
-If a Type parameter is specified, only look for ticket custom fields tied to that Type.
+Will load a Disabled Custom Field even if there is a non-disabled Custom Field
+with the same Name.
 
-If the Type parameter is '0', look for global ticket custom fields.
+If a Queue or Type parameter is specified, only look for ticket custom fields tied to that Queue or Type.
 
-If no queue parameter is specified, look for any and all custom fields with this name.
+If the Queue or Type parameter is '0', look for global ticket custom fields.
+
+If no queue or type parameter is specified, look for any and all custom fields with this name.
 
 BUG/TODO, this won't let you specify that you only want user or group CFs.
 
@@ -35,24 +38,34 @@ sub LoadByName {
         @_,
     );
 
-    # if we're looking for a queue by name, make it a number
-    if  (defined $args{'Queue'}  &&  $args{'Queue'} !~ /^\d+$/) {
-        my $QueueObj = RT::Queue->new($self->CurrentUser);
-        $QueueObj->Load($args{'Queue'});
-        $args{'Queue'} = $QueueObj->Id;
+    unless ( defined $args{'Name'} && length $args{'Name'} ) {
+        $RT::Logger->error("Couldn't load Custom Field without Name");
+        return wantarray ? (0, $self->loc("No name provided")) : 0;
     }
-    elsif  (defined $args{'Type'}  &&  $args{'Type'} !~ /^\d+$/) {
-        my $TypeObj = RTx::AssetTracker::Type->new($self->CurrentUser);
-        $TypeObj->Load($args{'Type'});
+
+    # if we're looking for a queue by name, make it a number
+    if ( defined $args{'Queue'} && ($args{'Queue'} =~ /\D/ || !$self->ContextObject) ) {
+        my $QueueObj = RT::Queue->new( $self->CurrentUser );
+        $QueueObj->Load( $args{'Queue'} );
+        $args{'Queue'} = $QueueObj->Id;
+        $self->SetContextObject( $QueueObj )
+            unless $self->ContextObject;
+    }
+    # if we're looking for a type by name, make it a number
+    elsif ( defined $args{'Type'} && ($args{'Type'} =~ /\D/ || !$self->ContextObject) ) {
+        my $TypeObj = RTx::AssetTracker::Type->new( $self->CurrentUser );
+        $TypeObj->Load( $args{'Type'} );
         $args{'Type'} = $TypeObj->Id;
+        $self->SetContextObject( $TypeObj )
+            unless $self->ContextObject;
     }
 
     # XXX - really naive implementation.  Slow. - not really. still just one query
 
-    my $CFs = RT::CustomFields->new($self->CurrentUser);
+    my $CFs = RT::CustomFields->new( $self->CurrentUser );
     $CFs->SetContextObject( $self->ContextObject );
-
-    $CFs->Limit( FIELD => 'Name', VALUE => $args{'Name'} );
+    my $field = $args{'Name'} =~ /\D/? 'Name' : 'id';
+    $CFs->Limit( FIELD => $field, VALUE => $args{'Name'}, CASESENSITIVE => 0);
     # Don't limit to queue if queue is 0.  Trying to do so breaks
     # RT::Group type CFs.
     if ( defined $args{'Queue'} ) {
@@ -79,5 +92,6 @@ sub LoadByName {
     return $self->LoadById( $first->id );
 }
 
+# }}}
 
 1;
