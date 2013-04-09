@@ -4,7 +4,6 @@ use RTx::AssetTracker::Asset;
 use RTx::AssetTracker::Assets;
 use RTx::AssetTracker::Types;
 use RTx::AssetTracker::Type;
-use RTx::AssetTracker::Interface::Web;
 use RT::CustomFields;
 use RT::CustomField;
 
