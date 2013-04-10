@@ -91,7 +91,7 @@ $COLUMN_MAP = {
         export_value     => sub { $_[0]->_export_formatted_IPs() },
     },
     TypeName => {
-        attribute => 'AssetType',
+        attribute => 'Type',
         title     => 'Type',
         value     => sub { return $_[0]->TypeObj->Name }
     },
