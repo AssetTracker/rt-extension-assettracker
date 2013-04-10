@@ -96,7 +96,16 @@ my ($title, $assetcount);
 $session{'i'}++;
 $session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'}) ;
 $session{'assets'}->FromSQL($Query) if ($Query);
-$session{'assets'}->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
+if ($OrderBy =~ /\|/) {
+    # Multiple Sorts
+    my @OrderBy = split /\|/,$OrderBy;
+    my @Order = split /\|/,$Order;
+    $session{'assets'}->OrderByCols(
+        map { { FIELD => $OrderBy[$_], ORDER => $Order[$_] } } ( 0
+        .. $#OrderBy ) );; 
+} else {
+    $session{'assets'}->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
+}
 
 
 $session{'CurrentAssetSearchHash'} = {

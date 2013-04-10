@@ -46,9 +46,6 @@
 <SELECT NAME="<%$Name%>">
 <OPTION VALUE="Name"><&|/l&>Name</&></OPTION>
 <OPTION VALUE="Description"><&|/l&>Description</&></OPTION>
-<OPTION VALUE="Content"><&|/l&>Content</&></OPTION>
-<OPTION VALUE="ContentType"><&|/l&>Content-Type</&></OPTION>
-<OPTION VALUE="Filename"><&|/l&>Filename</&></OPTION>
 </SELECT>
 <%ARGS>
 $Name => 'AttachmentField'
