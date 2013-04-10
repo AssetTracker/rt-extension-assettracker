@@ -100,23 +100,7 @@ sub NewItem {
     return(RTx::AssetTracker::Scrip->new($self->CurrentUser));
 }
 
-        eval "require RTx::AssetTracker::Scrips_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Scrips_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Scrips_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Scrips_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Scrips_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Scrips_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 

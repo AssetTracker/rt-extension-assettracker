@@ -260,24 +260,7 @@ sub _CoreAccessible {
  }
 };
 
-
-        eval "require RTx::AssetTracker::Type_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Type_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Type_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Type_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Type_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Type_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 

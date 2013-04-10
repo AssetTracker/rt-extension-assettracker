@@ -2771,7 +2771,7 @@ sub ExportExcel {
 
         for my $f (@$export_format) {
             my $attr = $f->{attribute};
-            my $style = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "style") || 'Default';
+            my $style = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "export_style") || 'Default';
             my $type = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "type") || 'String';
             my $value = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "export_value")
                      || run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "value");

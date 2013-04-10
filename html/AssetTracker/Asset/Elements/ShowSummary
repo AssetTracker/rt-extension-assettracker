@@ -46,71 +46,48 @@
 <table width="100%" class="asset-summary">
     <tr>
       <td valign="top" width="40%" class="boxcontainer">
-      <table width="100%" class="asset-summary">
-          <tr>
-            <td valign="top" class="boxcontainer">
+% $m->callback( %ARGS, CallbackName => 'LeftColumnTop' );
 			    <&| /Widgets/TitleBox, title => loc('The Basics'),
                 title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/Modify.html?id=".$Asset->Id,
                 class=> 'asset-info-basics' &>
 				<& /AssetTracker/Asset/Elements/ShowBasics, Asset => $Asset &>
 				</&>
-            </td>
-          </tr>
 % if ($RT::EnableIP) {
-          <tr>
-            <td valign="top" class="boxcontainer">
 				<&| /Widgets/TitleBox, title => loc('IP Addresses'),
                 title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyIPs.html?id=".$Asset->Id,
                 class => 'asset-info-IPs' &>
                 <& /AssetTracker/Asset/Elements/ShowIP, Asset => $Asset &>
 				</&>
-            </td>
-          </tr>
 % }
-          <tr>
-            <td valign="top" class="boxcontainer">
 				<&| /Widgets/TitleBox, title => loc('People'),
                 title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id,
                 class=> 'asset-info-people' &>
 				<& /AssetTracker/Asset/Elements/ShowPeople, Asset => $Asset &>
 				</&>
-            </td>
-          </tr>
-          <tr>
-            <td valign="top" class="boxcontainer">
 				<&| /Widgets/TitleBox, title => loc('Tickets'),
                 class => 'asset-info-tickets' &>
 				<& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 1 &>
 				</&>
-            </td>
-          </tr>
-          <tr>
-            <td valign="top" class="boxcontainer">
 % my (@extra);
 % push @extra, titleright_raw => '<a href="'. RT->Config->Get('WebPath'). '/AssetTracker/Asset/Graphs/index.html?id='.$Asset->id.'">'.loc('Graph').'</a>' unless RT->Config->Get('DisableGraphViz');
+% $m->callback( %ARGS, CallbackName => 'LinksExtra', extra => \@extra );
 				<&| /Widgets/TitleBox, title => loc('Links'),
                 title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id,
                 class => 'asset-info-links', @extra &>
 				<& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 0 &>
 				</&>
-            </td>
-          </tr>
-      </table>
+% $m->callback( %ARGS, CallbackName => 'LeftColumn' );
       </td>
       <td valign="top" width="60%" class="boxcontainer">
+% $m->callback( %ARGS, CallbackName => 'RightColumnTop' );
 % if ($Asset->TypeObj->AssetCustomFields->First) {
-      <table width="100%" class="asset-summary">
-          <tr>
-            <td valign="top" class="boxcontainer">
 				<&| /Widgets/TitleBox, title => loc('Custom Fields'),
                 title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyFields.html?id=".$Asset->Id,
                 class => 'asset-info-cfs' &>
 				<& /Elements/ShowCustomFields, Object => $Asset &>
 				</&>
-            </td>
-          </tr>
-      </table>
 % }  
+% $m->callback( %ARGS, CallbackName => 'RightColumn' );
       </td>
     </tr>
 </table>

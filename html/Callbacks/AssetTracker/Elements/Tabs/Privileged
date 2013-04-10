@@ -8,7 +8,7 @@ my $query_string = sub {
     return $u->query;
 };
 
-warn keys %session;
+#warn keys %session;
 
 my $assets;
 eval {
@@ -95,7 +95,8 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         }
     }
 
-    if ( $request_path =~ m{^/AssetTracker/(?:Asset|Search)/} && $request_path !~ m{^/Search/index\.html}) {
+    if ( $request_path =~ m{^/AssetTracker/(?:Asset|Search)/}
+        || ( $request_path =~ m{^/AssetTracker/index\.html} && $DECODED_ARGS->{'q'} ) ) {
         my $search = $assets; #->child('search');
         my $args      = '';
         my $has_query = '';
@@ -225,6 +226,13 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
     }
 
     my $tools = Menu->child("tools");
+
+    $tools->child( asset_import =>
+        title       => loc('Asset Import'),
+        description => loc('Import assets from an Excel 94 XML formatted file'),
+        path        => '/AssetTracker/Tools/Import.html',
+    );
+
     my $admin = $tools->child("config");
     if ($admin) {
         my $types = $admin->child( 'asset-types' => title => loc('Asset Types'), path => '/AssetTracker/Admin/Types/', description => loc('Manage asset types and asset-specific properties') );
@@ -240,6 +248,8 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
     }
 
     PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset'), sort_order => 99 );
+    PageWidgets()->child( AT_simple_search => raw_html => $m->scomp('/AssetTracker/Elements/SimpleSearch'), sort_order => 98 );
+
 </%INIT>
 <%ARGS>
 $show_menu => 1

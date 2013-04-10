@@ -48,7 +48,7 @@ my $Orig_BriefDescriptions_AddLink = $_BriefDescriptions{AddLink};
 $_BriefDescriptions{AddLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_AddLink->($self)
-	    unless ( $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
+	    unless ( $self->Data && $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
         my $value;
         if ( $self->NewValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -99,7 +99,7 @@ my $Orig_BriefDescriptions_DeleteLink = $_BriefDescriptions{DeleteLink};
 $_BriefDescriptions{DeleteLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_DeleteLink->($self)
-	    unless ( $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
+	    unless ( $self->Data && $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
         my $value;
         if ( $self->OldValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -164,6 +164,25 @@ $_BriefDescriptions{Set} = sub {
 	    return $Orig_BriefDescriptions_Set->($self);
         }
 };
+
+
+=head2 CustomFieldLookupType
+
+Returns the RT::Transaction lookup type, which can 
+be passed to RT::CustomField->Create() via the 'LookupType' hash key.
+
+=cut
+
+
+sub CustomFieldLookupType {
+    my $self=shift;
+    
+    if ( ref $self && $self->{values}->{objecttype} eq 'RTx::AssetTracker::Asset' ) {
+	"RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
+    } else {
+	"RT::Queue-RT::Ticket-RT::Transaction";
+    }
+}
 
 
 1;

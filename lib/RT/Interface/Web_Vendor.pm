@@ -1,67 +1,10 @@
-# BEGIN BPS TAGGED BLOCK {{{
-# 
-# COPYRIGHT:
-#  
-# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-#                                          <jesse@bestpractical.com>
-# 
-# (Except where explicitly superseded by other copyright notices)
-# 
-# 
-# LICENSE:
-# 
-# This work is made available to you under the terms of Version 2 of
-# the GNU General Public License. A copy of that license should have
-# been provided with this software, but in any event can be snarfed
-# from www.gnu.org.
-# 
-# This work is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-# 
-# 
-# CONTRIBUTION SUBMISSION POLICY:
-# 
-# (The following paragraph is not intended to limit the rights granted
-# to you to modify and distribute this software under the terms of
-# the GNU General Public License and is only of importance to you if
-# you choose to contribute your changes and enhancements to the
-# community by submitting them to Best Practical Solutions, LLC.)
-# 
-# By intentionally submitting any modifications, corrections or
-# derivatives to this work, or any other work intended for use with
-# Request Tracker, to Best Practical Solutions, LLC, you confirm that
-# you are the copyright holder for those contributions and you grant
-# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
-# royalty-free, perpetual, license to use, copy, create derivative
-# works based on those contributions, and sublicense and distribute
-# those contributions and any derivatives thereof.
-# 
-# END BPS TAGGED BLOCK }}}
+package RT::Interface::Web;
 
-=head1 NAME
-
-RTx::AssetTracker::Interface::Web
-
-=begin testing
-
-use_ok(RTx::AssetTracker::Interface::Web);
-
-=end testing
-
-=cut
-
-
-package RTx::AssetTracker::Interface::Web;
 use strict;
+no warnings qw(redefine);
 
 package HTML::Mason::Commands;
-use strict;
+
 use vars qw/$r $m %session/;
 
 
@@ -357,7 +300,7 @@ $RT::Logger->debug("Processing asset watchers");
             my $watchers = [split('\n', $ARGSRef->{"Asset-$id-$role"})];
             push @results,
                 SetWatchers(
-                   Asset => $Asset, Watchers => $watchers, Type => '$role',
+                   Asset => $Asset, Watchers => $watchers, Type => $role,
                    TransactionData => $ARGSRef->{PeopleComment}
                                    || $ARGSRef->{GlobalComment} );
         }
@@ -402,7 +345,7 @@ sub SetWatchers {
         }
         else {
             push @results, "Error adding user: $watcher to $TypeGroup: $msg"
-                unless $msg =~ /already has member/;
+                unless $msg =~ /principal is already/;
         }
     }
 
@@ -426,7 +369,7 @@ sub SetWatchers {
         }
         else {
             push @results, "Error adding group: '$watcher_name' to $TypeGroup: $msg"
-                unless $msg =~ /already has member/;
+                unless $msg =~ /principal is already/;
         }
     }
 
@@ -915,6 +858,9 @@ sub _ProcessATObjectCustomFieldUpdates {
                 $values_hash{ $val } = 1 if $val;
             }
 
+            # For Date Cfs, @values is empty when there is no changes (no datas in form input)
+            return @results if ( $cf->Type =~ /^Date(?:Time)?$/ && ! @values );
+
             $cf_values->RedoSearch;
             while ( my $cf_value = $cf_values->Next ) {
                 next if $values_hash{ $cf_value->id };
@@ -963,131 +909,10 @@ sub _ProcessATObjectCustomFieldUpdates {
     return @results;
 }
 
-# {{{ sub ProcessTicketWatchers
-
-=head2 ProcessTicketWatchers ( TicketObj => $Ticket, ARGSRef => \%ARGS );
-
-Returns an array of results messages.
-
-=cut
-
-sub ProcessTicketWatchers {
-    my %args = (
-        TicketObj => undef,
-        ARGSRef   => undef,
-        @_
-    );
-    my (@results);
-
-    my $Ticket  = $args{'TicketObj'};
-    my $ARGSRef = $args{'ARGSRef'};
-
-    # Munge watchers
-
-    foreach my $key ( keys %$ARGSRef ) {
-
-        # Delete deletable watchers
-        if ( $key =~ /^Ticket-DeleteWatcher-Type-(.*)-Principal-(\d+)$/ ) {
-            my ( $code, $msg ) = $Ticket->DeleteWatcher(
-                PrincipalId => $2,
-                Type        => $1
-            );
-            push @results, $msg;
-        }
-
-        # Delete watchers in the simple style demanded by the bulk manipulator
-        elsif ( $key =~ /^Delete(Requestor|Cc|AdminCc)$/ ) {
-            my ( $code, $msg ) = $Ticket->DeleteWatcher(
-                Email => $ARGSRef->{$key},
-                Type  => $1
-            );
-            push @results, $msg;
-        }
-
-        # Add new wathchers by email address
-        elsif ( ( $ARGSRef->{$key} || '' ) =~ /^(?:AdminCc|Cc|Requestor)$/
-            and $key =~ /^WatcherTypeEmail(\d*)$/ )
-        {
-
-            #They're in this order because otherwise $1 gets clobbered :/
-            my ( $code, $msg ) = $Ticket->AddWatcher(
-                Type  => $ARGSRef->{$key},
-                Email => $ARGSRef->{ "WatcherAddressEmail" . $1 }
-            );
-            push @results, $msg;
-        }
-
-        #Add requestors in the simple style demanded by the bulk manipulator
-        elsif ( $key =~ /^Add(Requestor|Cc|AdminCc)$/ ) {
-            my ( $code, $msg ) = $Ticket->AddWatcher(
-                Type  => $1,
-                Email => $ARGSRef->{$key}
-            );
-            push @results, $msg;
-        }
-
-        # Add new  watchers by owner
-        elsif ( $key =~ /^Ticket-AddWatcher-Principal-(\d*)$/ ) {
-            my $principal_id = $1;
-            my $form = $ARGSRef->{$key};
-            foreach my $value ( ref($form) ? @{$form} : ($form) ) {
-                next unless $value =~ /^(?:AdminCc|Cc|Requestor)$/i;
-
-                my ( $code, $msg ) = $Ticket->AddWatcher(
-                    Type        => $value,
-                    PrincipalId => $principal_id
-                );
-                push @results, $msg;
-            }
-        }
-
-    }
-    return (@results);
-}
-
 sub ActiveRoleArray {
 
     return RTx::AssetTracker::Type->ActiveRoleArray();
 
 }
-
-sub ATMaybeRedirectForResults {
-    my %args = (
-        Path      => $HTML::Mason::Commands::m->request_comp->path,
-        Arguments => {},
-        Anchor    => undef,
-        Actions   => undef,
-        Force     => 0,
-        @_
-    );
-    my $has_actions = $args{'Actions'} && grep( defined, @{ $args{'Actions'} } );
-
-    return unless $has_actions || $args{'Force'};
-
-    my %arguments = %{ $args{'Arguments'} };
-
-    if ( $has_actions ) {
-        my $key = Digest::MD5::md5_hex( rand(1024) );
-        push @{ $session{"Actions"}{ $key } ||= [] }, @{ $args{'Actions'} };
-        $session{'i'}++;
-        $arguments{'results'} = $key;
-    }
-
-    $args{'Path'} =~ s!^/+!!;
-    my $url = RT->Config->Get('WebURL') . $args{Path};
-
-    if ( keys %arguments ) {
-        $url .= '?'. $m->comp( '/Elements/QueryString', %arguments );
-    }
-    if ( $args{'Anchor'} ) {
-        $url .= "#". $args{'Anchor'};
-    }
-    return RT::Interface::Web::Redirect($url);
-}
-
-eval "require RTx::AssetTracker::Interface::Web_Vendor";
-die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Interface/Web_Vendor.pm});
-eval "require RTx::AssetTracker::Interface::Web_Local";
-die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Interface/Web_Local.pm});
 
 1;

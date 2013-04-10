@@ -72,12 +72,6 @@ use strict;
 use vars qw(@ISA);
 @ISA = qw(RT::SearchBuilder);
 
-
-eval "require RTx::AssetTracker::SearchBuilder_Vendor";
-die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/SearchBuilder_Vendor.pm});
-eval "require RTx::AssetTracker::SearchBuilder_Local";
-die $@ if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/SearchBuilder_Local.pm});
+RT::Base->_ImportOverlays();
 
 1;
-
-

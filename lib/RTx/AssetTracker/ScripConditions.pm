@@ -100,23 +100,7 @@ sub NewItem {
     return(RTx::AssetTracker::ScripCondition->new($self->CurrentUser));
 }
 
-        eval "require RTx::AssetTracker::ScripConditions_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/ScripConditions_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::ScripConditions_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/ScripConditions_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::ScripConditions_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/ScripConditions_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 

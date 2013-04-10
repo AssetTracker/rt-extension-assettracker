@@ -86,7 +86,7 @@
 <a href="<%$RT::WebPath%>/AssetTracker/Search/Export.html<%$QueryString%>"><&|/l&>Importable Spreadsheet</&></a><br>
 <a href="<%$RT::WebPath%>/AssetTracker/Search/Results.rdf<%$QueryString%>"><&|/l&>RSS Feed</&></a>
 %# | <a href="<%$RT::WebPath%>/AssetTracker/Tools/Offline.html<%$QueryString%>"><&|/l&>Work offline</&></a><br>
-<& /Elements/Callback, _CallbackName => 'SearchActions', QueryString => $QueryString&>
+% $m->callback( QueryString => $QueryString, CallbackName => 'SearchActions' );
 </div>
 <%INIT>
 
@@ -123,8 +123,8 @@ $session{'CurrentAssetSearchHash'} = {
 if ( $session{'assets'}->Query()) {
     $assetcount = $session{assets}->CountAll();
     if ($assetcount == 1 and $AutoForwardSingleResult) {
-        $m->comp('/AssetTracker/Asset/Display.html', id => $session{'assets'}->First->Id);
-        return;
+        RT::Interface::Web::Redirect( RT->Config->Get('WebURL')
+            ."AssetTracker/Asset/Display.html?id=". $session{assets}->First->id );
     }
     $title = loc('Found [quant,_1,asset]', $assetcount);
 } else {

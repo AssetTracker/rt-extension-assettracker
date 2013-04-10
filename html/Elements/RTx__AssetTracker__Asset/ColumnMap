@@ -50,47 +50,9 @@ $Attr => undef
 
 
 <%ONCE>
-our ( $ASSET_COLUMN_MAP );
+my $COLUMN_MAP;
 
-sub AssetColumnMap {
-    my $name = shift;
-    my $attr = shift;
-
-    # First deal with the simple things from the map
-    if ( $ASSET_COLUMN_MAP->{$name} ) {
-        return ( $ASSET_COLUMN_MAP->{$name}->{$attr} );
-    }
-
-    # now, let's deal with harder things, like Custom Fields
-
-    elsif ( $name =~ /^(?:CF|CustomField)\.\{(.+)\}$/ ) {
-        my $field = $1;
-
-        if ( $attr eq 'attribute' ) {
-            return (undef);
-        }
-        elsif ( $attr eq 'title' ) {
-            return ( $field );
-        }
-        elsif ( $attr eq 'value' ) {
-	    # Display custom field contents, separated by newlines.
-            # For Image custom fields we also show a thumbnail here.
-            return sub {
-                my $values = $_[0]->CustomFieldValues($field);
-                return map {
-                    (
-                        ($_->CustomFieldObj->Type eq 'Image')
-                            ? \($m->scomp( '/Elements/ShowCustomFieldImage', Object => $_ ))
-                            : $_->Content
-                    ),
-                    \'<br>',
-                } @{ $values->ItemsArrayRef }
-	    };
-        }
-    }
-}
-
-sub AssetLinkCallback {
+my $LinkCallback = sub {
     my $method = shift;
 
     my $mode            = $RTx::AssetTracker::Asset::LINKTYPEMAP{$method}{Mode};
@@ -119,9 +81,9 @@ sub AssetLinkCallback {
             } @{ $_[0]->$method->ItemsArrayRef }
         }
     }
-}
+};
 
-$ASSET_COLUMN_MAP = {
+$COLUMN_MAP = {
     IP => {
         attribute => 'IP',
         title     => 'IP Address',
@@ -137,7 +99,7 @@ $ASSET_COLUMN_MAP = {
         attribute => 'id',
         align     => 'right',
         type      => 'Number',
-        style     => 's23',
+        export_style     => 's23',
         value     => sub { return $_[0]->id }
     },
     Name => {
@@ -177,40 +139,20 @@ $ASSET_COLUMN_MAP = {
 
           }
     },
-    CreatedRelative => {
-        title     => 'Created',
-        attribute => 'Created',
-        value     => sub { return $_[0]->CreatedObj->AgeAsString }
-    },
-    LastUpdatedRelative => {
-        title     => 'Last Updated',
-        attribute => 'LastUpdated',
-        value     => sub { return $_[0]->LastUpdatedObj->AgeAsString }
-    },
     Created => {
         attribute => 'Created',
         type      => 'DateTime',
-        style     => 's21',
+        export_style   => 's21',
         value     => sub { return $_[0]->CreatedObj->AsString },
         export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
-    },
-    CreatedBy => {
-        attribute => 'CreatedBy',
-        title => 'Created By',
-        value     => sub { return $_[0]->CreatorObj->Name }
     },
     LastUpdated => {
         attribute => 'LastUpdated',
         title     => 'Last Updated',
         type      => 'DateTime',
-        style     => 's21',
+        export_style   => 's21',
         value     => sub { return $_[0]->LastUpdatedObj->AsString },
         export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
-    },
-    LastUpdatedBy => {
-        attribute => 'LastUpdatedBy',
-        title     => 'Last Updated By',
-        value     => sub { return $_[0]->LastUpdatedByObj->Name }
     },
     LastTransaction => {
         attribute => 'LastTransaction',
@@ -220,7 +162,7 @@ $ASSET_COLUMN_MAP = {
 
     # Everything from LINKTYPEMAP
     (map {
-        $_ => AssetLinkCallback( $_ )
+        $_ => $LinkCallback->( $_ )
     } keys %RTx::AssetTracker::Asset::LINKTYPEMAP),
 
     '_CLASS' => {
@@ -238,7 +180,7 @@ $ASSET_COLUMN_MAP = {
 for my $role ( ActiveRoleArray() ) {
     my $group_method = $role . 'RoleGroup';
     my $export_method = $role . 'RoleGroupExportString';
-    $ASSET_COLUMN_MAP->{$role} = {
+    $COLUMN_MAP->{$role} = {
         attribute => "$role.EmailAddress",
         value => sub { return $_[0]->$group_method->MemberEmailAddressesAsString },
         export_value => sub { return $_[0]->$export_method },
@@ -249,6 +191,6 @@ for my $role ( ActiveRoleArray() ) {
 # }}}
 </%ONCE>
 <%init>
-$m->comp( '/Elements/Callback', COLUMN_MAP    => $ASSET_COLUMN_MAP, _CallbackName => 'ColumnMap');
-return AssetColumnMap($Name, $Attr);
+$m->callback( COLUMN_MAP => $COLUMN_MAP, CallbackName => 'ColumnMap' );
+return GetColumnMapEntry( Map => $COLUMN_MAP, Name => $Name, Attribute => $Attr );
 </%init>

@@ -43,123 +43,62 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc("Grid asset update") &>
-%#<& /Elements/Tabs, Title => loc("Grid asset update") &>
+<& /Elements/Header, Title => $title &>
 <& /AssetTracker/Elements/Tabs,
-    current_tab => "AssetTracker/Search/Grid.html" &>
-
+    current_tab => "AssetTracker/Search/Grid.html",
+    Title => $title,
+ &>
 
 <& /Elements/ListActions, actions => \@results &>
-<& /Elements/TitleBoxStart, title => loc('Update selected assets') &>
-<FORM METHOD="POST" ACTION="<%$RT::WebPath%>/AssetTracker/Search/Grid.html" >
-<input type="hidden" name="Query" value="<%$ARGS{'Query'}%>">
-<input type="hidden" name="Format" value="<%$ARGS{'Format'}%>">
-<TABLE WIDTH=100% border=0 cellpadding=3 CELLSPACING=0>
-<TR>
-<TH><&|/l&>Update</&></TH>
-%foreach my $col (@cols) {
-% my $colalias = $col;
-% $colalias =~ s/(Obj\-\>)(Name|AsString)//;
-% $colalias =~ s/TypeName/Type/;
-% $colalias =~ s/OwnerName/Owner/;
-% $colalias =~ s/AdminCc/Admin/;
-% $colalias =~ s/CustomField\.\{(.+)\}/$1/;
-
-<TH><% loc($colalias) %>&nbsp;</TH>
+<form method="post" action="<% RT->Config->Get('WebPath') %>/AssetTracker/Search/Grid.html" name="GridUpdate" id="GridUpdate">
+% foreach my $var (qw(Query Format OrderBy Order Rows Page SavedChartSearchId)) {
+<input type="hidden" class="hidden" name="<%$var%>" value="<%$ARGS{$var} || ''%>" />
 %}
-</TR>
+<& /Elements/CollectionList, 
+    Collection => $Assets,
+    Query => $Query,
+    DisplayFormat => $Format,
+    Format => $ARGS{'Format'},
+    Verbatim => 1,
+    AllowSorting => 1,
+    OrderBy => $OrderBy,
+    Order => $Order,
+    Rows => $Rows,
+    Page => $Page,
+    BaseURL => RT->Config->Get('WebPath')."/AssetTracker/Search/Grid.html?",
+    Class => 'RTx::AssetTracker::Assets'
+   &>
 
-<%PERL>
+% $m->callback(CallbackName => 'AfterAssetList', ARGSRef => \%ARGS);
 
-my $i;
+<hr />
 
-$Assets->RedoSearch();
-while (my $Asset = $Assets->Next) {
- $i++;
- if ($i % 2) {
-     $bgcolor = "#dddddd";
- }
- else {
-     $bgcolor = "#ffffff";
- }
-      </%PERL>
-<TR bgcolor="<%$bgcolor%>">
-<TD><input type=checkbox name="UpdateAsset<%$Asset->Id%>" ></TD>
-%foreach my $col (@cols) {
-<TD>
-% if ($col eq 'id') {
-<A HREF="<% $RT::WebPath%>/AssetTracker/Asset/Display.html?id=<%$Asset->Id%>"><%$Asset->Id()%></A>
-% }
-%elsif ($col eq 'Name') {
-<input name="<%"Asset-".$Asset->Id."-Name"%>" size=20 value="<%$Asset->Name%>">
-% }
-%elsif ($col eq 'Description') {
-<input name="<%"Asset-".$Asset->Id."-Description"%>" size=40 value="<%$Asset->Description%>">
-% }
-%elsif ($col eq 'Status') {
-<& /AssetTracker/Elements/SelectStatus, Name => "Asset-".$Asset->Id."-Status", Default => $Asset->Status &>
-% }
-%elsif ($col eq 'TypeName') {
-<& /AssetTracker/Elements/SelectType, Name => "Asset-".$Asset->Id."-Type", Default => $Asset->Type &>
-% }
-%elsif (grep { $col eq $_ } RTx::AssetTracker::Type->ActiveRoleArray()) {
-<textarea cols=30 rows=3 name="<%"Asset-".$Asset->Id."-$col"%>">
-%  my $method = $col . 'RoleGroup';
-%  my $members = $Asset->$method->MembersObj;
-%  while (my $member = $members->Next) {
-%      if ($member->MemberObj->IsGroup) {
-Group:<% $member->MemberObj->Object->Name %>
-%      }
-%      else {
-<% $member->MemberObj->Object->EmailAddress ? $member->MemberObj->Object->EmailAddress : $member->MemberObj->Object->Name %>
-%      }
-%  }
-</textarea>
-% }
-%elsif ($col =~ /^CustomField\.\{(.+)\}$/) {
-%    my $cfname = $1;
-%# See if it is a CF for this Asset type
-%    if($TypeCFs{$Asset->Type}{$cfname}) {
-%        my $CustomField = RT::CustomField->new($session{CurrentUser});
-%        my ($rv, $msg) = $CustomField->LoadByName(Name => $cfname );
-%        if ($CustomField->CurrentUserHasRight("ModifyCustomField")) {
-    <& /AssetTracker/Elements/EditCustomField, Object => $Asset, CustomField => $CustomField &>
-%        }
-%        elsif ($CustomField->CurrentUserHasRight("SeeCustomField")) {
-    <& /AssetTracker/Elements/ShowCustomField, Object => $Asset, CustomField => $CustomField &>
-%        }
-%        else {
-    (no right)
-%        }
-%    }
-%    else {
-  n/a
-%    }
-% }
-%else {
-
-<% eval "\$Asset->$col()" %>&nbsp;
-%}
-</TD>
-%}
-</TR>
-%}
+<& /Elements/Submit, Label => loc('Update'), CheckboxNameRegex => '/^UpdateAsset\d+$/', CheckAll => 1, ClearAll => 1 &>
 
 
-
-</TABLE>
-<& /Elements/TitleBoxEnd &>
-<& /Elements/Submit, Label => loc('Update All') &>
+</form>
 
 
-</FORM>
 <%INIT>
 
 unless ($session{'CurrentUser'}->HasRight( Object => $RTx::AssetTracker::System, Right => 'BulkUpdate')) {
     Abort(loc("No permission to perform bulk updates of assets."));
 }
 
-my ($bgcolor, @results);
+unless ( defined $Rows ) {
+    $Rows = $RowsPerPage;
+    $ARGS{Rows} = $RowsPerPage;
+}
+my $title = loc("Grid asset update");
+
+# Iterate through the ARGS hash and remove anything with a null value.
+map ( $ARGS{$_} =~ /^$/ && ( delete $ARGS{$_} ), keys %ARGS );
+
+my (@results);
+
+$Page ||= 1;
+
+$Format ||= RT->Config->Get('DefaultAssetSearchResultFormat');
 
 # Process the updates
 my @UpdateIDs;
@@ -203,28 +142,30 @@ foreach my $id (@UpdateIDs) {
 
 }
 
-# Iterate through the ARGS hash and remove anything with a null value.
-# map ($ARGS{$_} =~ /^$/ && (delete $ARGS{$_}), keys %ARGS);
-
-$Format ||= $RT::DefaultAssetSearchResultFormat;
-# Scrub the html of the format string to remove any potential nasties.
-$Format = $m->comp('/Elements/ScrubHTML', Content => $Format);
-my (@Format) = $m->comp('/Elements/CollectionAsTable/ParseFormat', Format => $Format);
-
-#my @cols = qw(id Name Status Description TypeObj->Name );
-my @cols;
-push @cols, $_->{title} for @Format;
-
 
 my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
-$Assets->FromSQL($ARGS{'Query'});
+$Assets->FromSQL($Query);
+if ( $OrderBy =~ /\|/ ) {
 
-Abort(loc("No search to operate on.")) unless ($Assets);
+  # Multiple Sorts
+  my @OrderBy = split /\|/, $OrderBy;
+  my @Order   = split /\|/, $Order;
+  $Assets->OrderByCols(
+    map { { FIELD => $OrderBy[$_], ORDER => $Order[$_] } }
+      ( 0 .. $#OrderBy ) );
+}
+else {
+  $Assets->OrderBy( FIELD => $OrderBy, ORDER => $Order );
+}
+
+$Assets->RowsPerPage($Rows) if ($Rows);
+$Assets->GotoPage( $Page - 1 );    # SB uses page 0 as the first page
+
+Abort( loc("No search to operate on.") ) unless ($Assets);
 
 my %allcfs;
 my %cfqnames;
 my %cfqs;
-my %TypeCFs;
 my $count = 0;
 while (my $Asset = $Assets->Next) {
     my $cfq = $Asset->TypeObj;
@@ -237,27 +178,18 @@ while (my $Asset = $Assets->Next) {
 	while (my $cf = $cfs->Next) {
 	    $allcfs{$cf->Id} = $cf;
 	    $cfqnames{$cf->Id}{$cfqn} = 1;
-            $TypeCFs{$cfqn}{$cf->Name} = 1;
-            $TypeCFs{$cfqid}{$cf->Name} = 1;
+            $m->notes->{TypeCFs}{$cfqn}{$cf->Name} = 1;
+            $m->notes->{TypeCFs}{$cfqid}{$cf->Name} = 1;
 	}
     }
 }
 
-my %globalcfs;
-my $CFs = RT::CustomFields->new($RT::SystemUser);
-$CFs->LimitToGlobalAsset;
-while (my $cf = $CFs->Next) {
-    $globalcfs{$cf->Id} = 1;
-}
-
 
 #Iterate through each asset we've been handed
-my (@linkresults,@cfresults);
-my %queues;
 
 $Assets->RedoSearch();
+
 while (my $Asset = $Assets->Next) {
-    $queues{$Asset->TypeObj->Id}++;
     $RT::Logger->debug( "Checking Asset ".$Asset->Id ."\n");
     next unless ($ARGS{"UpdateAsset".$Asset->Id});
     $RT::Logger->debug ("Matched\n");
@@ -281,5 +213,12 @@ $RT::Logger->debug( "About to update watchers");
 
 </%INIT>
 <%ARGS>
-$Format => $RT::DefaultAssetSearchResultFormat
+$Format => undef
+$Page => 1
+$Rows => undef
+$RowsPerPage => undef
+$Order => 'ASC'
+$OrderBy => 'id'
+$Query => undef
+$SavedSearchId => undef
 </%ARGS>

@@ -80,7 +80,7 @@
 </TD>
 </TR>
 
-<& /Elements/Callback, _CallbackName => 'EndOfList', AssetObj => $AssetObj, %ARGS &>
+% $m->callback( CallbackName => 'EndOfList', AssetObj => $AssetObj, %ARGS );
 </TABLE>
 
 <%INIT>

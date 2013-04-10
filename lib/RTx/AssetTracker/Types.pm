@@ -97,23 +97,7 @@ sub NewItem {
     return(RTx::AssetTracker::Type->new($self->CurrentUser));
 }
 
-        eval "require RTx::AssetTracker::Types_Overlay";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Types_Overlay.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Types_Vendor";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Types_Vendor.pm}) {
-            die $@;
-        };
-
-        eval "require RTx::AssetTracker::Types_Local";
-        if ($@ && $@ !~ qr{^Can't locate RTx/AssetTracker/Types_Local.pm}) {
-            die $@;
-        };
-
-
-
+RT::Base->_ImportOverlays();
 
 =head1 SEE ALSO
 
