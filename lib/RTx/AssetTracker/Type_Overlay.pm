@@ -32,7 +32,7 @@ use RT::Group;
 use vars qw(@DEFAULT_ACTIVE_STATUS @DEFAULT_INACTIVE_STATUS $RIGHTS %DEFAULT_ROLES);
 
 @DEFAULT_ACTIVE_STATUS = qw(production development qa pilot dr test);
-@DEFAULT_INACTIVE_STATUS = qw(retired);
+@DEFAULT_INACTIVE_STATUS = qw(retired deleted);
 
 $RIGHTS = {
     SeeType            => 'Can this principal see this asset type',       # loc_pair
@@ -45,6 +45,7 @@ $RIGHTS = {
     CreateAsset    => 'Create assets of this type',                       # loc_pair
     ModifyAsset    => 'Modify assets of this type',                       # loc_pair
     RetireAsset    => 'Retire assets of this type',                       # loc_pair
+    DeleteAsset    => 'Delete assets',                                    # loc_pair
 #    OwnAsset       => 'Own assets of this type',                       # loc_pair
 #    WatchAsAdmin   => 'Right to administer type',
 
