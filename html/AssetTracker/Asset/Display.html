@@ -171,4 +171,14 @@ $m->callback(
     ARGSRef => \%ARGS,
 );
 
+# This code does automatic redirection if any updates happen. 
+if ($RT::VERSION =~ /^4/) {
+  MaybeRedirectForResults(
+    Actions   => \@Actions,
+    Path      => "/AssetTracker/Asset/Display.html",
+    Anchor    => $ARGS{'Anchor'},
+    Arguments => { id => $AssetObj->id },
+  );
+}
+
 </%INIT>
