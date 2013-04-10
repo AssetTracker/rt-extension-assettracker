@@ -661,7 +661,37 @@ sub ProcessAssetLinks {
             else {
                 push @results, $msg;
             }
+        }
+    }
 
+    foreach my $linktype ( keys %$LINKDIRMAP ) {
+        if ( $ARGSRef->{ $AssetObj->Id . "-$linktype" } ) {
+            $ARGSRef->{ $AssetObj->Id . "-$linktype" } = join( ' ', @{ $ARGSRef->{ $AssetObj->Id . "-$linktype" } } )
+                if ref( $ARGSRef->{ $AssetObj->Id . "-$linktype" } );
+
+            for my $luri ( split( / /, $ARGSRef->{ $AssetObj->Id . "-$linktype" } ) ) {
+                next unless $luri;
+                $luri =~ s/\s+$//;    # Strip trailing whitespace
+                my ( $val, $msg ) = $AssetObj->AddLink(
+                    Target => $luri,
+                    Type   => $linktype
+                );
+                push @results, $msg;
+            }
+        }
+        if ( $ARGSRef->{ "$linktype-" . $AssetObj->Id } ) {
+            $ARGSRef->{ "$linktype-" . $AssetObj->Id } = join( ' ', @{ $ARGSRef->{ "$linktype-" . $AssetObj->Id } } )
+                if ref( $ARGSRef->{ "$linktype-" . $AssetObj->Id } );
+
+            for my $luri ( split( / /, $ARGSRef->{ "$linktype-" . $AssetObj->Id } ) ) {
+                next unless $luri;
+                my ( $val, $msg ) = $AssetObj->AddLink(
+                    Base => $luri,
+                    Type => $linktype
+                );
+
+                push @results, $msg;
+            }
         }
     }
 

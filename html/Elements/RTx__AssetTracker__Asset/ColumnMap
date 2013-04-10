@@ -181,6 +181,7 @@ for my $role ( ActiveRoleArray() ) {
     my $group_method = $role . 'RoleGroup';
     my $export_method = $role . 'RoleGroupExportString';
     $COLUMN_MAP->{$role} = {
+        attribute => "$role.EmailAddress",
         value => sub { return $_[0]->$group_method->MemberEmailAddressesAsString },
         export_value => sub { return $_[0]->$export_method },
     };
