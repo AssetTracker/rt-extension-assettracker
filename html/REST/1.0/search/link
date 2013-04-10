@@ -1,0 +1,119 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%# 
+%# COPYRIGHT:
+%#  
+%# This software is Copyright (c) 1996-2005 Best Practical Solutions, LLC 
+%#                                          <jesse@bestpractical.com>
+%# 
+%# (Except where explicitly superseded by other copyright notices)
+%# 
+%# 
+%# LICENSE:
+%# 
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%# 
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%# 
+%# 
+%# CONTRIBUTION SUBMISSION POLICY:
+%# 
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%# 
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%# 
+%# END BPS TAGGED BLOCK }}}
+%# REST/1.0/asset/link
+%#
+<%ARGS>
+$id => undef
+$del => 0
+$rel
+$to
+</%ARGS>
+<%INIT>
+use RT::Interface::REST;
+
+my $output;
+my $status = "200 Ok";
+my $asset = new RTx::AssetTracker::Asset $session{CurrentUser};
+my $object = $r->path_info;
+
+my @fields = qw(DependsOn DependedOnBy RefersTo ReferredToBy RunsOn IsRunning ComponentOf HasComponent );
+@fields = (@fields, @RTx::AssetTracker::LinkTypes); # Make sure we know about Custom Link types
+my %fields = map { lc $_ => $_ } @fields;
+my @F = @fields;
+my %lfields;
+# Don't forget that the Type argument must always be the name of the forward link type;
+# the forward and reverse links are differentiated by the Mode
+while (my ($t,$b) = splice(@F, 0, 2)) {
+  $lfields{$t} = { Type => $t, Mode => 'Target' },
+  $lfields{$b} = { Type => $t, Mode => 'Base' },
+}
+
+# http://.../REST/1.0/asset/link/1
+
+$object =~ s#^/##;
+if ($id && $object && $id != $object) {
+    $output = "Different ids in URL (`$object') and submitted form (`$id').\n";
+    $status = "400 Bad Request";
+    goto OUTPUT;
+}
+$id ||= $object;
+unless ($id =~ /^\d+$/ && $to =~ /^\d+$/) {
+    my $bad = ($id !~ /^\d+$/) ? $id : $to;
+    $output = $r->path_info. "\n";
+    $output .= "Invalid asset id: '$bad'.\n";
+    $status = "400 Bad Request";
+    goto OUTPUT;
+}
+unless (exists $fields{lc $rel}) {
+    $output = "Invalid link: '$rel'.\n";
+    $status = "400 Bad Request";
+    goto OUTPUT;
+}
+$rel = $fields{lc $rel};
+
+$asset->Load($id);
+unless ($asset->Id) {
+    $output = "Couldn't load asset id: '$id'.\n";
+    $status = "404 Asset not found";
+    goto OUTPUT;
+}
+
+my $type = $lfields{$rel}->{Type};
+my $mode = $lfields{$rel}->{Mode};
+
+my $n = 1;
+my $op = $del ? "DeleteLink" : "AddLink";
+($n, $output) = $asset->$op(Type => $type, $mode => "at://$RT::Organization/asset/$to");
+
+if ($n == 0) {
+    $status = "500 Error";
+}
+
+OUTPUT:
+</%INIT>
+RT/<% $RT::VERSION %> <% $status %>
+
+<% $output |n %>
