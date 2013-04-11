@@ -131,7 +131,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         my $current_search_menu;
         if ( $request_path =~ m{^/AssetTracker/Asset} ) {
             $current_search_menu = $search->child( current_search => title => loc('Current Search') );
-            $current_search_menu->path("/Search/Results.html$args") if $has_query;
+            $current_search_menu->path("/AssetTracker/Search/Results.html$args") if $has_query;
         } else {
             $current_search_menu = PageMenu();
         }
