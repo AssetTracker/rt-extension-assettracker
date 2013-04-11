@@ -1,0 +1,70 @@
+% $r->content_type('application/json');
+<% JSON::to_json( \@suggestions ) |n %>
+% $m->abort;
+<%ARGS>
+$return => 'URI'
+$term => undef
+$delim => undef
+$max => 10
+$op => undef
+</%ARGS>
+<%INIT>
+require JSON;
+require RTx::AssetTracker::Assets;
+require RTx::AssetTracker::Type;
+
+$m->abort unless defined $return
+             and defined $term
+             and length $term;
+
+# Use our delimeter if we have one
+if ( defined $delim and length $delim ) {
+    if ( $delim eq ',' ) {
+        $delim = qr/,\s*/;
+    } else {
+        $delim = qr/\Q$delim\E/;
+    }
+
+    # If the field handles multiple values, pop the last one off
+    $term = (split $delim, $term)[-1] if $term =~ $delim;
+}
+
+my $CurrentUser = $session{'CurrentUser'};
+
+# Require privileged users or overriding config
+$m->abort unless $CurrentUser->Privileged
+              or RT->Config->Get('AllowAssetAutocompleteForUnprivileged');
+
+my %fields = %{ { Name => 'LIKE' } };
+
+# If an operator is provided, check against only the returned field
+# using that operator
+%fields = ( $return => $op ) if $op;
+
+my $Assets = RTx::AssetTracker::Assets->new( $CurrentUser );
+my $Types = RTx::AssetTracker::Types->new( $CurrentUser );
+$Types->UnLimit();
+
+while (my ($name, $op) = each %fields) {
+    $op = 'STARTSWITH'
+        unless $op =~ /^(?:LIKE|(?:START|END)SWITH|=|!=)$/i;
+
+    $Assets->Limit(
+        FIELD => $name,
+        OPERATOR => $op,
+        VALUE => $term,
+        ENTRYAGGREGATOR => 'OR',
+        SUBCLAUSE => 'autocomplete',
+    );
+}
+
+my @suggestions;
+
+while ( my $Asset = $Assets->Next ) {
+    my $formatted = $m->scomp('/AssetTracker/Elements/ShowAsset', Asset => $Asset);
+    $formatted =~ s/\n//g;
+    $formatted =~ s|<.+?>||g;
+    push @suggestions, { label => $formatted, value => $Asset->$return };
+}
+
+</%INIT>
