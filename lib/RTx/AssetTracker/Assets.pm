@@ -2557,7 +2557,7 @@ sub CurrentUserCanSee {
         my $groups = RT::Groups->new( RT->SystemUser );
         $groups->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Type-Role' );
         foreach ( @tmp ) {
-            $groups->Limit( FIELD => 'Type', VALUE => $_ );
+            $groups->Limit( FIELD => 'Name', VALUE => $_ );
         }
         my $principal_alias = $groups->Join(
             ALIAS1 => 'main',
@@ -2612,7 +2612,7 @@ sub CurrentUserCanSee {
                 $self->SUPER::Limit(
                     SUBCLAUSE => 'ACL',
                     ALIAS => 'main',
-                    FIELD => 'Type',
+                    FIELD => 'Name',
                     VALUE => $_[0],
                     ENTRYAGGREGATOR => $ea,
                 );
@@ -2622,7 +2622,7 @@ sub CurrentUserCanSee {
                     $self->SUPER::Limit(
                         SUBCLAUSE => 'ACL',
                         ALIAS => 'main',
-                        FIELD => 'Type',
+                        FIELD => 'Name',
                         VALUE => $q,
                         ENTRYAGGREGATOR => $ea,
                     );
@@ -2650,7 +2650,7 @@ sub CurrentUserCanSee {
             $self->SUPER::Limit(
                 SUBCLAUSE       => 'ACL',
                 ALIAS           => $role_group_alias,
-                FIELD           => 'Type',
+                FIELD           => 'Name',
                 VALUE           => $role,
                 ENTRYAGGREGATOR => 'AND',
             );

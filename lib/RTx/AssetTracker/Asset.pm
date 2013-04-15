@@ -760,7 +760,7 @@ sub _CreateAssetGroups {
         my $type_obj = RT::Group->new($self->CurrentUser);
         my ($id, $msg) = $type_obj->_Create(Domain => 'RTx::AssetTracker::Asset-Role',
                                                        Instance => $self->Id,
-                                                       Type => $type,
+                                                       Name => $type,
                                                        InsideTransaction => 1,
                                                        '_RecordTransaction' => $args{'_Commit'} && $args{'_RecordTransaction'} );
         unless ($id) {
@@ -1743,7 +1743,7 @@ sub LoadAssetRoleGroup {
     my $group = RT::Group->new( $self->CurrentUser );
     $group->LoadByCols( Domain => 'RTx::AssetTracker::Asset-Role',
                            Instance =>$self->Id,
-                           Type => $args{'Type'}
+                           Name => $args{'Type'}
                            );
 
     # if it doesn't exits ( like when we add a new role in the config file )

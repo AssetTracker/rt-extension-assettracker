@@ -157,11 +157,11 @@ sub ConfigureRole {
 
     # if the system role group doesn't exist, create it
     my $group = RT::Group->new( $RT::SystemUser );
-    $group->LoadByCols( Domain => 'RT::System-Role', Type => $role );
+    $group->LoadByCols( Domain => 'RT::System-Role', Name => $role );
     unless ( $group->id ) {
         $group->_Create( Domain            => 'RT::System-Role',
                          Instance          => 0,
-                         Type              => $role,
+                         Name              => $role,
                          Description       => 'SystemRolegroup for internal use',  # loc
                          InsideTransaction => 0 );
         $group->id or $RT::Logger->error("Couldn't create group for system role '$role'");
@@ -706,7 +706,7 @@ sub _CreateTypeGroups {
 
         return ( $self->_Create( Domain            => $args{'Domain'},
                                  Instance          => $args{'Instance'},
-                                 Type              => $args{'Type'},
+                                 Name              => $args{'Type'},
                                  InsideTransaction => 1 ) );
     }
 }
@@ -1090,7 +1090,7 @@ sub LoadTypeRoleGroup {
     my $group = RT::Group->new( $self->CurrentUser );
     $group->LoadByCols( Domain => 'RTx::AssetTracker::Type-Role',
                        Instance =>$self->Id,
-                       Type => $args{'Type'}
+                       Name => $args{'Type'}
                        );
 
     # if it doesn't exits ( like when we add a new role in the config file )
