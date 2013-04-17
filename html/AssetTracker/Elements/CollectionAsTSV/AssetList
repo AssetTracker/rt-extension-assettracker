@@ -37,7 +37,7 @@ my (@Format) = $m->comp('/Elements/CollectionAsTable/ParseFormat', Format => $Fo
 my $item = 0;
 foreach my $col (@Format) {
     $item++;
-    if ( $col->{title} eq 'NEWLINE' ) {
+    if ( defined $col->{title} && $col->{title} eq 'NEWLINE' ) {
         $item = 0;
     }
     else {

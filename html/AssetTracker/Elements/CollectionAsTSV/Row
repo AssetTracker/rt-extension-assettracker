@@ -38,6 +38,7 @@ foreach my $column (@Format) {
         push @out, ProcessColumnMapValue(
             $ColumnMap->{$col}{'value'},
             Arguments => [$record, $i],
+            Escape => 0,
         );
     }
     s/\t/ \[TAB\] /gs for @out;

@@ -80,10 +80,10 @@ foreach my $col (@Format) {
             Name  => $attr,
             Attr  => 'title',
         );
-        $title = ProcessColumnMapValue( $tmp, Arguments => [ $attr ] );
-    } else {
-        $title = $m->comp('/Elements/ScrubHTML', Content => $title);
+        $title = ProcessColumnMapValue( $tmp, Arguments => [ $attr ], Escape => 0 );
     }
+    $title =~ s/(?:\n|\r)//g;
+    $title =~ s{\t}{    }g;
 
     $m->out( loc($title) );
     $m->out("\t");
