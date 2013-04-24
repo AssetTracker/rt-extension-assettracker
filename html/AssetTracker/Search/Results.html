@@ -89,7 +89,27 @@
 % $m->callback( QueryString => $QueryString, CallbackName => 'SearchActions' );
 </div>
 <%INIT>
+# Read from user preferences
+my $prefs = $session{'CurrentUser'}->UserObj->Preferences("AssetSearchDisplay") || {};
 
+# These variables are what define a search_hash; this is also
+# where we give sane defaults.
+$Format      ||= $prefs->{'Format'} || RT->Config->Get('DefaultAssetSearchResultFormat');
+$Order       ||= $prefs->{'Order'} || 'ASC';
+$OrderBy     ||= $prefs->{'OrderBy'} || 'id';
+
+# Some forms pass in "RowsPerPage" rather than "Rows"
+# We call it RowsPerPage everywhere else.
+
+if ( !defined($Rows) ) {
+    if (defined $ARGS{'RowsPerPage'} ) {
+        $Rows = $ARGS{'RowsPerPage'};
+    } elsif ( defined $prefs->{'RowsPerPage'} ) {
+        $Rows = $prefs->{'RowsPerPage'};
+    } else {
+        $Rows = 50;
+    }
+}
 $Page = 1 unless $Page && $Page > 0;
 
 my ($title, $assetcount);
@@ -150,11 +170,11 @@ $session{'assets'}->PrepForSerialization();
 </%CLEANUP>
 <%ARGS>
 $Query => undef
-$Format => $RT::DefaultAssetSearchResultFormat
+$Format => undef
 $HideResults => 0
-$Rows => 50
+$Rows => undef
 $Page => 1
-$OrderBy => 'id'
-$Order => 'ASC'
+$OrderBy => undef
+$Order => undef
 $AutoForwardSingleResult => 0
 </%ARGS>
