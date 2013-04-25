@@ -73,7 +73,7 @@ sub _InitSQL {
 
 sub _SQLLimit {
   my $self = shift;
-    my %args = (@_);
+    my %args = (FIELD => '', @_);
 
   # All SQL stuff goes into one SB subclause so we can deal with all
   # the aggregation
