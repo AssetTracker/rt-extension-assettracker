@@ -27,7 +27,7 @@ sub import {
     if ( $args{'testing'} ) {
         unshift @{ $args{'requires'} }, 'RTx::AssetTracker';
     } else {
-        $args{'testing'} = 'RTx::AsssetTracker';
+        $args{'testing'} = 'RTx::AssetTracker';
     }
 
     $class->SUPER::import( %args );
