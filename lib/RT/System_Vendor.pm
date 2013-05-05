@@ -3,47 +3,35 @@ package RT::System;
 use strict;
 no warnings qw(redefine);
 
-sub AvailableRights {
+use RTx::AssetTracker::Type;
+
+my $Orig_AvailableRights = \&AvailableRights;
+*AvailableRights = sub {
     my $self = shift;
 
-    my $queue = RT::Queue->new(RT->SystemUser);
-    my $group = RT::Group->new(RT->SystemUser);
-    my $cf    = RT::CustomField->new(RT->SystemUser);
-    my $class = RT::Class->new(RT->SystemUser);
     my $type =  RTx::AssetTracker::Type->new(RT->SystemUser);
 
-    my $qr = $queue->AvailableRights();
-    my $gr = $group->AvailableRights();
-    my $cr = $cf->AvailableRights();
-    my $clr = $class->AvailableRights();
     my $tr = $type->AvailableRights();
 
     # Build a merged list of all system wide rights, queue rights and group rights.
-    my %rights = (%{$RT::System::RIGHTS}, %{$gr}, %{$qr}, %{$cr}, %{$clr}, %$tr);
-    delete $rights{ExecuteCode} if RT->Config->Get('DisallowExecuteCode');
+    my %rights = (%{$Orig_AvailableRights->($self)}, %$tr);
 
     return(\%rights);
-}
+};
 
-sub RightCategories {
+
+my $Orig_RightCategories = \&RightCategories;
+*RightCategories = sub {
     my $self = shift;
 
-    my $queue = RT::Queue->new(RT->SystemUser);
-    my $group = RT::Group->new(RT->SystemUser);
-    my $cf    = RT::CustomField->new(RT->SystemUser);
-    my $class = RT::Class->new(RT->SystemUser);
     my $type =  RTx::AssetTracker::Type->new(RT->SystemUser);
 
-    my $qr = $queue->RightCategories();
-    my $gr = $group->RightCategories();
-    my $cr = $cf->RightCategories();
-    my $clr = $class->RightCategories();
     my $tr = $type->RightCategories();
 
     # Build a merged list of all system wide rights, queue rights and group rights.
-    my %rights = (%{$RT::System::RIGHT_CATEGORIES}, %{$gr}, %{$qr}, %{$cr}, %{$clr}, %$tr);
+    my %rights = (%{$Orig_RightCategories->($self)}, %$tr);
 
     return(\%rights);
-}
+};
 
 1;
