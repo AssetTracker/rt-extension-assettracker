@@ -2,3 +2,4 @@ Makefile
 blib/
 pm_to_blib
 t/lib/RTx/AssetTracker/Test.pm
+t/tmp
