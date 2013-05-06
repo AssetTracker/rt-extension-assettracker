@@ -64,7 +64,7 @@
     </&>
 % }
     <&| /Widgets/TitleBox, title => loc('People'),
-        (($can_modify || $can_modify_owner) ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id) : ()),
+        (($can_modify || $can_modify_owner || $can_modify_people ) ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id) : ()),
         class=> 'asset-info-people',
     &>
         <& /AssetTracker/Asset/Elements/ShowPeople, Asset => $Asset &>
@@ -98,4 +98,5 @@ $Asset => undef
 my $can_modify = $Asset->CurrentUserHasRight('ModifyAsset');
 my $can_modify_cf = $Asset->CurrentUserHasRight('ModifyCustomField');
 my $can_modify_owner = $Asset->CurrentUserHasRight('OwnAsset');
+my $can_modify_people = $Asset->CurrentUserHasRight('WatchAsAdmin');
 </%INIT>
