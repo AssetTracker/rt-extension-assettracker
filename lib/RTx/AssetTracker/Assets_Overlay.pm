@@ -2944,6 +2944,8 @@ sub _import {
     }
     elsif ($id =~ /(\d+)/) {
         $asset->Load($1);
+        return 0, "Nonexistent id: $id" unless $asset->Id;
+
         my ($aid, undef, $err) = $asset->UpdateAsset( %asset, _Commit => 0, _RecordTransaction => 0, _Detailed => $detailed );
         return $aid, $self->loc("Asset #[_1] not updated: [_2]", $asset->Id, $err);
     }
