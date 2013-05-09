@@ -91,3 +91,8 @@ div.asset-info-basics div.titlebox-content .labeltop{
 #display-options .submit {
  width: 100%;
 }
+
+/* full-page asset lists */
+#comp-AssetTracker-Search-Results #body>table.collection {
+    margin-bottom: 2em;
+}

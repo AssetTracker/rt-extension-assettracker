@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,7 +43,7 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 % $m->callback( Asset => $Asset, actions=> $actions, tabs => $tabs, %ARGS );
 <& /Elements/Tabs, 
@@ -52,150 +54,216 @@
     current_toptab => $current_toptab,
     Title => $Title &> 
 <%INIT>
-
 my $tabs = {};
 my $current_toptab = "AssetTracker/index.html",
 my $searchtabs = {};
 my $actions;
 
-if ( $Asset) {
-	
-my $id   = $Asset->id();
+if ($Asset) {
 
-if ( defined $session{'assets'} and $session{'assets'}->Count ) {
+    my $id = $Asset->id();
+
+    if ( defined $session{'assets'} and $session{'assets'}->Count ) {
 
         # we have to update session data if we get new ItemMap
-        my $updatesession = 1 unless($session{'assets'}->{'item_map'});
+        my $updatesession = 1 unless ( $session{'assets'}->{'item_map'} );
 
         my $item_map = $session{'assets'}->ItemMap;
 
         if ($updatesession) {
-                $session{'i'}++;
-		$session{'assets'}->PrepForSerialization();
+            $session{'i'}++;
+            $session{'assets'}->PrepForSerialization();
         }
 
         # Don't display prev links if we're on the first asset
-        if ($item_map->{$Asset->Id}->{prev}) {
+        if ( $item_map->{ $Asset->Id }->{prev} ) {
+            if ( $item_map->{first} ) {
                 $searchtabs->{'_a'} = {
-                            class => "nav",
-                            path => "AssetTracker/Asset/Display.html?id=" . $item_map->{first},
-                            title => '<< ' . loc('First') };
-                $searchtabs->{"_b"} = { class => "nav",
-                            path => "AssetTracker/Asset/Display.html?id=" . $item_map->{$Asset->Id}->{prev},
-                                  title => '< ' . loc('Prev') };
-       } 
-
+                    class => "nav",
+                    path  => "AssetTracker/Asset/Display.html?id=" . $item_map->{first},
+                    title => '<< ' . loc('First')
+                };
+            }
+            $searchtabs->{"_b"} = {
+                class => "nav",
+                path  => "AssetTracker/Asset/Display.html?id="
+                    . $item_map->{ $Asset->Id }->{prev},
+                title => '< ' . loc('Prev')
+            };
+        }
 
         # Don't display next links if we're on the last asset
-        if ($item_map->{$Asset->Id}->{next}) {
-            $searchtabs->{'d'} = { class => "nav",
-                            path => "AssetTracker/Asset/Display.html?id=" . $item_map->{$Asset->Id}->{next},
-                             title => loc('Next') . ' >' };
-            $searchtabs->{'e'} = {
-                           class => "nav",
-                           path => "AssetTracker/Asset/Display.html?id=" . $item_map->{last},
-                           title => loc('Last') . ' >>' };
+        if ( $item_map->{ $Asset->Id }->{next} ) {
+            $searchtabs->{'d'} = {
+                class => "nav",
+                path  => "AssetTracker/Asset/Display.html?id="
+                    . $item_map->{ $Asset->Id }->{next},
+                title => loc('Next') . ' >'
+            };
+            if ( $item_map->{last} ) {
+                $searchtabs->{'e'} = {
+                    class => "nav",
+                    path  => "AssetTracker/Asset/Display.html?id=" . $item_map->{last},
+                    title => loc('Last') . ' >>'
+                };
+            }
         }
-}
+    }
 
+    $tabs->{"this"} = {
+        class          => "currentnav",
+        path           => "AssetTracker/Asset/Display.html?id=" . $Asset->id,
+        title          => $Asset->Name,
+        current_subtab => $current_subtab
+    };
 
-
-$tabs->{"this"} = { class => "currentnav",
-                    path  => "AssetTracker/Asset/Display.html?id=" . $Asset->id,
-                    title => $Asset->Name,
-                    current_subtab => $current_subtab };
-
-my $asset_page_tabs = {
+    my $asset_page_tabs = {
         _A => {
             title => loc('Display'),
-            path  => "AssetTracker/Asset/Display.html?id=" . $id, },
+            path  => "AssetTracker/Asset/Display.html?id=" . $id,
+        },
+
         _Ab => {
             title => loc('History'),
-            path  => "AssetTracker/Asset/History.html?id=" . $id, },
-
+            path  => "AssetTracker/Asset/History.html?id=" . $id,
+        },
         _B => {
             title => loc('Basics'),
-            path  => "AssetTracker/Asset/Modify.html?id=" . $id, },
+            path  => "AssetTracker/Asset/Modify.html?id=" . $id,
+        },
+
         _Ba => {
             title => loc('Fields'),
-            path  => "AssetTracker/Asset/ModifyFields.html?id=" . $id, },
+            path  => "AssetTracker/Asset/ModifyFields.html?id=" . $id,
+        },
         _Bb => {
             title => loc('IPs'),
-            path  => "AssetTracker/Asset/ModifyIPs.html?id=" . $id, },
+            path  => "AssetTracker/Asset/ModifyIPs.html?id=" . $id,
+        },
 
 #        _C => {
 #            title => loc('Dates'),
-#            path  => "AssetTracker/Asset/ModifyDates.html?id=" . $id, },
+#            path  => "AssetTracker/Asset/ModifyDates.html?id=" . $id,
+#        },
         _D => {
             title => loc('People'),
-            path => "AssetTracker/Asset/ModifyPeople.html?id=" . $id, },
+            path  => "AssetTracker/Asset/ModifyPeople.html?id=" . $id,
+        },
         _E => {
             title => loc('Links'),
-            path  => "AssetTracker/Asset/ModifyLinks.html?id=" . $id, },
-        _F => {
+            path  => "AssetTracker/Asset/ModifyLinks.html?id=" . $id,
+        },
+        _X => {
             title => loc('Jumbo'),
             path  => "AssetTracker/Asset/ModifyAll.html?id=" . $id,
-            seperator => 1 },
+        },
 
-};
+    };
 
-unless ($RT::EnableIP) {
-    delete $asset_page_tabs->{_Bb};
-}
-
-foreach my $tab ( sort keys %{$asset_page_tabs} ) {
-    if ( $asset_page_tabs->{$tab}->{'path'} eq $current_tab ) {
-        $asset_page_tabs->{$tab}->{"subtabs"}        = $subtabs;
-        $tabs->{'this'}->{"current_subtab"}        = 
-        $asset_page_tabs->{$tab}->{"path"};
+    unless ($RT::EnableIP) {
+        delete $asset_page_tabs->{_Bb};
     }
-}
-$tabs->{'this'}->{"subtabs"} = $asset_page_tabs;
-$current_tab = "AssetTracker/Asset/Display.html?id=" . $id;
 
-
-
-
-
-#if (    $Asset->CurrentUserHasRight('ModifyAsset')
-     #or $Asset->CurrentUserHasRight('ReplyToAsset') ) {
-    #$actions->{'A'} = { title => loc('Reply'),
-                        #path  => "AssetTracker/Asset/Update.html?Action=Respond&id=" . $id,
-    #};
-#}
+    foreach my $tab ( sort keys %{$asset_page_tabs} ) {
+        if ( $asset_page_tabs->{$tab}->{'path'} eq $current_tab ) {
+            $asset_page_tabs->{$tab}->{"subtabs"} = $subtabs;
+            $tabs->{'this'}->{"current_subtab"}
+                = $asset_page_tabs->{$tab}->{"path"};
+        }
+    }
+    $tabs->{'this'}->{"subtabs"} = $asset_page_tabs;
+    $current_tab = "AssetTracker/Asset/Display.html?id=" . $id;
 
 }
 
-my $args = '?'; # Doing it this way prevents uninitialised variable errors
-                # in logs since $args is not always set.
-$args .= $m->comp(
-    '/Elements/QueryString',
+my $args = '';
+my $has_query = '';
+my %query_args;
+my $search_id = $ARGS{'SavedSearchId'}
+            || $session{'CurrentAssetSearchHash'}->{'SearchId'} || '';
+my $chart_search_id = $ARGS{'SavedChartSearchId'} || '';
+
+$has_query = 1 if ( $ARGS{'Query'} or $session{'CurrentAssetSearchHash'}->{'Query'} );
+  
+%query_args = (
+    SavedSearchId => ($search_id eq 'new') ? undef : $search_id,
+    SavedChartSearchId => $chart_search_id,
     Query   => $ARGS{'Query'}   || $session{'CurrentAssetSearchHash'}->{'Query'},
     Format  => $ARGS{'Format'}  || $session{'CurrentAssetSearchHash'}->{'Format'},
     OrderBy => $ARGS{'OrderBy'} || $session{'CurrentAssetSearchHash'}->{'OrderBy'},
     Order   => $ARGS{'Order'}   || $session{'CurrentAssetSearchHash'}->{'Order'},
-    Rows    => $ARGS{'Rows'},
-  ) if ($ARGS{'Query'} or $session{'CurrentAssetSearchHash'}->{'Query'});
+    Page    => $ARGS{'Page'}    || $session{'CurrentAssetSearchHash'}->{'Page'},
+    RowsPerPage => $ARGS{'RowsPerPage'} || $session{'CurrentAssetSearchHash'}->{'RowsPerPage'},
+);
 
-$tabs->{"f"} = { path      => "AssetTracker/Search/Build.html?NewQuery=1",
-                 title     => loc('New Query')};
-$tabs->{"g"} = { path      => "AssetTracker/Search/Build.html$args",
-                 title     => loc('Query Builder')};
-$tabs->{"h"} = { path      => "AssetTracker/Search/Edit.html$args",
-                 title     => loc('Advanced'),
-                 separator => 1 };
-if (defined $session{'assets'} and $session{'assets'}->Count) {
+$args = "?" . $m->comp( '/Elements/QueryString', %query_args );
+
+$tabs->{"f"} = {
+    path  => "AssetTracker/Search/Build.html?NewQuery=1",
+    title => loc('New Search')
+};
+$tabs->{"g"} = {
+    path  => "AssetTracker/Search/Build.html" . (($has_query) ? $args : ''),
+    title => loc('Edit Search')
+};
+$tabs->{"h"} = {
+    path      => "AssetTracker/Search/Edit.html$args",
+    title     => loc('Advanced'),
+    separator => 1
+};
+if ($has_query) {
+
+    if ( $current_tab =~ m{AssetTracker/Search/Results.html} ) {
+        $current_tab = "AssetTracker/Search/Results.html$args";
+
+        if ( $session{'CurrentUser'}
+            ->HasRight( Right => 'SuperUser', Object => $RT::System ) )
+        {
+            my $shred_args = $m->comp(
+                '/Elements/QueryString',
+                Search         => 1,
+                Plugin         => 'Assets',
+                'Assets:query' => $query_args{'Query'},
+                'Assets:limit' => $query_args{'Rows'}
+            );
+
+            $tabs->{"shredder"} = {
+                path  => 'Admin/Tools/Shredder/?' . $shred_args,
+                title => loc('Shredder')
+            };
+
+        }
+    }
     if ( $current_tab =~ m{AssetTracker/Search/(Bulk|Build|Edit|Grid)\.html} ) {
         $current_tab = "AssetTracker/Search/$1.html$args";
     }
 
-  $tabs->{"i"} = { path      => "AssetTracker/Search/Results.html$args",
-                   title     => loc('Show Results'),
-                   separator => 1,
-                   subtabs   => $searchtabs };
-  if ($current_tab =~  "AssetTracker/Search/Results.html") {
-    $current_tab = "AssetTracker/Search/Results.html$args";
-  }
+    $tabs->{"i"} = {
+        path  => "AssetTracker/Search/Results.html$args",
+        title => loc('Show Results'),
+    };
+
+    $tabs->{"j"} = {
+        path  => "AssetTracker/Search/Bulk.html$args",
+        title => loc('Bulk Update'),
+    };
+
+    $tabs->{"ja"} = {
+        path  => "AssetTracker/Search/Grid.html$args",
+        title => loc('Grid Update'),
+    };
+
+#    $tabs->{"k"} = {
+#        path  => "AssetTracker/Search/Chart.html$args",
+#        title => loc('Graph'),
+#    };
+
+}
+
+foreach my $searchtab ( keys %{$searchtabs} ) {
+    ( $searchtab =~ /^_/ )
+        ? $tabs->{ "s" . $searchtab } = $searchtabs->{$searchtab}
+        : $tabs->{ "z_" . $searchtab } = $searchtabs->{$searchtab};
 }
 
 my $topactions = {
@@ -212,7 +280,8 @@ my $topactions = {
 <%ARGS>
 $Asset => undef
 $subtabs => undef
-$current_tab => undef
-$current_subtab => undef
+$current_tab => ''
+$current_subtab => ''
 $Title => undef
+$RowsPerPage => undef
 </%ARGS>

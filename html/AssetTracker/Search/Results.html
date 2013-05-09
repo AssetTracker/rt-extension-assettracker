@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,9 +43,11 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => $title, Refresh => $session{'assets_refresh_interval'} &>
+<& /Elements/Header, Title => $title,
+    Refresh => $refresh,
+    LinkRel => \%link_rel &>
 <& /AssetTracker/Elements/Tabs, 
     current_tab => "AssetTracker/Search/Results.html".$QueryString, 
     Title => $title,
@@ -51,10 +55,17 @@
     Query => $Query,
     Rows => $Rows,
     OrderBy => $OrderBy,
-    Order => $Order &>
+    Order => $Order,
+    SavedSearchId => $SavedSearchId,
+    SavedChartSearchId => $SavedChartSearchId,
+    &>
+
+% $m->callback( ARGSRef => \%ARGS, CallbackName => 'BeforeResults' );
+
 <& /Elements/CollectionList, 
     Collection => $session{'assets'},
     Query => $Query,
+    TotalFound => $assetcount,
     AllowSorting => 1,
     OrderBy => $OrderBy,
     Order => $Order,
@@ -62,33 +73,36 @@
     Page => $Page,
     Format => $Format,
     Class => 'RTx::AssetTracker::Assets',
-    BaseURL => $RT::WebPath."/AssetTracker/Search/Results.html?"
+    BaseURL => $BaseURL
 
    &>
-<div align=right>
-<form method=get action="<%$RT::WebPath%>/AssetTracker/Search/Results.html">
-<input type="hidden" name="Query" value="<%$Query%>" />
-<input type="hidden" name="Format" value="<%$Format%>" />
-<input type="hidden" name="HideResults" value="<%$HideResults%>" />
-<input type="hidden" name="Rows" value="<%$Rows%>" />
-<input type="hidden" name="Page" value="<%$Page%>" />
-<input type="hidden" name="OrderBy" value="<%$OrderBy%>" />
-<input type="hidden" name="Order" value="<%$Order%>" />
-<& /Elements/Refresh, Name => 'AssetsRefreshInterval', Default => $session {'assets_refresh_interval'} &>
-<input type=submit value="<&|/l&>Go!</&>">
+% $m->callback( ARGSRef => \%ARGS, CallbackName => 'AfterResults' );
+
+% my %hiddens = (Query => $Query, Format => $Format, Rows => $Rows, OrderBy => $OrderBy, Order => $Order, HideResults => $HideResults, Page => $Page, SavedChartSearchId => $SavedChartSearchId );
+<div align="right" class="refresh">
+<form method="get" action="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html">
+% foreach my $key (keys(%hiddens)) {
+<input type="hidden" class="hidden" name="<%$key%>" value="<% defined($hiddens{$key})?$hiddens{$key}:'' %>" />
+% }
+<& /Elements/Refresh, Name => 'AssetsRefreshInterval', Default => $session{'assets_refresh_interval'}||RT->Config->Get('SearchResultsRefreshInterval', $session{'CurrentUser'}) &>
+<input type="submit" class="button" value="<&|/l&>Change</&>" />
 </form>
 </div>
-<div align=right>
-<a href="<%$RT::WebPath%>/AssetTracker/Search/Bulk.html<%$QueryString%>"><&|/l&>Batch Update multiple assets</&></a><br>
-<a href="<%$RT::WebPath%>/AssetTracker/Search/Grid.html<%$QueryString%>"><&|/l&>Grid Update multiple assets</&></a><br>
-<a href="<%$RT::WebPath%>/AssetTracker/Search/Results.html<%$QueryString%>"><&|/l&>Bookmarkable link</&></a><br>
-<a href="<%$RT::WebPath%>/AssetTracker/Search/Results.tsv<%$QueryString%>"><&|/l&>Spreadsheet</&></a><br>
-<a href="<%$RT::WebPath%>/AssetTracker/Search/Export.html<%$QueryString%>"><&|/l&>Importable Spreadsheet</&></a><br>
-<a href="<%$RT::WebPath%>/AssetTracker/Search/Results.rdf<%$QueryString%>"><&|/l&>RSS Feed</&></a>
-%# | <a href="<%$RT::WebPath%>/AssetTracker/Tools/Offline.html<%$QueryString%>"><&|/l&>Work offline</&></a><br>
+%if ($RT::VERSION =~ /^3/) {
+<div align="right" class="search-result-actions">
+<ul class="search-result-views">
+<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.tsv<%$QueryString%>"><&|/l&>Spreadsheet</&></a></li>
+<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Export.html<%$QueryString%>"><&|/l&>Importable Spreadsheet</&></a></li>
+<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.rdf<%$QueryString%>"><&|/l&>RSS Feed</&></a></li>
+%#<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Tools/Offline.html<%$QueryString%>"><&|/l&>Work offline</&></a></li>
+</ul>
+<br/>
 % $m->callback( QueryString => $QueryString, CallbackName => 'SearchActions' );
 </div>
+%}
 <%INIT>
+$m->callback( ARGSRef => \%ARGS, CallbackName => 'Initial' );
+
 # Read from user preferences
 my $prefs = $session{'CurrentUser'}->UserObj->Preferences("AssetSearchDisplay") || {};
 
@@ -115,7 +129,10 @@ $Page = 1 unless $Page && $Page > 0;
 my ($title, $assetcount);
 $session{'i'}++;
 $session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'}) ;
-$session{'assets'}->FromSQL($Query) if ($Query);
+my ($ok, $msg) = $Query ? $session{'assets'}->FromSQL($Query) : (1, "Vacuously OK");
+# Provide an empty search if parsing failed
+$session{'assets'}->FromSQL("id < 0") unless ($ok);
+
 if ($OrderBy =~ /\|/) {
     # Multiple Sorts
     my @OrderBy = split /\|/,$OrderBy;
@@ -126,7 +143,8 @@ if ($OrderBy =~ /\|/) {
 } else {
     $session{'assets'}->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
 }
-
+$session{'tickets'}->RowsPerPage( $Rows ) if $Rows;
+$session{'tickets'}->GotoPage( $Page - 1 );
 
 $session{'CurrentAssetSearchHash'} = {
     Format      => $Format,
@@ -136,16 +154,11 @@ $session{'CurrentAssetSearchHash'} = {
     OrderBy     => $OrderBy,
     RowsPerPage => $Rows,
     AutoForwardSingleResult => 0,
-    } unless ($session{'CurrentAssetSearchHash'} && $session{'CurrentAssetSearchHash'}->{Query} eq $Query);
-
+};
 
 
 if ( $session{'assets'}->Query()) {
     $assetcount = $session{assets}->CountAll();
-    if ($assetcount == 1 and $AutoForwardSingleResult) {
-        RT::Interface::Web::Redirect( RT->Config->Get('WebURL')
-            ."AssetTracker/Asset/Display.html?id=". $session{assets}->First->id );
-    }
     $title = loc('Found [quant,_1,asset]', $assetcount);
 } else {
     $title = loc("Find assets");
@@ -159,11 +172,47 @@ my $QueryString = "?".$m->comp('/Elements/QueryString',
                                Order => $Order,
                                Page => $Page);
 
-
 if ($ARGS{'AssetsRefreshInterval'}) {
 	$session{'assets_refresh_interval'} = $ARGS{'AssetsRefreshInterval'};
 }
 
+my $refresh = $session{'assets_refresh_interval'}
+    || RT->Config->Get('SearchResultsRefreshInterval', $session{'CurrentUser'} );
+
+# Check $m->request_args, not $DECODED_ARGS, to avoid creating a new CSRF token on each refresh
+if (RT->Config->Get('RestrictReferrer') and $refresh and not $m->request_args->{CSRF_Token}) {
+    my $token = RT::Interface::Web::StoreRequestToken( $session{'CurrentSearchHash'} );
+    $m->notes->{RefreshURL} = RT->Config->Get('WebURL')
+        . "AssetTracker/Search/Results.html?CSRF_Token="
+            . $token;
+}
+
+my %link_rel;
+my $genpage = sub {
+    return $m->comp(
+        '/Elements/QueryString',
+        Query   => $Query,
+        Format  => $Format,
+        Rows    => $Rows,
+        OrderBy => $OrderBy,
+        Order   => $Order,
+        Page    => shift(@_),
+    );
+};
+
+if ( $AutoForwardSingleResult && $assetcount == 1 &&
+    $session{assets}->First ) {
+# $assetcount is not always precise unless $UseSQLForACLChecks is set to true,
+# check $session{assets}->First here is to make sure the asset is there.
+    RT::Interface::Web::Redirect( RT->Config->Get('WebURL')
+            ."AssetTracker/Asset/Display.html?id=". $session{assets}->First->id );
+}
+
+my $BaseURL = RT->Config->Get('WebPath')."/AssetTracker/Search/Results.html?";
+$link_rel{first} = $BaseURL . $genpage->(1)         if $Page > 1;
+$link_rel{prev}  = $BaseURL . $genpage->($Page - 1) if $Page > 1;
+$link_rel{next}  = $BaseURL . $genpage->($Page + 1) if ($Page * $Rows) < $assetcount;
+$link_rel{last}  = $BaseURL . $genpage->(POSIX::ceil($assetcount/$Rows)) if $Rows and ($Page * $Rows) < $assetcount;
 </%INIT>
 <%CLEANUP>
 $session{'assets'}->PrepForSerialization();
@@ -176,5 +225,7 @@ $Rows => undef
 $Page => 1
 $OrderBy => undef
 $Order => undef
+$SavedSearchId => undef
+$SavedChartSearchId => undef
 $AutoForwardSingleResult => 0
 </%ARGS>
