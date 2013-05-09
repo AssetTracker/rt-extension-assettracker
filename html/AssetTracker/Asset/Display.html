@@ -47,7 +47,7 @@
     Title => $title &>
 <& /AssetTracker/Elements/Tabs, 
     Asset => $AssetObj, 
-    current_tab => 'Asset/Display.html?id='.$AssetObj->id,
+    current_tab => 'AssetTracker/Asset/Display.html?id='.$AssetObj->id,
     Title => $title &>
 
 % $m->callback(CallbackName => 'BeforeActionList', %ARGS, Actions => \@Actions, ARGSRef => \%ARGS, Asset => $AssetObj);

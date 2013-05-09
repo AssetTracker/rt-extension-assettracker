@@ -16,6 +16,10 @@ my $Orig_FriendlyObjectType = \&FriendlyObjectType;
     }
 };
 
+$_BriefDescriptions{Update} = sub {
+        my $self = shift;
+        return $self->loc( "Asset update" );
+    };
 
 $_BriefDescriptions{AddIP} = sub {
         my $self = shift;

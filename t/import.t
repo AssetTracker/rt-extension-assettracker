@@ -1,17 +1,18 @@
+#!/usr/bin/perl
+
 package T::Import;
 use strict;
 use warnings;
 
 
 BEGIN {
-    use lib ("/Users/todd-chapman/rtat/lib");
-    use RT;
+    use lib ("t/lib");
+    use RTx::AssetTracker::Test tests => 49;
     RT::LoadConfig();
     RT::Init();
 }
 
 use base qw(Test::Class);
-use Test::More;
 use RTx::AssetTracker;
 use RTx::AssetTracker::Assets;
 use RT::CurrentUser;
@@ -25,14 +26,34 @@ use constant NODETAIL => 0;
 
 sub startup :Test(startup=>3) {
     my ($self) = @_;
+
+    my $user_obj = RT::User->new( $RT::SystemUser );
+    $user_obj->LoadOrCreateByEmail( 'todd@chaka.net' );
+    $user_obj->SetName( 'todd' );
+    $user_obj->SetPrivileged( 1 );
+    $user_obj->PrincipalObj->GrantRight( Right => 'SuperUser' );
+
     my $cu = RT::CurrentUser->new();
     $cu->LoadByName('todd');
     $self->{cu} = $cu;
+
+    my $group = RT::Group->new( $RT::SystemUser );
+    $group->LoadUserDefinedGroup( 'group foo' );
+    $group->Id || $group->CreateUserDefinedGroup( Name => 'group foo', Description => 'A test group' );
 
     my $type = RTx::AssetTracker::Type->new($cu);
     $type->Load("Servers");
     $type->Id || $type->Create(Name => "Servers");
     ok($type->Id, "Asset type 'Servers' exists");
+
+    my $cf = RT::CustomField->new( $RT::SystemUser );
+    $cf->LoadByName( Type => 0, Name => 'Foo' );
+    $cf->Id || $cf->Create(
+        Name => 'Foo',
+        Type => 'FreeformSingle',
+        LookupType => 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset',
+    );
+    $cf->AddToObject( $type );
 
     $type = RTx::AssetTracker::Type->new($cu);
     $type->Load("Virtual");

@@ -44,6 +44,8 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <%ARGS>
+$Class        => 'RTx__AssetTracker__Asset'
+
 @Format => undef
 $AllowSorting => undef
 $Order=>undef
@@ -60,23 +62,31 @@ $Rows = 0;
 my %generic_query_args = ( Query => $Query, Rows => $Rows, Page => $Page );
 
 foreach my $col (@Format) {
-    if ( $col->{title} eq 'NEWLINE' ) {
+    my $title = $col->{'title'} || '';
+    if ( $title eq 'NEWLINE' ) {
         $m->out(qq{\n});
-    }
-    else {
-        my $title = $col->{title};
-        $title =~ s/^__(.*)__$/$1/o;
-        $title = (
-            $m->comp(
-                '/Elements/RTx__AssetTracker__Asset/ColumnMap',
-                Name => $title,
-                Attr => 'title'
-              )
-              || $title
-        );
-        $m->out( loc($title) );
+        next;
+    } elsif ( $title eq 'NBSP' ) {
         $m->out("\t");
+        next;
     }
+
+    # if title is not defined then use defined attribute or last
+    # one we saw in the format
+    unless ( defined $col->{'title'} ) {
+        my $attr = $col->{'attribute'} || $col->{'last_attribute'};
+        my $tmp = $m->comp( '/Elements/ColumnMap',
+            Class => $Class,
+            Name  => $attr,
+            Attr  => 'title',
+        );
+        $title = ProcessColumnMapValue( $tmp, Arguments => [ $attr ], Escape => 0 );
+    }
+    $title =~ s/(?:\n|\r)//g;
+    $title =~ s{\t}{    }g;
+
+    $m->out( loc($title) );
+    $m->out("\t");
 }
 </%perl>
 

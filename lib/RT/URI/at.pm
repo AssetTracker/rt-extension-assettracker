@@ -264,9 +264,6 @@ sub AsString {
     }
 }
 
-eval "require RT::URI::at_Vendor";
-die $@ if ($@ && $@ !~ qr{^Can't locate RT/URI/at_Vendor.pm});
-eval "require RT::URI::at_Local";
-die $@ if ($@ && $@ !~ qr{^Can't locate RT/URI/at_Local.pm});
+RT::Base->_ImportOverlays();
 
 1;

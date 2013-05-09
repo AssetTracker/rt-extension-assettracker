@@ -1505,7 +1505,7 @@ See L<RT::Record>
 sub CustomFieldValues {
     my $self  = shift;
     my $field = shift;
-    if ( $field =~ /\D/ ) {
+    if ( $field and $field !~ /^\d+$/ ) {
         my $cf = RT::CustomField->new( $self->CurrentUser );
         $cf->SetContextObject( $self );
         $cf->LoadByName( Name => $field, Type => $self->TypeObj->Id );

@@ -2745,12 +2745,13 @@ sub Export {
 
 sub ExportExcel {
     my ($self, $format) = @_;
+    my $class = 'RTx__AssetTracker__Asset';
 
     local $HTML::Mason::Commands::r = FakeRequest->new;
 
     my $row_data = '';
     my $row_count = $self->Count()+1;
-    my $export_format = [ { attribute => 'id' }, grep { $_->{title} ne 'NEWLINE' && $_->{attribute} ne 'id' } @$format ];
+    my $export_format = [ { attribute => 'id' }, grep { ($_->{title}||'') ne 'NEWLINE' && $_->{attribute} ne 'id' } @$format ];
     my $column_count = @$export_format;
 
     my $i = 1;
@@ -2758,8 +2759,9 @@ sub ExportExcel {
     for my $f (@$export_format) {
         my $attr = $f->{attribute};
         $row_data .= qq{<Column ss:Width="60.0" />\n};
-        my $value = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "title") || $attr;
-        my $out = _xml_escape_value($value);
+        my $value = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "title") || $attr;
+        my $out = _xml_escape_value(
+            HTML::Mason::Commands::ProcessColumnMapValue( $value, Arguments => [ $attr ], Escape => 0 ) );
         $header .= qq{<Cell ><Data ss:Type="String">$out</Data></Cell>\n};
     }
     $header .= '</Row>';
@@ -2771,26 +2773,12 @@ sub ExportExcel {
 
         for my $f (@$export_format) {
             my $attr = $f->{attribute};
-            my $style = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "export_style") || 'Default';
-            my $type = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "type") || 'String';
-            my $value = run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "export_value")
-                     || run_component("/Elements/RTx__AssetTracker__Asset/ColumnMap", Name => $attr, Attr => "value");
-            my $out;
-            if (ref($value) eq 'CODE') {
-                my ($computed_value) = $value->($asset);
-                if (ref($computed_value) eq 'SCALAR') {
-                    $out = _xml_escape_value($$computed_value);
-                }
-                else {
-                    $out = _xml_escape_value($computed_value);
-                }
-            }
-            elsif (ref($value) eq 'SCALAR') {
-                $out = _xml_escape_value($$value);
-            }
-            else {
-                $out = _xml_escape_value($value);
-            }
+            my $style = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "export_style") || 'Default';
+            my $type  = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "type") || 'String';
+            my $value = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "export_value")
+                     || run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "value");
+            my $out = _xml_escape_value(
+                HTML::Mason::Commands::ProcessColumnMapValue( $value, Arguments => [ $asset ], Escape => 0 ) );
             $row .= qq{<Cell ss:StyleID="$style"><Data ss:Type="$type">$out</Data></Cell>\n};
         }
         
@@ -2944,6 +2932,8 @@ sub _import {
     }
     elsif ($id =~ /(\d+)/) {
         $asset->Load($1);
+        return 0, "Nonexistent id: $id" unless $asset->Id;
+
         my ($aid, undef, $err) = $asset->UpdateAsset( %asset, _Commit => 0, _RecordTransaction => 0, _Detailed => $detailed );
         return $aid, $self->loc("Asset #[_1] not updated: [_2]", $asset->Id, $err);
     }

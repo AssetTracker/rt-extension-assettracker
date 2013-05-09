@@ -106,27 +106,36 @@ $tabs->{"this"} = { class => "currentnav",
                     current_subtab => $current_subtab };
 
 my $asset_page_tabs = {
-    _A => { title => loc('Display'),
+        _A => {
+            title => loc('Display'),
             path  => "AssetTracker/Asset/Display.html?id=" . $id, },
+        _Ab => {
+            title => loc('History'),
+            path  => "AssetTracker/Asset/History.html?id=" . $id, },
 
-    _B => { title => loc('Edit Basics'),
+        _B => {
+            title => loc('Basics'),
             path  => "AssetTracker/Asset/Modify.html?id=" . $id, },
-    _Ba => { title => loc('Edit Fields'),
+        _Ba => {
+            title => loc('Fields'),
             path  => "AssetTracker/Asset/ModifyFields.html?id=" . $id, },
-    _Bb => { title => loc('Edit IPs'),
+        _Bb => {
+            title => loc('IPs'),
             path  => "AssetTracker/Asset/ModifyIPs.html?id=" . $id, },
 
-#    _C => { title => loc('Dates'),
+#        _C => {
+#            title => loc('Dates'),
 #            path  => "AssetTracker/Asset/ModifyDates.html?id=" . $id, },
-    _D =>
-      { title => loc('Edit People'), path => "AssetTracker/Asset/ModifyPeople.html?id=" . $id, },
-    _E => { title => loc('Edit Links'),
+        _D => {
+            title => loc('People'),
+            path => "AssetTracker/Asset/ModifyPeople.html?id=" . $id, },
+        _E => {
+            title => loc('Links'),
             path  => "AssetTracker/Asset/ModifyLinks.html?id=" . $id, },
-    _F => { title => loc('Edit All'),
+        _F => {
+            title => loc('Jumbo'),
             path  => "AssetTracker/Asset/ModifyAll.html?id=" . $id,
             seperator => 1 },
-    _G => { title => loc('View History'),
-             path  => "AssetTracker/Asset/History.html?id=" . $id, },
 
 };
 
@@ -176,6 +185,10 @@ $tabs->{"h"} = { path      => "AssetTracker/Search/Edit.html$args",
                  title     => loc('Advanced'),
                  separator => 1 };
 if (defined $session{'assets'} and $session{'assets'}->Count) {
+    if ( $current_tab =~ m{AssetTracker/Search/(Bulk|Build|Edit|Grid)\.html} ) {
+        $current_tab = "AssetTracker/Search/$1.html$args";
+    }
+
   $tabs->{"i"} = { path      => "AssetTracker/Search/Results.html$args",
                    title     => loc('Show Results'),
                    separator => 1,
