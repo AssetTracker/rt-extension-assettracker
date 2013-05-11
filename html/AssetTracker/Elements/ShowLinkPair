@@ -37,6 +37,6 @@ $Asset
 $Base
 $Map
 $SkipTickets => 1
-$SkipResolvedTickets => 1
+$SkipResolvedTickets => 0
 $ShowOnlyTickets => 0
 </%ARGS>
