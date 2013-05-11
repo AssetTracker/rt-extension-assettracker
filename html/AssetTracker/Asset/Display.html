@@ -62,6 +62,12 @@
 </div>
 <br />
 
+% $m->callback( %ARGS, Asset => $AssetObj, CallbackName => 'BeforeShowTicketLinks' );
+<div class="ticketlinks">
+<& /AssetTracker/Elements/ShowTicketLinks,  Asset => $AssetObj &>
+</div>
+<br />
+
 % $m->callback( Asset => $AssetObj, %ARGS, CallbackName => 'BeforeShowHistory' );
 
 % if ( $RT::ShowAssetHistory ) {

@@ -1,0 +1,41 @@
+<&| /Widgets/TitleBox,
+    title => loc('[_1] Most recent tickets', $Rows),
+    title_href => RT->Config->Get('WebPath').'/Search/Results.html?'
+                . $m->comp('/Elements/QueryString', %query_args),
+    class => 'asset-info-tickets'
+&>
+<& /Elements/CollectionList,
+    Class => 'RT::Tickets',
+    ShowNavigation => 0,
+    %query_args,
+&>
+
+<form action="<% RT->Config->Get('WebPath')%>/Ticket/Create.html" name="child" method="post">
+<input type="hidden" name="new-RefersTo" value="<%$Asset->URI%>">
+<input type="hidden" name="Subject" value="Problem with <%$Asset->Name%>">
+<&|/l_unsafe, $m->scomp('/Elements/SelectNewTicketQueue' )&><input type="submit" value="New ticket in queue">&nbsp;[_1]</&>
+</form>
+</&>
+<%init>
+
+my $user = $session{'CurrentUser'}->UserObj;
+my $Rows = $user->Preferences( 'SummaryRows', ( RT->Config->Get('DefaultSummaryRows') || 10 ) );
+
+my %query_args = (
+    Query   => "RefersTo = '" . $Asset->URI . "'",
+    Format  => qq{
+                '<b><a href="__WebPath__/Ticket/Display.html?id=__id__">__id__</a></b>/TITLE:#',
+                '<b><a href="__WebPath__/Ticket/Display.html?id=__id__">__Subject__</a></b>/TITLE:Subject',
+                '__QueueName__',
+                '__Status__',
+                '__OwnerName__',
+                '<small>__LastUpdatedRelative__</small>'},
+    OrderBy => 'LastUpdated',
+    Order   => 'DESC',
+    Rows    => $Rows,
+);
+
+</%init>
+<%args>
+$Asset => undef
+</%args>
