@@ -9,7 +9,7 @@
 %     my $uri_method = $_->{Mode} . 'URI';
 %     if ( ( $SkipTickets || $ShowOnlyTickets ) && $Link->$uri_method->IsLocal ) {
 %         my $object = $_->{Mode} eq 'Base' ? $Link->TargetObj : $Link->BaseObj;
-%         if ( $SkipTickets && $method eq 'RefersTo' && ref( $Link->BaseObj ) eq 'RT::Ticket' ) { next; }
+%         if ( $SkipTickets && $method eq 'ReferredToBy' && ref( $Link->BaseObj ) eq 'RT::Ticket' ) { next; }
 %         if ( $ShowOnlyTickets && ref( $object ) ne 'RT::Ticket' ) { next; }
 %         if ( $SkipResolvedTickets && ref( $object ) eq 'RT::Ticket'
 %              && $object->QueueObj->IsInactiveStatus( $object->Status ) ) { next; }
