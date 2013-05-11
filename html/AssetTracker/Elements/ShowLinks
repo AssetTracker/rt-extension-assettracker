@@ -51,8 +51,9 @@
     <ul>
 % while (my $Link = $Asset->ReferredToBy->Next) {
 % next unless ($Link->BaseURI->IsLocal and $Link->BaseObj
-%         and (ref ($Link->BaseObj) eq 'RT::Ticket')
-%         and $Link->BaseObj->Status =~ /^(new|open|stalled)$/ and $LimitActive);
+%          and (ref ($Link->BaseObj) eq 'RT::Ticket') );
+% next if ( $LimitActive
+%       and $Link->BaseObj->QueueObj->IsInactiveStatus( $Link->BaseObj->Status ) );
 <li><& /Elements/ShowLink, URI => $Link->BaseURI &>
 % }
 </ul>
