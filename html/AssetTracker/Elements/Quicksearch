@@ -81,6 +81,10 @@ my %status;
 my %sql;
 my %count;
 
+$sql{all}{all} = join( " AND ", map "Status != '$_'", RTx::AssetTracker::Type->InactiveStatusArray);
+$Assets->FromSQL($sql{all}{all});
+$count{all}{all} = $Assets->Count();
+
 while (my $type = $Types->Next) {
        next unless ($type->CurrentUserHasRight('ShowAsset'));
        foreach my $status ($type->ActiveStatusArray) {
@@ -91,17 +95,14 @@ while (my $type = $Types->Next) {
            $count{$type->Name}{$status} = $Assets->Count();
 
        }
-       $sql{$type->Name}{'all'} = "Type = '".$type->Name."' AND Status != 'retired'";
+       $sql{$type->Name}{'all'} = "Type = '".$type->Name."' AND ".$sql{'all'}{'all'};
        $Assets->FromSQL($sql{$type->Name}{'all'});
        $count{$type->Name}{'all'} = $Assets->Count();
 }
-foreach my $status (@RT::AssetActiveStatus) {
+foreach my $status ( RTx::AssetTracker::Type->ActiveStatusArray ) {
     $sql{all}{$status} = "Status='$status'";
     $Assets->FromSQL($sql{all}{$status});
     $count{all}{$status} = $Assets->Count();
 }
-    $sql{all}{all} = "Status != 'retired'";
-    $Assets->FromSQL($sql{all}{all});
-    $count{all}{all} = $Assets->Count();
 
 </%INIT>
