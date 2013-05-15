@@ -892,7 +892,7 @@ sub AddWatcher {
 
     # {{{ Check ACLS
     #If the watcher we're trying to add is for the current user
-    if ( $self->CurrentUser->PrincipalId  eq $args{'PrincipalId'}) {
+    if ( $args{'PrincipalId'} && $self->CurrentUser->PrincipalId == $args{'PrincipalId'}) {
         #  If it's an Admin and they don't have
         #   'WatchAsAdmin' or 'ModifyAsset', bail
         if ( $args{'Type'} ) {
@@ -1073,7 +1073,7 @@ sub DeleteWatcher {
 
     # {{{ Check ACLS
     #If the watcher we're trying to add is for the current user
-    if ( $self->CurrentUser->PrincipalId eq $args{'PrincipalId'} ) {
+    if ( $self->CurrentUser->PrincipalId == $principal->id ) {
 
         #  If it's an Admin and they don't have
         #   'WatchAsAdmin' or 'ModifyAsset', bail
