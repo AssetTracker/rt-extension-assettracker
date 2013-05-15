@@ -57,7 +57,7 @@
 my $tabs = {};
 my $current_toptab = "AssetTracker/index.html",
 my $searchtabs = {};
-my $actions;
+my $actions = {};
 
 if ($Asset) {
 
