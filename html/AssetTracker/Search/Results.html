@@ -143,8 +143,8 @@ if ($OrderBy =~ /\|/) {
 } else {
     $session{'assets'}->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
 }
-$session{'tickets'}->RowsPerPage( $Rows ) if $Rows;
-$session{'tickets'}->GotoPage( $Page - 1 );
+$session{'assets'}->RowsPerPage( $Rows ) if $Rows;
+$session{'assets'}->GotoPage( $Page - 1 );
 
 $session{'CurrentAssetSearchHash'} = {
     Format      => $Format,
