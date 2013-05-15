@@ -1,4 +1,4 @@
-<& /Elements/Header,
+'<& /Elements/Header,
     Title => loc("Assets at a glance"),
     Refresh => $session{'home_refresh_interval'} &>
 <& /AssetTracker/Elements/Tabs,
@@ -27,7 +27,7 @@
 if ( $ARGS{'q'} ) {
     my $query = $ARGS{'q'};
 
-    if ( $query =~ m/^(\d+\.\d+\.\d+\.\d+)$/ ) {
+    if ( RT->Config->Get('EnableIP') && $query =~ m/^(\d+\.\d+\.\d+\.\d+)$/ ) {
         $m->comp("/AssetTracker/Search/Results.html", Query => "IP = '$query'", AutoForwardSingleResult => 1);
         return();
     }
