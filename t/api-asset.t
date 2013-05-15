@@ -70,17 +70,17 @@ is($a2->OwnerRoleGroup->UserMembersObj->First->Id, $u->Id);
 
 my $a3 = RTx::AssetTracker::Asset->new($RT::SystemUser);
 my ($id3, $msg3) = $a3->Create( Type => $testtype->Id,
-                                Name => 'Testing',
+                                Name => 'Testing 2',
                                 Owner => $u->Id);
 my ($cfv1, $cfm1) = $a->AddCustomFieldValue(Field => $testcf->Id,
  Value => 'Value1');
-isnt($cfv1 , 0, "Adding a custom field to asset 1 is successful: $cfm");
+isnt($cfv1 , 0, "Adding a custom field to asset 1 is successful: $cfm1");
 my ($cfv2, $cfm2) = $a3->AddCustomFieldValue(Field => $testcf->Id,
  Value => 'Value2');
-isnt($cfv2 , 0, "Adding a custom field to asset 2 is successful: $cfm");
+isnt($cfv2 , 0, "Adding a custom field to asset 2 is successful: $cfm2");
 my ($cfv3, $cfm3) = $a->AddCustomFieldValue(Field => $testcf->Id,
  Value => 'Value3');
-isnt($cfv3 , 0, "Adding a custom field to asset 1 is successful: $cfm");
+isnt($cfv3 , 0, "Adding a custom field to asset 1 is successful: $cfm3");
 is($a->CustomFieldValues($testcf->Id)->Count , 2,
    "This asset has 2 custom field values");
 is($a3->CustomFieldValues($testcf->Id)->Count , 1,
