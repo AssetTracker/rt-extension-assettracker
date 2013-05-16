@@ -52,7 +52,7 @@ my $Orig_BriefDescriptions_AddLink = $_BriefDescriptions{AddLink};
 $_BriefDescriptions{AddLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_AddLink->($self)
-	    unless ( $self->Data && $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
+            unless ( $self->Data && $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
         my $value;
         if ( $self->NewValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -103,7 +103,7 @@ my $Orig_BriefDescriptions_DeleteLink = $_BriefDescriptions{DeleteLink};
 $_BriefDescriptions{DeleteLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_DeleteLink->($self)
-	    unless ( $self->Data && $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
+            unless ( $self->Data && $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
         my $value;
         if ( $self->OldValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -155,7 +155,7 @@ my $Orig_BriefDescriptions_Set = $_BriefDescriptions{Set};
 $_BriefDescriptions{Set} = sub {
         my $self = shift;
 
-	if ( $self->ObjectType eq 'RTx::AssetTracker::Asset' && $self->Field eq 'Type' ) {
+        if ( $self->ObjectType eq 'RTx::AssetTracker::Asset' && $self->Field eq 'Type' ) {
             my $t1 = new RTx::AssetTracker::Type( $self->CurrentUser );
             $t1->Load( $self->OldValue );
             my $t2 = new RTx::AssetTracker::Type( $self->CurrentUser );
@@ -165,7 +165,7 @@ $_BriefDescriptions{Set} = sub {
         }
 
         else {
-	    return $Orig_BriefDescriptions_Set->($self);
+            return $Orig_BriefDescriptions_Set->($self);
         }
 };
 
@@ -182,9 +182,9 @@ sub CustomFieldLookupType {
     my $self=shift;
     
     if ( ref $self && $self->{values}->{objecttype} eq 'RTx::AssetTracker::Asset' ) {
-	"RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
+        "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
     } else {
-	"RT::Queue-RT::Ticket-RT::Transaction";
+        "RT::Queue-RT::Ticket-RT::Transaction";
     }
 }
 
