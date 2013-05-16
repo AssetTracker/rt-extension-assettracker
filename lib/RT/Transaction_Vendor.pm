@@ -3,6 +3,43 @@ package RT::Transaction;
 use strict;
 no warnings qw(redefine);
 
+# Wrapper to execute Asset Scrips
+my $Orig_Create = \&Create;
+*Create = sub {
+    my $self = shift;
+    my %args = (
+        ActivateScrips => 1,
+        CommitScrips => 1,
+        @_
+    );
+
+    my ($id, $msg) = $Orig_Create->($self, @_);
+
+
+    #Provide a way to turn off scrips if we need to
+    $RT::Logger->info('About to think about scrips for transaction #' .$self->Id);
+    if ( $args{'ActivateScrips'} and $self->ObjectType eq 'RTx::AssetTracker::Asset' ) {
+       $self->{'scrips'} = RTx::AssetTracker::Scrips->new($RT::SystemUser);
+
+        $RT::Logger->info('About to prepare scrips for transaction #' .$self->Id); 
+
+        $self->{'scrips'}->Prepare(
+            Stage       => 'TransactionCreate',
+            Type        => $self->Type,
+            Asset       => $self->ObjectId,
+            Transaction => $self->id,
+        );
+
+        if ($args{'CommitScrips'} ) {
+            $RT::Logger->info('About to commit scrips for transaction #' .$self->Id);
+            $self->{'scrips'}->Commit();
+        }
+    }
+
+    return ( $id, $self->loc("Transaction Created") );
+};
+
+
 my $Orig_FriendlyObjectType = \&FriendlyObjectType;
 *FriendlyObjectType = sub {
     my $self = shift;
