@@ -58,6 +58,7 @@
 </&>
 <&| /Widgets/TitleBox, title => loc('Comments'), width => "100%", class => 'asset-info-comments' &>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "BasicComment" &>
+<table><& Elements/EditTransactionCustomFields, AssetObj => $Asset, TypeObj => $Asset->TypeObj &></table>
 </&>
 <& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to") &>
 </form>

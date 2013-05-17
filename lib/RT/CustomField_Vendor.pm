@@ -7,6 +7,11 @@ no warnings qw(redefine);
 use RT::CustomField;
 use RT::CurrentUser;
 
+
+RT::CustomField->_ForObjectType(
+    'RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction' => "Asset Transactions", );    #loc
+
+
 # {{{ sub LoadByName
 
 =head2 LoadByName (Queue => QUEUEID, Type => TYPEID, Name => NAME)

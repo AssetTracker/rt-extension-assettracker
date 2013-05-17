@@ -892,7 +892,7 @@ sub AddWatcher {
 
     # {{{ Check ACLS
     #If the watcher we're trying to add is for the current user
-    if ( $args{'PrincipalId'} && $self->CurrentUser->PrincipalId == $args{'PrincipalId'}) {
+    if ( $self->CurrentUser->PrincipalId  eq $args{'PrincipalId'}) {
         #  If it's an Admin and they don't have
         #   'WatchAsAdmin' or 'ModifyAsset', bail
         if ( $args{'Type'} ) {
@@ -990,12 +990,13 @@ sub _AddWatcher {
     }
 
     unless ( $args{'Silent'} ) {
-        $self->_NewTransaction(
+        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
             Type     => 'AddWatcher',
             NewValue => $principal->Id,
             Field    => $args{'Type'},
             Data     => $args{TransactionData},
         );
+        $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
     }
 
         return ( 1, $self->loc('Added principal as a [_1] for this asset', $self->loc($args{'Type'})) );
@@ -1073,7 +1074,7 @@ sub DeleteWatcher {
 
     # {{{ Check ACLS
     #If the watcher we're trying to add is for the current user
-    if ( $self->CurrentUser->PrincipalId == $principal->id ) {
+    if ( $self->CurrentUser->PrincipalId eq $args{'PrincipalId'} ) {
 
         #  If it's an Admin and they don't have
         #   'WatchAsAdmin' or 'ModifyAsset', bail
@@ -1124,10 +1125,12 @@ sub DeleteWatcher {
     }
 
     unless ( $args{'Silent'} ) {
-        $self->_NewTransaction( Type     => 'DelWatcher',
+        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+                                Type     => 'DelWatcher',
                                 OldValue => $principal->Id,
                                 Field    => $args{'Type'},
                                 Data     => $args{TransactionData} );
+        $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
     }
 
     return ( 1,
@@ -1165,10 +1168,12 @@ sub DeleteAllWatchers {
         }
 
         unless ( $args{Silent} ) {
-            $self->_NewTransaction( Type     => 'DelWatcher',
+            my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+                                    Type     => 'DelWatcher',
                                     OldValue => $principal->Id,
                                     Field    => $args{Type},
                                     Data     => $args{TransactionData} );
+            $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
         }
         
     }
@@ -1258,6 +1263,21 @@ sub HasRight {
 # }}}
 
 # }}}
+
+# {{{ TransactionCustomFields
+
+=head2 TransactionCustomFields
+
+    Returns the custom fields that transactions on assets will have.
+
+=cut
+
+sub TransactionCustomFields {
+    my $self = shift;
+    my $cfs = $self->TypeObj->AssetTransactionCustomFields;
+    $cfs->SetContextObject( $self );
+    return $cfs;
+}
 
 # {{{ sub TypeObj
 
@@ -1449,6 +1469,7 @@ sub _Set {
                                                TimeTaken => undef,
                                                Data      => $args{TransactionData},
         );
+        $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
         return ( $Trans, scalar $TransObj->Description );
     }
     else {
@@ -1557,10 +1578,12 @@ sub DeleteIP {
     my $retval = $ip->Delete();
     if ($retval) {
         unless ( $args{'Silent'} ) {
-            $self->_NewTransaction( Type     => 'DelIP',
+            my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+                                    Type     => 'DelIP',
                                     OldValue => $addr,
                                     Field    => 'IP',
                                     Data     => $args{TransactionData} );
+            $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
         }
 
         return ( 1, $self->loc( "$addr is no longer an IP for this asset." ) );
@@ -1604,10 +1627,12 @@ sub AddIP {
 
     if ($ip->Id) {
         unless ( $args{'Silent'} ) {
-            $self->_NewTransaction( Type     => 'AddIP',
+            my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+                                    Type     => 'AddIP',
                                     NewValue => $args{IP},
                                     Field    => 'IP',
                                     Data     => $args{TransactionData} );
+            $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
         }
         return ( $ip->Id, $self->loc( "$args{IP} is now an IP for this asset." ) );
     } else {
@@ -1824,6 +1849,7 @@ sub DeleteLink {
             TimeTaken => 0,
             Data     => $args{TransactionData},
         );
+        $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
         if ( $remote_uri->IsLocal ) {
 
             my $OtherObj = $remote_uri->Object;
@@ -1943,6 +1969,7 @@ sub _AddLink {
                                    NewValue =>  $remote_uri->URI || $remote_link,
                                    TimeTaken => 0,
                                    Data     => $args{TransactionData}, );
+        $TransObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransObj;
         if ( $remote_uri->IsLocal ) {
 
             # create transaction for other object;
@@ -2172,7 +2199,7 @@ sub _SetBasic {
 
     if ( $self->_Accessible( $args{Field}, 'write' ) ) {
 
-        return ( $self->_Set( Field => $args{Field}, Value => $args{Value}, TransactionData => $args{TransactionData} ) );
+        return ( $self->_Set( %args, Field => $args{Field}, Value => $args{Value}, TransactionData => $args{TransactionData} ) );
     }
 
     elsif ( $self->_Accessible( $args{Field}, 'read' ) ) {

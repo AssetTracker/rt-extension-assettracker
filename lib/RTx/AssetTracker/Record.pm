@@ -138,7 +138,8 @@ sub Update {
         my $method = "Set$attribute";
         my ( $code, $msg );
         if (ref $self eq 'RTx::AssetTracker::Asset') {
-            ( $code, $msg ) = $self->$method(Value => $value, TransactionData => $ARGSRef->{BasicComment} || $ARGSRef->{GlobalComment});
+	    RT::Logger->info($method);
+            ( $code, $msg ) = $self->$method(%args, Value => $value, TransactionData => $ARGSRef->{BasicComment} || $ARGSRef->{GlobalComment});
         }
         else {
             ( $code, $msg ) = $self->$method($value);
@@ -490,6 +491,7 @@ sub _AddCustomFieldValue {
                 NewReference => $new_value,
                 Data         => $args{'Data'},
               );
+            $TransactionObj->UpdateCustomFields( ARGSRef => $args{ARGSRef} ) if $TransactionObj;
         }
 
         my $new_content = $new_value->Content;

@@ -119,7 +119,10 @@ sub ProcessAssetIPs {
     foreach my $key ( keys %$ARGSRef ) {
 
         if ($key =~ /^Asset-(\d+)-DeleteIP-(\d+)$/) {
-            my ($rc, $msg) = $AssetObj->DeleteIP(IP => $2, TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment});
+            my ($rc, $msg) = $AssetObj->DeleteIP(IP => $2,
+                                                 TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment},
+                                                 ARGSRef => $ARGSRef
+            );
             push @results, $msg;
             #delete $ARGSRef->{$key};
             next;
@@ -146,7 +149,9 @@ sub ProcessAssetIPs {
                                              MAC => $ips{$ip}{MAC},
                                              TCPPorts => \@TCPPorts,
                                              UDPPorts => \@UDPPorts,
-                                             TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment});
+                                             TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment},
+                                             ARGSRef => $ARGSRef,
+        );
         push @results, $msg;
     }
 
@@ -189,7 +194,9 @@ sub ProcessAssetPorts {
             $method = "Delete".$transport."Port";
             foreach my $port (@current_ports) {
                 next if  grep { $_ eq $port } @new_ports;
-                    my ($rv, $msg) = $ip->$method($port, TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment});
+                    my ($rv, $msg) = $ip->$method($port, TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment},
+                                                  ARGSRef => $ARGSRef,
+                    );
                     if ($rv) {
                         push @results, "$transport port $port deleted from IP " . $ip->IP;
                     } else {
@@ -200,7 +207,9 @@ sub ProcessAssetPorts {
             $method = "Add".$transport."Port";
             foreach my $port (@new_ports) {
                 next if grep { $_ eq $port } @current_ports;
-                    my ($rv, $msg) = $ip->$method($port, TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment});
+                    my ($rv, $msg) = $ip->$method($port, TransactionData => $ARGSRef->{IPComment} || $ARGSRef->{GlobalComment},
+                                                  ARGSRef => $ARGSRef,
+                    );
                     if ($rv) {
                         push @results, "$transport port $port added to IP " . $ip->IP;
                     } else {
@@ -240,13 +249,18 @@ $RT::Logger->debug("Processing asset watchers");
         if ( ( $key =~ /^Asset-DeleteWatcher-Type-(.*)-Principal-(\d+)$/ )  ) {
             my ( $code, $msg ) = 
                 $Asset->DeleteWatcher(PrincipalId => $2,
-                                       Type => $1, TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment});
+                                       Type => $1, TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment},
+                                       ARGSRef => $ARGSRef,
+            );
             push @results, $msg;
         }
 
         # Delete watchers in the simple style demanded by the bulk manipulator
         elsif ( $key =~ /^Delete(\w+)$/ ) {	    
-            my ( $code, $msg ) = $Asset->DeleteWatcher( Email => $ARGSRef->{$key}, Type => $1, TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment} );
+            my ( $code, $msg ) = $Asset->DeleteWatcher( Email => $ARGSRef->{$key}, Type => $1,
+                                                        TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment},
+                                                        ARGSRef => $ARGSRef,
+            );
             push @results, $msg;
         }
 
@@ -264,7 +278,8 @@ $RT::Logger->debug("Processing asset watchers");
                 my ( $code, $msg ) = $Asset->AddWatcher(
                     PrincipalId => $WatcherId,
                     Type  => $type,
-                    TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment}
+                    TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment},
+                    ARGSRef => $ARGSRef,
                 );
                 push @results, $msg;
             }
@@ -275,7 +290,8 @@ $RT::Logger->debug("Processing asset watchers");
             my ( $code, $msg ) = $Asset->AddWatcher(
                 Type  => $1,
                 Email => $ARGSRef->{$key},
-                TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment},
+                TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment},,
+                ARGSRef => $ARGSRef,
             );
             push @results, $msg;
         }
@@ -285,8 +301,12 @@ $RT::Logger->debug("Processing asset watchers");
             and ( $key =~ /^Asset-AddWatcher-Principal-(\d*)$/ ) ) {
 
             #They're in this order because otherwise $1 gets clobbered :/
-            my ( $code, $msg ) =
-              $Asset->AddWatcher( Type => $ARGSRef->{$key}, PrincipalId => $1, TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment} );
+            my ( $code, $msg ) = $Asset->AddWatcher(
+                Type => $ARGSRef->{$key},
+                PrincipalId => $1,
+                TransactionData => $ARGSRef->{PeopleComment} || $ARGSRef->{GlobalComment},
+                ARGSRef => $ARGSRef,
+            );
             push @results, $msg;
         }
     }
@@ -302,7 +322,9 @@ $RT::Logger->debug("Processing asset watchers");
                 SetWatchers(
                    Asset => $Asset, Watchers => $watchers, Type => $role,
                    TransactionData => $ARGSRef->{PeopleComment}
-                                   || $ARGSRef->{GlobalComment} );
+                                   || $ARGSRef->{GlobalComment},
+                   ARGSRef => $ARGSRef,
+                );
         }
     }
 
@@ -530,22 +552,26 @@ sub ProcessBulkCustomFieldUpdates {
         my ($rv, $msg);
         if (exists $ARGSRef->{"$cfid-Value"} and $ARGSRef->{"$cfid-Value"}) {
             #Add the value or delete it if false
-            ($rv, $msg) = $Object->AddCustomFieldValue( Field => $cfid, Value => $ARGSRef->{"$cfid-Value"});
+            ($rv, $msg) = $Object->AddCustomFieldValue( Field => $cfid, Value => $ARGSRef->{"$cfid-Value"},
+                                                        ARGSRef => $ARGSRef );
             push @results, $msg;
         }
         elsif (exists $ARGSRef->{"$cfid-Value-Magic"}) {
             #Delete the value
-            ($rv, $msg) = $Object->DeleteCustomFieldValue( Field => $cfid, Value => $Object->FirstCustomFieldValue($cfid));
+            ($rv, $msg) = $Object->DeleteCustomFieldValue( Field => $cfid, Value => $Object->FirstCustomFieldValue($cfid),
+                                                           ARGSRef => $ARGSRef );
             push @results, $msg;
         }
         elsif (exists $ARGSRef->{"$cfid-Values"} and $ARGSRef->{"$cfid-Values"}) {
             #Add the value or delete it if false
-            ($rv, $msg) = $Object->AddCustomFieldValue( Field => $cfid, Value => $ARGSRef->{"$cfid-Values"});
+            ($rv, $msg) = $Object->AddCustomFieldValue( Field => $cfid, Value => $ARGSRef->{"$cfid-Values"},
+                                                        ARGSRef => $ARGSRef );
             push @results, $msg;
         }
         elsif (exists $ARGSRef->{"$cfid-Values-Magic"}) {
             #Delete the value
-            ($rv, $msg) = $Object->DeleteCustomFieldValue( Field => $cfid, Value => $Object->FirstCustomFieldValue($cfid));
+            ($rv, $msg) = $Object->DeleteCustomFieldValue( Field => $cfid, Value => $Object->FirstCustomFieldValue($cfid),
+                                                           ARGSRef => $ARGSRef );
             push @results, $msg;
         }
         elsif (exists $ARGSRef->{"$cfid-Values-AddValues-Magic"}) {
@@ -559,7 +585,8 @@ sub ProcessBulkCustomFieldUpdates {
                     @values = split(/\n/, $values[0]);
                 }
                 foreach my $value (@values) {
-                    ($rv, $msg) = $Object->AddUniqueCustomFieldValue( Field => $cfid, Value => $value);
+                    ($rv, $msg) = $Object->AddUniqueCustomFieldValue( Field => $cfid, Value => $value,
+                                                                      ARGSRef => $ARGSRef );
                     push @results, $msg;
                 }
             }
@@ -575,7 +602,8 @@ sub ProcessBulkCustomFieldUpdates {
                     @values = split(/\n/, $values[0]);
                 }
                 foreach my $value (@values) {
-                    ($rv, $msg) = $Object->DeleteCustomFieldValue( Field => $cfid, Value => $value);
+                    ($rv, $msg) = $Object->DeleteCustomFieldValue( Field => $cfid, Value => $value,
+                                                                   ARGSRef => $ARGSRef );
                     push @results, $msg;
                 }
             }
@@ -623,11 +651,15 @@ sub ProcessAssetLinks {
             next unless $ARGSRef->{$arg} =~ /($all_links)/;
             my $linktype = $1;
             if ($linktype =~ /^($all_bases)$/) {
-                my ( $val, $msg ) = $AssetObj->AddLink( Target => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
+                my ( $val, $msg ) = $AssetObj->AddLink( Target => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment},
+                                                        ARGSRef => $ARGSRef,
+                );
                 push @results, $msg;
             } else {
                 $linktype = $LINKTYPEMAP->{$linktype}{Type} if $LINKTYPEMAP->{$linktype}{Mode} eq 'Base';
-                my ( $val, $msg ) = $AssetObj->AddLink( Base => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
+                my ( $val, $msg ) = $AssetObj->AddLink( Base => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment},
+                                                        ARGSRef => $ARGSRef,
+                );
                 push @results, $msg;
             }
         }
@@ -637,11 +669,15 @@ sub ProcessAssetLinks {
             next unless $id;
             my $linktype = $ARGSRef->{$arg};
             if ($linktype =~ /^($all_bases)$/) {
-                my ( $val, $msg ) = $AssetObj->AddLink( Target => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
+                my ( $val, $msg ) = $AssetObj->AddLink( Target => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment},
+                                                        ARGSRef => $ARGSRef,
+                );
                 push @results, $msg;
             } else {
                 $linktype = $LINKTYPEMAP->{$linktype}{Type} if $LINKTYPEMAP->{$linktype}{Mode} eq 'Base';
-                my ( $val, $msg ) = $AssetObj->AddLink( Base => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
+                my ( $val, $msg ) = $AssetObj->AddLink( Base => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment},
+                                                        ARGSRef => $ARGSRef,
+                );
                 push @results, $msg;
             }
         }
@@ -652,7 +688,10 @@ sub ProcessAssetLinks {
 
             my ( $val, $msg ) = $AssetObj->DeleteLink( Base   => $base,
                                                      Type   => $type,
-                                                     Target => $target, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
+                                                     Target => $target,
+                                                     TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment},
+                                                     ARGSRef => $ARGSRef,
+            );
 
             if ($val) {
                 push @results,
@@ -732,6 +771,7 @@ sub ProcessATObjectCustomFieldUpdates {
 
             foreach my $cf ( keys %{ $custom_fields_to_mod{$class}{$id} } ) {
                 my $CustomFieldObj = RT::CustomField->new( $session{'CurrentUser'} );
+                $CustomFieldObj->SetContextObject($Object);
                 $CustomFieldObj->LoadById($cf);
                 unless ( $CustomFieldObj->id ) {
                     $RT::Logger->warning("Couldn't load custom field #$cf");
@@ -813,6 +853,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Field => $cf->id,
                     Value => $value,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
+                    ARGSRef => $ARGSRef,
                 );
                 push ( @results, $msg );
             }
@@ -827,6 +868,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Field => $cf,
                     Value => $value,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
+                    ARGSRef => $ARGSRef,
                 );
                 push ( @results, $msg );
             }
@@ -836,6 +878,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Field   => $cf,
                     ValueId => $value,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
+                    ARGSRef => $ARGSRef,
                 );
                 push ( @results, $msg );
             }
@@ -853,6 +896,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Field => $cf,
                     Value => $value,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
+                    ARGSRef => $ARGSRef,
                 );
                 push ( @results, $msg );
                 $values_hash{ $val } = 1 if $val;
@@ -869,6 +913,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Field   => $cf,
                     ValueId => $cf_value->id,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
+                    ARGSRef => $ARGSRef,
                 );
                 push ( @results, $msg);
             }
@@ -893,6 +938,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Field => $cf,
                     Value => $value,
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
+                    ARGSRef => $ARGSRef,
                 );
                 push ( @results, $msg );
             }

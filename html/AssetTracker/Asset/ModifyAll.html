@@ -82,6 +82,7 @@
 
 <&| /Widgets/TitleBox, title => 'Change Comment',  class => 'asset-info-comment', width => "100%" &>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment" &>
+<table><& Elements/EditTransactionCustomFields, AssetObj => $Asset, TypeObj => $TypeObj &></table>
 </&>
 
 % if ($Action eq 'create') {

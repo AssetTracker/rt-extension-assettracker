@@ -166,7 +166,22 @@ $cfs->LimitToType($_) for keys %$seen_types;
 </&>
 
 <&|/Widgets/TitleBox, title => 'Change Comment', color=> "#999900", width => "100%" &>
+<table>
+<tr><td colspan="2">
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment" &>
+</td></tr>
+% while (my $CF = $TxnCFs->Next()) {
+<tr>
+<td align="right"><% $CF->Name %>:</td>
+<td><& /Elements/EditCustomField, 
+    CustomField => $CF, 
+    NamePrefix => "Object-RT::Transaction--CustomField-",
+    Default => $ARGS{"Object-RT::Transaction--CustomField-" . $CF->id . '-Values'} || 
+            $ARGS{"Object-RT::Transaction--CustomField-" . $CF->id . '-Value'},
+    &><em><% $CF->FriendlyType %></em></td>
+</td></tr>
+% } # end if while
+</table>
 </&>
 
 <& /Elements/Submit, Label => loc('Update') &>
@@ -314,7 +329,9 @@ while ( my $Asset = $Assets->Next ) {
                 if ( $op eq 'del' && $current_values->HasEntry($value) ) {
                     my ( $id, $msg ) = $Asset->DeleteCustomFieldValue(
                         Field => $cfid,
-                        Value => $value
+                        Value => $value,
+                        Data  => $ARGS{'GlobalComment'},
+                        ARGSRef => \%ARGS,
                     );
                     push @cfresults, $msg;
                 }
@@ -322,7 +339,9 @@ while ( my $Asset = $Assets->Next ) {
                 elsif ( $op eq 'add' && !$current_values->HasEntry($value) ) {
                     my ( $id, $msg ) = $Asset->AddCustomFieldValue(
                         Field => $cfid,
-                        Value => $value
+                        Value => $value,
+                        Data  => $ARGS{'GlobalComment'},
+                        ARGSRef => \%ARGS,
                     );
                     push @cfresults, $msg;
                 }
@@ -339,9 +358,9 @@ while ( my $Asset = $Assets->Next ) {
     @results = ( @results, @tempresults );
 }
 
-#my $TxnCFs = RT::CustomFields->new( $session{CurrentUser} );
-#$TxnCFs->LimitToLookupType( "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction" );
-#$TxnCFs->LimitToGlobalOrObjectId( sort keys %types );
+my $TxnCFs = RT::CustomFields->new( $session{CurrentUser} );
+$TxnCFs->LimitToLookupType( "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction" );
+$TxnCFs->LimitToGlobalOrObjectId( sort keys %types );
 
 </%INIT>
 <%args>

@@ -518,6 +518,8 @@ sub Delete {
 
 # }}}
 
+# {{{ Dealing with custom fields
+
 # {{{  CustomField
 
 =item CustomField NAME
@@ -533,6 +535,32 @@ sub CustomField {
     $cf->LoadByName(Name => $name, Type => $self->Id);
     return ($cf);
 }
+
+# {{{ AssetTransactionCustomFields
+
+=head2 AssetTransactionCustomFields
+
+Returns an L<RT::CustomFields> object containing all global and
+type-specific B<transaction> custom fields.
+
+=cut
+
+sub AssetTransactionCustomFields {
+    my $self = shift;
+
+    my $cfs = RT::CustomFields->new( $self->CurrentUser );
+    if ( $self->CurrentUserHasRight('SeeType') ) {
+        $cfs->SetContextObject( $self );
+        $cfs->LimitToGlobalOrObjectId( $self->Id );
+        $cfs->LimitToLookupType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction' );
+        $cfs->ApplySortOrder;
+    }
+    return ($cfs);
+}
+
+# }}}
+
+# }}}
 
 
 # {{{ ACCESS CONTROL
