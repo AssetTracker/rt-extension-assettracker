@@ -96,7 +96,6 @@
 <& /AssetTracker/Asset/Elements/EditCustomFields, TypeObj => $TypeObj &>
 </td>
 </tr>
-<& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj &>
 <tr>
 <td align="right" colspan="2">
 </td>
@@ -123,7 +122,12 @@
 </&>
 
 <&| /Widgets/TitleBox, title => 'Change Comment',  class => 'asset-info-comment', width => "100%" &>
+<table>
+<tr><td colspan="2">
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment", Default => $ARGS{ChangeComment} &>
+</td></tr>
+<& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj &>
+</table>
 </&>
 
 <& /Elements/Submit, Label => loc("Create")&>
