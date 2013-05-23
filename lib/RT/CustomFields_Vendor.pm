@@ -2,6 +2,7 @@
 package RT::CustomFields;
 
 use strict;
+no warnings qw(redefine);
 
 
 =head2 LimitToType TYPEID

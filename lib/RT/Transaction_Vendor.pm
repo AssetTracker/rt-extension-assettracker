@@ -3,6 +3,43 @@ package RT::Transaction;
 use strict;
 no warnings qw(redefine);
 
+# Wrapper to execute Asset Scrips
+my $Orig_Create = \&Create;
+*Create = sub {
+    my $self = shift;
+    my %args = (
+        ActivateScrips => 1,
+        CommitScrips => 1,
+        @_
+    );
+
+    my ($id, $msg) = $Orig_Create->($self, @_);
+
+
+    #Provide a way to turn off scrips if we need to
+    $RT::Logger->info('About to think about scrips for transaction #' .$self->Id);
+    if ( $args{'ActivateScrips'} and $self->ObjectType eq 'RTx::AssetTracker::Asset' ) {
+       $self->{'scrips'} = RTx::AssetTracker::Scrips->new($RT::SystemUser);
+
+        $RT::Logger->info('About to prepare scrips for transaction #' .$self->Id); 
+
+        $self->{'scrips'}->Prepare(
+            Stage       => 'TransactionCreate',
+            Type        => $self->Type,
+            Asset       => $self->ObjectId,
+            Transaction => $self->id,
+        );
+
+        if ($args{'CommitScrips'} ) {
+            $RT::Logger->info('About to commit scrips for transaction #' .$self->Id);
+            $self->{'scrips'}->Commit();
+        }
+    }
+
+    return ( $id, $self->loc("Transaction Created") );
+};
+
+
 my $Orig_FriendlyObjectType = \&FriendlyObjectType;
 *FriendlyObjectType = sub {
     my $self = shift;
@@ -16,6 +53,10 @@ my $Orig_FriendlyObjectType = \&FriendlyObjectType;
     }
 };
 
+$_BriefDescriptions{Update} = sub {
+        my $self = shift;
+        return $self->loc( "Asset update" );
+    };
 
 $_BriefDescriptions{AddIP} = sub {
         my $self = shift;
@@ -48,7 +89,7 @@ my $Orig_BriefDescriptions_AddLink = $_BriefDescriptions{AddLink};
 $_BriefDescriptions{AddLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_AddLink->($self)
-	    unless ( $self->Data && $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
+            unless ( $self->Data && $Orig_BriefDescriptions_AddLink->($self) eq $self->Data );
         my $value;
         if ( $self->NewValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -99,7 +140,7 @@ my $Orig_BriefDescriptions_DeleteLink = $_BriefDescriptions{DeleteLink};
 $_BriefDescriptions{DeleteLink} = sub {
         my $self = shift;
         return $Orig_BriefDescriptions_DeleteLink->($self)
-	    unless ( $self->Data && $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
+            unless ( $self->Data && $Orig_BriefDescriptions_DeleteLink->($self) eq $self->Data );
         my $value;
         if ( $self->OldValue ) {
             my $URI = RT::URI->new( $self->CurrentUser );
@@ -151,7 +192,7 @@ my $Orig_BriefDescriptions_Set = $_BriefDescriptions{Set};
 $_BriefDescriptions{Set} = sub {
         my $self = shift;
 
-	if ( $self->ObjectType eq 'RTx::AssetTracker::Asset' && $self->Field eq 'Type' ) {
+        if ( $self->ObjectType eq 'RTx::AssetTracker::Asset' && $self->Field eq 'Type' ) {
             my $t1 = new RTx::AssetTracker::Type( $self->CurrentUser );
             $t1->Load( $self->OldValue );
             my $t2 = new RTx::AssetTracker::Type( $self->CurrentUser );
@@ -161,7 +202,7 @@ $_BriefDescriptions{Set} = sub {
         }
 
         else {
-	    return $Orig_BriefDescriptions_Set->($self);
+            return $Orig_BriefDescriptions_Set->($self);
         }
 };
 
@@ -178,9 +219,9 @@ sub CustomFieldLookupType {
     my $self=shift;
     
     if ( ref $self && $self->{values}->{objecttype} eq 'RTx::AssetTracker::Asset' ) {
-	"RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
+        "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
     } else {
-	"RT::Queue-RT::Ticket-RT::Transaction";
+        "RT::Queue-RT::Ticket-RT::Transaction";
     }
 }
 

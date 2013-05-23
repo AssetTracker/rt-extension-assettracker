@@ -13,6 +13,3 @@ require 'RT/Transaction_Vendor.pm';
 
 return(1);
 </%init>
-<%once>
-RTx::AssetTracker::LoadConfig();
-</%once>

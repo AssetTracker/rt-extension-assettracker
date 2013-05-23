@@ -9,9 +9,10 @@
 %     my $uri_method = $_->{Mode} . 'URI';
 %     if ( ( $SkipTickets || $ShowOnlyTickets ) && $Link->$uri_method->IsLocal ) {
 %         my $object = $_->{Mode} eq 'Base' ? $Link->TargetObj : $Link->BaseObj;
-%         if ( $SkipTickets && ref( $object ) eq 'RT::Ticket' ) { next; }
+%         if ( $SkipTickets && $method eq 'ReferredToBy' && ref( $Link->BaseObj ) eq 'RT::Ticket' ) { next; }
 %         if ( $ShowOnlyTickets && ref( $object ) ne 'RT::Ticket' ) { next; }
-%         if ( $SkipResolvedTickets && ref( $object ) eq 'RT::Ticket' && $closed->($object)  ) { next; }
+%         if ( $SkipResolvedTickets && ref( $object ) eq 'RT::Ticket'
+%              && $object->QueueObj->IsInactiveStatus( $object->Status ) ) { next; }
 %     }
 <li><& /Elements/ShowLink, URI => $_->{Mode} eq 'Base' ? $Link->TargetURI : $Link->BaseURI &>
 % }
@@ -36,18 +37,6 @@ $Asset
 $Base
 $Map
 $SkipTickets => 1
-$SkipResolvedTickets => 1
+$SkipResolvedTickets => 0
 $ShowOnlyTickets => 0
 </%ARGS>
-
-<%ONCE>
-my $closed = sub {
-    my $ticket = shift;
-
-    return 1 if    $ticket->Status eq 'rejected'
-                or $ticket->Status eq 'resolved'
-                or $ticket->Status eq 'deleted';
-
-0;
-};
-</%ONCE>

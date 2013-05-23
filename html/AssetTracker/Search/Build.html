@@ -67,7 +67,7 @@
 %#
 <& /Elements/Header, Title => $title &>
 <& /AssetTracker/Elements/Tabs, 
-    current_tab => "Search/Build.html".$QueryString,
+    current_tab => "AssetTracker/Search/Build.html?".$QueryString,
     Title => $title,
     %query,
     SavedSearchId => $saved_search{'Id'},
@@ -145,7 +145,7 @@ if ( $NewQuery ) {
 { # Attempt to load what we can from the session and preferences, set defaults
 
     my $current = $session{'CurrentAssetSearchHash'};
-    my $prefs = $session{'CurrentUser'}->UserObj->Preferences("SearchDisplay") || {};
+    my $prefs = $session{'CurrentUser'}->UserObj->Preferences("AssetSearchDisplay") || {};
     my $default = { Query => '', Format => '', OrderBy => 'id', Order => 'ASC', RowsPerPage => 50 };
 
     for( qw(Query Format OrderBy Order RowsPerPage) ) {

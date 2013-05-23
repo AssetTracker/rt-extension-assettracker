@@ -238,7 +238,7 @@ my $ValidCFs = $m->comp(
     NamePrefix => "Object-RTx::AssetTracker::Asset--CustomField-"
 );
 
-if ($ARGS{'id'} eq 'new') { # new asset?
+if (defined($ARGS{'id'}) and $ARGS{'id'} eq 'new') { # new asset?
     if ( $ValidCFs ) {
         $m->comp('Display.html', %ARGS);
         $RT::Logger->crit("After display call; error is $@");

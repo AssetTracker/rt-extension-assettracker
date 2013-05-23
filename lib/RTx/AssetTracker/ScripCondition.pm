@@ -78,7 +78,7 @@ use vars qw( @ISA );
 sub _Init {
   my $self = shift; 
 
-  $self->Table('ScripConditions');
+  $self->Table('AT_ScripConditions');
   $self->SUPER::_Init(@_);
 }
 

@@ -337,7 +337,7 @@ sub _FindScrips {
 
     $self->Limit( FIELD => "Stage", VALUE => $args{'Stage'} );
 
-    my $ConditionsAlias = $self->NewAlias('ScripConditions');
+    my $ConditionsAlias = $self->NewAlias('AT_ScripConditions');
 
     $self->Join(
         ALIAS1 => 'main',

@@ -37,7 +37,7 @@ my (@Format) = $m->comp('/Elements/CollectionAsTable/ParseFormat', Format => $Fo
 my $item = 0;
 foreach my $col (@Format) {
     $item++;
-    if ( $col->{title} eq 'NEWLINE' ) {
+    if ( defined $col->{title} && $col->{title} eq 'NEWLINE' ) {
         $item = 0;
     }
     else {
@@ -46,7 +46,19 @@ foreach my $col (@Format) {
 }
 
 
-$Collection->OrderBy(FIELD => $OrderBy, ORDER => $Order); 
+if ( $OrderBy =~ /\|/ ) {
+    # Multiple Sorts
+    my @OrderBy = split /\|/, $OrderBy;
+    my @Order   = split /\|/, $Order;
+    $Collection->OrderByCols(
+        map { { FIELD => $OrderBy[$_], ORDER => $Order[$_] } }
+        ( 0 .. $#OrderBy )
+    );
+}
+else {
+    $Collection->OrderBy( FIELD => $OrderBy, ORDER => $Order );
+}
+
 #$Collection->RowsPerPage($Rows) if ($Rows);
 #$Collection->GotoPage($Page-1); # SB uses page 0 as the first page
 my $TotalFound =  $Collection->CountAll();
