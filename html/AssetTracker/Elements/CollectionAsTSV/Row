@@ -5,54 +5,46 @@ $record => undef
 $maxitems => undef
 $Depth => undef
 $Warning => undef
+$ColumnMap => {}
+$Class     => 'RTx__AssetTracker__Asset'
+$Classes => ''
 $TrailingNewline => 1
 </%ARGS>
 
 <%PERL>
-my $item;
 foreach my $column (@Format) {
-    if ( $column->{title} eq 'NEWLINE' ) {
-	#while ($item < $maxitems) {
-	    #$m->out('"');
-	    #$item++;
-	#}
-	#$item = 0;
-        #$m->out("\"\t");
-        #$m->flush_buffer();
+    if ( defined $column->{title} && $column->{title} eq 'NEWLINE' ) {
         $m->out( "\n" );
         next;
     }
-    $item++;
-    #$m->out('<td class="collection-as-table">');
-    foreach my $subcol ( @{ $column->{output} } ) {
-        if ( $subcol =~ /^__(.*?)__$/o ) {
-            my $col = $1;
-            my $value = $m->comp('/Elements/RTx__AssetTracker__Asset/ColumnMap', Name => $col, Attr => 'value');
 
-            if ( $value && ref($value)) {
-		# All HTML snippets are returned by the callback function
-		# as scalar references.  Data fetched from the objects are
-		# plain scalars, and needs to be escaped properly.
-#$RT::Logger->crit("Column: $col Values: " . join(':',(&{ $value } ( $record, $i ))));
-		$m->out( 
-		    #map { ref($_) ? $$_ : $m->interp->apply_escapes( $_ => 'h' ) }
-		    map { my $out = ref($_) ? $$_ : $_; $out =~ s/\t/ \[TAB\] /g; $out}
-		    &{ $value } ( $record, $i )
-	        );
-            } else {
-		# Simple value; just escape it.
-                #$m->out( $m->interp->apply_escapes( $value => 'h' ) );
-                $value =~ s/\t/ \[TAB\] /g;
-                $m->out( $value );
-            }
+    my @out;
+    foreach my $subcol ( @{ $column->{output} } ) {
+        my ($col) = ($subcol =~ /^__(.*?)__$/);
+        unless ( $col ) {
+            push @out, $subcol;
+            next;
         }
-        else {
-            my $value = Encode::decode_utf8($subcol);
-            $value =~ s/\t/ \[TAB\] /g;
-            $m->out( $value );
+
+        unless ( exists $ColumnMap->{$col}{'value'} ) {
+            $ColumnMap->{$col}{'value'} = $m->comp(
+                "/Elements/ColumnMap",
+                Class => $Class,
+                Name  => $col,
+                Attr  => 'value'
+            );
         }
+
+        push @out, ProcessColumnMapValue(
+            $ColumnMap->{$col}{'value'},
+            Arguments => [$record, $i],
+            Escape => 0,
+        );
     }
-    $m->out("\t");
+    s/\t/ \[TAB\] /gs for @out;
+
+    $m->out(@out) if @out;
+    $m->out( "\t" );
 }
 #$m->out("\n");
 </%PERL>

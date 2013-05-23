@@ -177,7 +177,7 @@ sub LoadAction  {
                                       ScripActionObj => $self, 
                                       ScripObj => $args{'ScripObj'},
                                       TemplateObj => $self->TemplateObj,
-                                      AssetObj => $args{'AssetObj'},
+                                      TicketObj => $args{'AssetObj'},
                                       TransactionObj => $args{'TransactionObj'},
 				    );
 }

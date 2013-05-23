@@ -53,8 +53,10 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
                 $tabs->child( people => title => loc('People'), path => "/AssetTracker/Asset/ModifyPeople.html?id=" . $id,);
             }
 
-            if ( $can->('ModifyAsset') ) {
+            if ( $can->('ModifyAsset') && RT->Config->Get('EnableIP') ) {
                 $tabs->child( ips => title => loc('IPs'), path => "/AssetTracker/Asset/ModifyIPs.html?id=" . $id, );
+            }
+            if ( $can->('ModifyAsset') ) {
                 $tabs->child( fields => title => loc('Fields'), path => "/AssetTracker/Asset/ModifyFields.html?id=" . $id, );
                 $tabs->child( links => title => loc('Links'), path => "/AssetTracker/Asset/ModifyLinks.html?id=" . $id, );
             }

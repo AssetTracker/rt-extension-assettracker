@@ -77,6 +77,8 @@ div.asset-info-basics div.titlebox-content .labeltop{
 
 
 .asset-summary .titlebox-title a, div#body .asset-summary .titlebox-title a:visited { color: #fff;}
+div#body .ticketlinks .titlebox-title .left a { color: #fff; }
+div#body .ticketlinks .titlebox-title .left a:visited { color: #fff; }
 
 .asset-inactive {
   text-decoration: line-through;
@@ -90,4 +92,9 @@ div.asset-info-basics div.titlebox-content .labeltop{
 
 #display-options .submit {
  width: 100%;
+}
+
+/* full-page asset lists */
+#comp-AssetTracker-Search-Results #body>table.collection {
+    margin-bottom: 2em;
 }
