@@ -1,44 +1,22 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::More qw/no_plan/;
-use WWW::Mechanize;
-use HTTP::Request::Common;
-use HTTP::Cookies;
-use LWP;
-use Encode;
+use RTx::AssetTracker::Test no_plan => 1;
 
 use RT;
 RT::LoadConfig;
 RT::Init;
 
-my $cookie_jar = HTTP::Cookies->new;
-my $agent = WWW::Mechanize->new();
+my ($url, $agent) = RT::Test->started_ok;
 
-# give the agent a place to stash the cookies
-
-$agent->cookie_jar($cookie_jar);
-
-
-# get the top page
-my $url = $RT::WebURL;
 $agent->get($url);
 
 is ($agent->{'status'}, 200, "Loaded a page");
 
 
 # {{{ test a login
+ok($agent->login, 'logged in');
 
-# follow the link marked "Login"
-
-ok($agent->{form}->find_input('user'));
-
-ok($agent->{form}->find_input('pass'));
-ok ($agent->{'content'} =~ /username:/i);
-$agent->field( 'user' => 'root' );
-$agent->field( 'pass' => 'password' );
-# the field isn't named, so we have to click link 0
-$agent->click(0);
 is($agent->{'status'}, 200, "Fetched the page ok");
 ok( $agent->{'content'} =~ /Logout/i, "Found a logout link");
 
@@ -55,7 +33,7 @@ sub test_get {
 
 
         $file =~ s#^html/##; 
-        ok ($agent->get("$url/$file", "GET $url/$file"));
+        ok ($agent->get("$url/$file"), "GET $url/$file");
         is ($agent->{'status'}, 200, "Loaded $file");
 #        ok( $agent->{'content'} =~ /Logout/i, "Found a logout link on $file ");
         ok( $agent->{'content'} !~ /Not logged in/i, "Still logged in for  $file");
