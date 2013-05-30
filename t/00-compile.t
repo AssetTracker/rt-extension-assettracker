@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
 use RTx::AssetTracker::Test tests => 42;
 
 require_ok("RTx::AssetTracker");

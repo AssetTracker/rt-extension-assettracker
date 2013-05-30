@@ -23,7 +23,7 @@ substitute( {
     {
         sufix => '.in',
     },
-    't/lib/RTx/AssetTracker/Test.pm',
+    'lib/RTx/AssetTracker/Test.pm',
 );
 
 WriteAll();
