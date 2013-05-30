@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use Test::More tests => 30;
+use RTx::AssetTracker::Test tests => 33;
 use strict;
 use RT;
 use RTx::AssetTracker;
@@ -9,7 +9,6 @@ use RTx::AssetTracker::Assets;
 
 # Load the config file
 RT::LoadConfig();
-RTx::AssetTracker::LoadConfig();
 
 #Connect to the database and get RT::SystemUser and RT::Nobody loaded
 RT::Init();
