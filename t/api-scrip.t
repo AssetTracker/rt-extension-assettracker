@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
 use RTx::AssetTracker::Test tests => 25;
 use RT;
 require 'RT/Transaction_Vendor.pm';

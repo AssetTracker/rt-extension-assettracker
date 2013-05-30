@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use RTx::AssetTracker::Test;
 
 use RT::CustomField;

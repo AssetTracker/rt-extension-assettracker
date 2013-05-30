@@ -6,7 +6,6 @@ use warnings;
 
 
 BEGIN {
-    use lib ("t/lib");
     use RTx::AssetTracker::Test tests => 49;
     RT::LoadConfig();
     RT::Init();
