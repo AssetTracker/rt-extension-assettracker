@@ -25,6 +25,11 @@ $ make initdb
 
 Add RTx::AssetTracker to your Plugins in etc/RT_SiteConfig.pm and restart your web server.
 
+If you like to use Assets as CF SourceValues, you can activate it as example like this inside
+RT_SiteConfig.pm:
+
+Set(@CustomFieldValuesSources, (qw(RT::CustomFieldValues::ATServers)));
+
 UPGRADE
 
 If you have AT 1.2.4 installed under RT, do the following:
