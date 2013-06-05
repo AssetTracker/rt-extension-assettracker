@@ -1,5 +1,8 @@
 package RT::CustomFieldValues::ATServers;
 
+# Activate this CFSource via RT_SiteConfig.pm
+# Set(@CustomFieldValuesSources, (qw(RT::CustomFieldValues::ATServers)));
+
 use base qw(RT::CustomFieldValues::External);
 use RT;
 use RTx::AssetTracker::Asset;
