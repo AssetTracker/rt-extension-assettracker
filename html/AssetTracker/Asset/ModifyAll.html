@@ -100,13 +100,13 @@ my $TypeObj;
 my ($Name, $Action, $Id);
 my (@bresults, @wresults, @lresults, @results, @ip_results, @cf_results);
 
-if ($id eq 'new') {
+if ( defined($id) && $id eq 'new' ) {
     ($Asset, @results) = CreateAsset(%ARGS);
     $m->comp("/AssetTracker/Asset/Display.html", id => $Asset->Id, Actions => \@results);
     return;
 }
 
-elsif ($id =~ /\d+/ && $id > 0) {
+elsif ( defined($id) && $id =~ /\d+/ && $id > 0) {
 
         $Asset = LoadAsset($id);
         $Name = $Asset->Name;
