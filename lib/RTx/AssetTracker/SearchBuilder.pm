@@ -56,13 +56,11 @@
 
 =cut
 
-package RTx::AssetTracker::SearchBuilder;
-
-use RT::SearchBuilder;
-
 use strict;
-use vars qw(@ISA);
-@ISA = qw(RT::SearchBuilder);
+
+package RTx::AssetTracker::SearchBuilder;
+use base 'RT::SearchBuilder';
+
 
 RT::Base->_ImportOverlays();
 

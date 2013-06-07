@@ -46,9 +46,6 @@
 # 
 # END BPS TAGGED BLOCK }}}
 
-use strict;
-
-
 =head1 NAME
 
   RTx::AssetTracker::ScripConditions -- Class Description
@@ -64,23 +61,15 @@ use strict;
 
 =cut
 
-package RTx::AssetTracker::ScripConditions;
+use strict;
 
-use RTx::AssetTracker::SearchBuilder;
+package RTx::AssetTracker::ScripConditions;
+use base 'RTx::AssetTracker::SearchBuilder';
+
 use RTx::AssetTracker::ScripCondition;
 
-use vars qw( @ISA );
-@ISA= qw(RTx::AssetTracker::SearchBuilder);
+sub Table {'AT_ScripConditions'};
 
-
-sub _Init {
-    my $self = shift;
-    $self->{'table'} = 'AT_ScripConditions';
-    $self->{'primary_key'} = 'id';
-
-
-    return ( $self->SUPER::_Init(@_) );
-}
 
 
 =head2 NewItem

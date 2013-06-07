@@ -46,9 +46,6 @@
 # 
 # END BPS TAGGED BLOCK }}}
 
-use strict;
-
-
 =head1 NAME
 
   RTx::AssetTracker::Templates -- Class Description
@@ -64,23 +61,15 @@ use strict;
 
 =cut
 
-package RTx::AssetTracker::Templates;
+use strict;
 
-use RT::SearchBuilder;
+package RTx::AssetTracker::Templates;
+use base 'RTx::AssetTracker::SearchBuilder';
+
 use RTx::AssetTracker::Template;
 
-use vars qw( @ISA );
-@ISA= qw(RTx::AssetTracker::SearchBuilder);
+sub Table {'AT_Templates'};
 
-
-sub _Init {
-    my $self = shift;
-    $self->{'table'} = 'AT_Templates';
-    $self->{'primary_key'} = 'id';
-
-
-    return ( $self->SUPER::_Init(@_) );
-}
 
 
 =head2 NewItem

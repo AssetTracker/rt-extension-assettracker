@@ -35,10 +35,12 @@ In the future, there will probably be other API goodness encapsulated here.
 =cut
 
 
-package RTx::AssetTracker::System;
-use RT::ACL;
-use base qw /RT::Base/;
 use strict;
+
+package RTx::AssetTracker::System;
+use base 'RT::Base';
+
+use RT::ACL;
 use vars qw/ $RIGHTS/;
 
 

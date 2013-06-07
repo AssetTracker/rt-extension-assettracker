@@ -57,13 +57,13 @@
 
 =cut
 
-package RTx::AssetTracker::Record;
-use RT::Record;
-
 use strict;
-use vars qw/@ISA/;
+use warnings;
 
-@ISA = qw(RT::Record);
+package RTx::AssetTracker::Record;
+use base 'RT::Record';
+
+
 
 # {{{ sub URI 
 

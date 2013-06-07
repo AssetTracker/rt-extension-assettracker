@@ -44,9 +44,6 @@
 # 
 # END BPS TAGGED BLOCK }}}
 
-use strict;
-
-
 =head1 NAME
 
   RTx::AssetTracker::Ports -- Class Description
@@ -62,23 +59,15 @@ use strict;
 
 =cut
 
-package RTx::AssetTracker::Ports;
+use strict;
 
-use RTx::AssetTracker::SearchBuilder;
+package RTx::AssetTracker::Ports;
+use base 'RTx::AssetTracker::SearchBuilder';
+
 use RTx::AssetTracker::Port;
 
-use vars qw( @ISA );
-@ISA= qw(RTx::AssetTracker::SearchBuilder);
+sub Table {'AT_Ports'};
 
-
-sub _Init {
-    my $self = shift;
-    $self->{'table'} = 'AT_Ports';
-    $self->{'primary_key'} = 'id';
-
-
-    return ( $self->SUPER::_Init(@_) );
-}
 
 
 =head2 NewItem

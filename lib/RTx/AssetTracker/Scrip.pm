@@ -46,9 +46,6 @@
 # 
 # END BPS TAGGED BLOCK }}}
 
-use strict;
-
-
 =head1 NAME
 
 RTx::AssetTracker::Scrip
@@ -62,25 +59,17 @@ RTx::AssetTracker::Scrip
 
 =cut
 
+use strict;
+
 package RTx::AssetTracker::Scrip;
-use RTx::AssetTracker::Record; 
+use base 'RTx::AssetTracker::Record';
+
+sub Table {'AT_Scrips'};
+
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Template;
 use RTx::AssetTracker::ScripCondition;
 use RTx::AssetTracker::ScripAction;
-
-
-use vars qw( @ISA );
-@ISA= qw( RTx::AssetTracker::Record );
-
-sub _Init {
-  my $self = shift; 
-
-  $self->Table('AT_Scrips');
-  $self->SUPER::_Init(@_);
-}
-
-
 
 
 
