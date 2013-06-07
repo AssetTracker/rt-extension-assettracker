@@ -1,0 +1,1 @@
+ALTER TABLE AT_Types ADD Lifecycle VARCHAR2(32) NULL;

@@ -23,17 +23,6 @@ Set ($DefaultAssetSearchResultFormat,
    );
 
 
-# {{{ Miscellaneous AT Settings
-
-# You can define new statuses and even reorder existing statuses here.
-# WARNING. DO NOT DELETE ANY OF THE DEFAULT STATUSES. If you do, RT
-# will break horribly.
-
-@AssetActiveStatus = qw(production development qa dr pilot test) unless @AssetActiveStatus;
-@AssetInactiveStatus = qw(retired) unless @AssetInactiveStatus;
-
-# }}}
-
 # Asset name uniqueness is now enforced by the API instead of the DB
 # The rules are evaluated in this order:
 Set ($GlobalUniqueAssetName, 1);
@@ -100,5 +89,43 @@ local $rt_comps = RT->Config->Get("HomepageComponents");
 RT->Config->Set("HomepageComponents", [@$rt_comps, qw(AssetQuickSearch)]);
 
 Set ($AssetImportRequiresRights, 1);
+
+
+=head1 Lifecycles
+
+=cut
+
+Set(%Lifecycles,
+    at_default => {
+        initial         => [ ],
+        active          => [ 'production', 'development', 'qa', 'dr', 'pilot', 'test' ],
+        inactive        => [ 'retired', 'deleted' ],
+
+        defaults => {
+            on_create => 'production',
+        },
+
+        transitions => {
+            ''       => [qw(production development qa dr pilot test retired)],
+
+            # from   => [ to list ],
+            production  => [qw(development qa dr pilot test retired deleted)],
+            development => [qw(production qa dr pilot test retired deleted)],
+            qa          => [qw(production development dr pilot test retired deleted)],
+            dr          => [qw(production development qa pilot test retired deleted)],
+            pilot       => [qw(production development qa dr test retired deleted)],
+            test        => [qw(production development qa dr pilot retired deleted)],
+            retired     => [qw(production development qa dr pilot test deleted)],
+            deleted     => [qw(production development qa dr pilot test retired)],
+        },
+        rights => {
+            '* -> deleted'  => 'DeleteAsset',
+            '* -> *'        => 'ModifyAsset',
+        },
+        actions => [
+        ],
+    },
+);
+
 
 1;
