@@ -48,17 +48,7 @@
 <& /Elements/Header, Title => $title,
     Refresh => $refresh,
     LinkRel => \%link_rel &>
-<& /AssetTracker/Elements/Tabs, 
-    current_tab => "AssetTracker/Search/Results.html".$QueryString, 
-    Title => $title,
-    Format => $Format,
-    Query => $Query,
-    Rows => $Rows,
-    OrderBy => $OrderBy,
-    Order => $Order,
-    SavedSearchId => $SavedSearchId,
-    SavedChartSearchId => $SavedChartSearchId,
-    &>
+<& /Elements/Tabs &>
 
 % $m->callback( ARGSRef => \%ARGS, CallbackName => 'BeforeResults' );
 

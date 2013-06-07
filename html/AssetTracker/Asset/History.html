@@ -44,9 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Elements/Header, Title => loc("Asset History # [_1]", $Asset->Name) &>
-<& /AssetTracker/Elements/Tabs, 
-    Asset => $Asset, current_tab => 'AssetTracker/Asset/History.html?id='.$Asset->id, 
-    Title => loc("Asset History # [_1]", $Asset->Name) &>
+<& /Elements/Tabs &>
 
 <BR>
       

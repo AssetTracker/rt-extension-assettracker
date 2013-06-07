@@ -46,15 +46,8 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Admin/Elements/Header, Title => $title  &>
-%if ($RT::VERSION =~ /^3/) {
-<& /Admin/Elements/SystemTabs, 
-    current_tab => 'AssetTracker/Admin/Global/Scrips.html', 
-    current_subtab => 'AssetTracker/Admin/Global/Scrips.html', 
-    subtabs => $subtabs, 
-    Title => $title &>
-%} else {
 <& /Elements/Tabs &>
-%}
+
 <& /AssetTracker/Admin/Elements/EditScrips, title => $title, id => $id, %ARGS &>
 </form>
 <%init>

@@ -1,11 +1,6 @@
 <& /Elements/Header, Title => loc("Asset Import") &>
-% if ($RT::VERSION =~ /^3/) {
-<& /Tools/Elements/Tabs,
-    current_tab => "AssetTracker/Tools/Import.html",
-    Title => loc("Asset Import") &>
-% } else {
 <& /Elements/Tabs &>
-% }
+
 <& /Elements/ListActions, actions => $results &>
 
 <form action="Import.html" name="AssetImport" method="post" enctype="multipart/form-data">

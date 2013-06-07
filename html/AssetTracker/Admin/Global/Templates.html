@@ -46,15 +46,8 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Admin/Elements/Header, Title => $title, FeedURI => 'templates' &>
-%if ($RT::VERSION =~ /^3/) {
-<& /Admin/Elements/SystemTabs, 
-    current_tab => 'AssetTracker/Admin/Global/Templates.html', 
-    current_subtab => 'AssetTracker/Admin/Global/Templates.html', 
-    subtabs => $subtabs, 
-    Title => $title &>
-%} else {
 <& /Elements/Tabs &>
-%}
+
 <& /AssetTracker/Admin/Elements/EditTemplates, title => $title, %ARGS &>
 </form>
 <%init>

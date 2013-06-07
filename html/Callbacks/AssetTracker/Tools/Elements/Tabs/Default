@@ -1,9 +1,0 @@
-<%INIT>
-$tabs->{p} = {
-    title => loc('Asset Import'),
-    path => 'AssetTracker/Tools/Import.html',
-};
-</%INIT>
-<%ARGS>
-$tabs
-</%ARGS>

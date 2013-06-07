@@ -44,10 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Elements/Header, Title => $title &>
-<& /AssetTracker/Elements/Tabs,
-    current_tab => "AssetTracker/Search/Grid.html",
-    Title => $title,
- &>
+<& /Elements/Tabs &>
 
 <& /Elements/ListActions, actions => \@results &>
 <form method="post" action="<% RT->Config->Get('WebPath') %>/AssetTracker/Search/Grid.html" name="GridUpdate" id="GridUpdate">

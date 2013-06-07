@@ -46,11 +46,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Elements/Header, Title => $title &>
-<& /AssetTracker/Elements/Tabs,
-    Asset => $asset,
-    Title => $title,
-    current_tab => "AssetTracker/Asset/ModifyLinks.html?id=$id",
-&>
+<& /Elements/Tabs &>
 
 <& /Elements/ListActions, actions => \@results &>
 

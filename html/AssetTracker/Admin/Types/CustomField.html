@@ -44,12 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Admin/Elements/Header, Title => $title &>
-<& /AssetTracker/Admin/Elements/TypeTabs, id => $TypeObj->Id, 
-    AssetTypeObj => $TypeObj,                                                      
-    current_tab => 'AssetTracker/Admin/Types/CustomFields.html?id='.$TypeObj->id, 
-    current_subtab => $current_subtab, 
-    subtabs => $subtabs, 
-    Title => $title &>
+<& /Elements/Tabs &>
 
 <& /AssetTracker/Admin/Elements/EditCustomField, title => $title, %ARGS &>
 

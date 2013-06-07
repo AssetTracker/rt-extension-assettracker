@@ -44,10 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Elements/Header, Title => loc('Modify asset #[_1] - ', $Asset->id) . $Asset->Name &>
-<& /AssetTracker/Elements/Tabs, 
-    Asset => $Asset, 
-    current_tab => "AssetTracker/Asset/Modify.html?id=".$Asset->Id, 
-    Title => loc('Modify asset #[_1]', $Asset->id) &>
+<& /Elements/Tabs &>
 
 <& /Elements/ListActions, actions => \@results &>
 

@@ -46,12 +46,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <& /Admin/Elements/Header, Title => $title &>
-<& /AssetTracker/Admin/Elements/TypeTabs, id => $TypeObj->id, 
-    AssetTypeObj => $TypeObj,                                                      
-    current_tab => 'AssetTracker/Admin/Types/Scrips.html?id='.$id, 
-    current_subtab => 'AssetTracker/Admin/Types/Scrips.html?id='.$id, 
-    subtabs => $subtabs, 
-    Title => $title &>
+<& /Elements/Tabs &>
 
 % unless ( $TypeObj->Disabled ) { # Global scrips does not apply to disabled types
 <h2><&|/l&>Scrips which apply to all asset types</&></h2>
