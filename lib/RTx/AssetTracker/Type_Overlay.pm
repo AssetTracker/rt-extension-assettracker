@@ -60,6 +60,7 @@ our $RIGHT_CATEGORIES = {
         ModifyTypeAdmins   => 'Staff',
         ModifyTypeWatchers   => 'Staff',
         RetireAsset        => 'Staff',
+        DeleteAsset        => 'Staff',
         OwnAsset           => 'General',
         WatchAsAdmin       => 'General',
 };
