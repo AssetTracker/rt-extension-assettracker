@@ -181,7 +181,7 @@ my $refresh = $session{'assets_refresh_interval'}
 
 # Check $m->request_args, not $DECODED_ARGS, to avoid creating a new CSRF token on each refresh
 if (RT->Config->Get('RestrictReferrer') and $refresh and not $m->request_args->{CSRF_Token}) {
-    my $token = RT::Interface::Web::StoreRequestToken( $session{'CurrentSearchHash'} );
+    my $token = RT::Interface::Web::StoreRequestToken( $session{'CurrentAssetSearchHash'} );
     $m->notes->{RefreshURL} = RT->Config->Get('WebURL')
         . "AssetTracker/Search/Results.html?CSRF_Token="
             . $token;
