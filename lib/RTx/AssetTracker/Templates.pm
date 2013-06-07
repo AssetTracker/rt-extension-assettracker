@@ -76,12 +76,12 @@ use RT::SearchBuilder;
 use RTx::AssetTracker::Template;
 
 use vars qw( @ISA );
-@ISA= qw(RT::SearchBuilder);
+@ISA= qw(RTx::AssetTracker::SearchBuilder);
 
 
 sub _Init {
     my $self = shift;
-    $self->{'table'} = 'Templates';
+    $self->{'table'} = 'AT_Templates';
     $self->{'primary_key'} = 'id';
 
 
