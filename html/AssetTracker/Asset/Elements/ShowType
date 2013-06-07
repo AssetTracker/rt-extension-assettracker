@@ -45,65 +45,20 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
+<% $value %>
 <%ARGS>
-$AssetObj => undef
-@fields => ()
-$InTable => 0
-%defaults => ()
+$Asset => undef
+$TypeObj
 </%ARGS>
 <%INIT>
-unless ( @fields ) {
-    @fields = (
-        {   name => 'Name',
-            html => '<input name="Name" value="'.$m->interp->apply_escapes( $defaults{'Name'} || $AssetObj->Name, 'h' ).'" />',
-        },
-        {   name => 'Status',
-            comp => '/Elements/SelectStatus',
-            args => {
-                Name => 'Status',
-                DefaultLabel => loc("[_1] (Unchanged)",loc($AssetObj->Status)),
-                Default => $defaults{'Status'} || undef,
-                AssetObj => $AssetObj,
-                TypeObj => $AssetObj->TypeObj,
-            },
-        },
-        {   name => 'Type',
-            comp => '/Elements/SelectType',
-            args => {
-                Name => 'Type',
-                Default => $defaults{'Type'} || $AssetObj->TypeObj->Id,
-                ShowNullOption => 0,
-            }
-        },
-        {   name => 'Description',
-            html => '<input name="Description" value="'.$m->interp->apply_escapes( $defaults{'Description'} || $AssetObj->Description, 'h' ).'" />',
-        },
-    );
+my $value = $TypeObj->Name;
+
+if ( $Asset and $Asset->CurrentUserHasRight('SeeType') ) {
+    # Grab the type name anyway if the current user can
+    # see the type based on his role for this asset
+    $value = $TypeObj->__Value('Name');
 }
 
-$m->callback( CallbackName => 'MassageFields', %ARGS, AssetObj => $AssetObj, Fields => \@fields );
-
-# Process the field list, skipping if html is provided and running the
-# components otherwise
-for my $field (@fields) {
-    next if defined $field->{'html'};
-    if ( $field->{'comp'} ) {
-        $field->{'html'} = $m->scomp($field->{'comp'}, %{$field->{'args'} || {}});
-    }
-}
+$value = '#'. $TypeObj->id
+    unless defined $value && length $value;
 </%INIT>
-
-% unless ($InTable) {
-<table>
-% }
-% for my $field (@fields) {
- <tr class="<% lc $field->{'name'} %>">\
-<td class="label"><&|/l&><% $field->{'name'} %></&>:</td>\
-<td class="value"><% $field->{'html'} |n %></td>\
-</tr>
-% }
-% $m->callback( CallbackName => 'EndOfList', AssetObj => $AssetObj, %ARGS, Fields => \@fields );
-% unless ($InTable) {
-</table>
-% }
-
