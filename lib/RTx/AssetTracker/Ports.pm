@@ -46,11 +46,11 @@
 
 =head1 NAME
 
-  RTx::AssetTracker::Ports -- Class Description
- 
+  RTx::AssetTracker::Ports - a collection of AssetTracker Port objects
+
 =head1 SYNOPSIS
 
-  use RTx::AssetTracker::Ports
+  use RTx::AssetTracker::Ports;
 
 =head1 DESCRIPTION
 
@@ -60,6 +60,7 @@
 =cut
 
 use strict;
+use warnings;
 
 package RTx::AssetTracker::Ports;
 use base 'RTx::AssetTracker::SearchBuilder';
@@ -68,6 +69,62 @@ use RTx::AssetTracker::Port;
 
 sub Table {'AT_Ports'};
 
+sub _Init {
+    my $self = shift;
+    $self->{'table'} = 'AT_Ports';
+    $self->{'primary_key'} = 'id';
+
+
+    return ( $self->SUPER::_Init(@_) );
+}
+
+
+sub LimitToIP {
+    my $self = shift;
+
+    my $IPid = shift;
+
+    my %args = (
+          Operator => '=',
+          @_
+    );
+
+    $self->Limit( FIELD => 'IP', VALUE => $IPid, %args );
+}
+
+sub LimitToTransport {
+    my $self = shift;
+
+    my $transport = shift;
+    my %args = (
+          Operator => '=',
+          @_
+    );
+
+    $self->Limit( FIELD => 'Transport', VALUE => $transport, %args );
+}
+
+sub LimitToTCP {
+    my $self = shift;
+
+    my %args = (
+          Operator => '=',
+          @_
+    );
+
+    $self->LimitToTransport('TCP', %args);
+}
+
+sub LimitToUDP {
+    my $self = shift;
+
+    my %args = (
+          Operator => '=',
+          @_
+    );
+
+    $self->LimitToTransport('UDP', %args);
+}
 
 
 =head2 NewItem

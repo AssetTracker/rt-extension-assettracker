@@ -48,13 +48,15 @@
 
 =head1 NAME
 
-  RTx::AssetTracker::ScripActions -- Class Description
- 
+  RTx::AssetTracker::ScripActions - Collection of Action objects
+
 =head1 SYNOPSIS
 
-  use RTx::AssetTracker::ScripActions
+  use RTx::AssetTracker::ScripActions;
+
 
 =head1 DESCRIPTION
+
 
 
 =head1 METHODS
@@ -62,6 +64,7 @@
 =cut
 
 use strict;
+use warnings;
 
 package RTx::AssetTracker::ScripActions;
 use base 'RTx::AssetTracker::SearchBuilder';
@@ -70,7 +73,30 @@ use RTx::AssetTracker::ScripAction;
 
 sub Table {'AT_ScripActions'};
 
+sub _Init { 
+  my $self = shift;
+  $self->{'table'} = "AT_ScripActions";
+  $self->{'primary_key'} = "id";
+  return ( $self->SUPER::_Init(@_));
+}
 
+
+sub LimitToType  {
+  my $self = shift;
+  my $type = shift;
+  $self->Limit (ENTRYAGGREGATOR => 'OR',
+		FIELD => 'Type',
+		VALUE => "$type")
+      if defined $type;
+  $self->Limit (ENTRYAGGREGATOR => 'OR',
+		FIELD => 'Type',
+		VALUE => "Correspond")
+      if $type eq "Create";
+  $self->Limit (ENTRYAGGREGATOR => 'OR',
+		FIELD => 'Type',
+		VALUE => 'any');
+  
+}
 
 =head2 NewItem
 

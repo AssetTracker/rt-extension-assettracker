@@ -60,6 +60,7 @@
 =cut
 
 use strict;
+use warnings;
 
 package RTx::AssetTracker::IPs;
 use base 'RTx::AssetTracker::SearchBuilder';
@@ -68,6 +69,14 @@ use RTx::AssetTracker::IP;
 
 sub Table {'AT_IPs'};
 
+sub _Init {
+    my $self = shift;
+    $self->{'table'} = 'AT_IPs';
+    $self->{'primary_key'} = 'id';
+
+
+    return ( $self->SUPER::_Init(@_) );
+}
 
 
 =head2 NewItem
