@@ -54,14 +54,6 @@
 
 =head1 METHODS
 
-
-=begin testing
-
-ok (require RTx::AssetTracker::SearchBuilder);
-
-=end testing
-
-
 =cut
 
 package RTx::AssetTracker::SearchBuilder;

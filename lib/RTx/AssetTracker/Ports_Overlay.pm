@@ -11,12 +11,6 @@
 
 =head1 METHODS
 
-=begin testing 
-
-ok (require RTx::AssetTracker::Ports);
-
-=end testing
-
 =cut
 
 

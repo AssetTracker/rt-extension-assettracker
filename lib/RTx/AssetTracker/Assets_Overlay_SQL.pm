@@ -400,68 +400,6 @@ Convert a RT-SQL string into a set of SearchBuilder restrictions.
 Returns (1, 'Status message') on success and (0, 'Error Message') on
 failure.
 
-
-=begin testing
-
-use RTx::AssetTracker::Assets;
-
-
-
-my $assets = RTx::AssetTracker::Assets->new($RT::SystemUser);
-
-my $query = "Status = 'production'";
-my ($id, $msg)  = $assets->FromSQL($query);
-
-ok ($id, $msg);
-
-
-my (@ids, @expectedids);
-
-my $a = RTx::AssetTracker::Asset->new($RT::SystemUser);
-
-my $string = 'subject/content SQL test';
-my ($aid, undef, undef) = $a->Create(Type => 'Servers', Name => 'Assets_Overlay_SQL 1', Description => $string);
-ok( $aid, "Asset Created");
-
-push @ids, $a->Id;
-
-($aid, undef, undef) = $a->Create(Type => 'Servers', Name => 'Assets_Overlay_SQL 2', Description => $string);
-ok( $aid, "Asset Created");
-
-push @ids, $a->Id;
-
-$query = ("Description LIKE '$string'");
-
-my ($id, $msg) = $assets->FromSQL($query);
-
-
-ok ($id, $msg);
-
-is ($assets->Count, scalar @ids, "number of returned assets same as entered");
-while (my $asset = $assets->Next) {
-    push @expectedids, $asset->Id;
-}
-ok (eq_array(\@ids, \@expectedids), "returned expected assets");
-
-#$query = ("id = $ids[0] OR MemberOf = $ids[0]");
-
-my ($id, $msg) = $assets->FromSQL($query);
-
-ok ($id, $msg);
-is ($assets->Count, scalar @ids, "number of returned assets same as entered");
-
-@expectedids = ();
-while (my $asset = $assets->Next) {
-    push @expectedids, $asset->Id;
-}
-
-ok (eq_array(\@ids, \@expectedids), "returned expected assets");
-
-
-
-=end testing
-
-
 =cut
 
 sub FromSQL {

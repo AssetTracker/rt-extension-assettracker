@@ -101,17 +101,6 @@ sub new {
 
 Returns RTx::AssetTracker::System's id. It's 1. 
 
-
-=begin testing
-
-use RTx::AssetTracker::System;
-my $sys = RTx::AssetTracker::System->new();
-is( $sys->Id, 1);
-is ($sys->id, 1);
-
-=end testing
-
-
 =cut
 
 *Id = \&id;

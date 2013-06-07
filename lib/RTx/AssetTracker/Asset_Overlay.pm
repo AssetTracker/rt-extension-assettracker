@@ -11,12 +11,6 @@
 
 =head1 METHODS
 
-=begin testing 
-
-use RTx::AssetTracker::Asset;
-
-=end testing
-
 =cut
 
 
@@ -226,18 +220,6 @@ Arguments: ARGS is a hash of named parameters.  Valid parameters are:
 
 
 Returns: ASSETID, Transaction Object, Error Message
-
-
-=begin testing
-
-my $a = RTx::AssetTracker::Asset->new($RT::SystemUser);
-
-my ($id, undef, undef) = $a->Create(Type => 'Servers', Name => "An test asset $$", Description => 'This is a description');
-ok( $a->Id, "Asset Created");
-
-ok ( my $id = $a->Id, "Got asset id");
-
-=end testing
 
 =cut
 
@@ -777,46 +759,6 @@ This routine expects to be called from Asset->Create _inside of a transaction_
 It will create two groups for this asset: Admin and Owner.
 
 It will return true on success and undef on failure.
-
-=begin testing
-
-ok(my $todd = RT::User->new($RT::SystemUser), "Creating a todd rt::user");
-$todd->LoadOrCreateByEmail('todd@example.com');
-ok($todd->Id,  "Found the todd rt user");
-
-ok(my $bob = RT::User->new($RT::SystemUser), "Creating a bob rt::user");
-$bob->LoadOrCreateByEmail('bob@example.com');
-ok($bob->Id,  "Found the bob rt user");
-
-my $asset = RTx::AssetTracker::Asset->new($RT::SystemUser);
-my ($id, $msg) = $asset->Create(Description => "Asset Foo",
-                Name => "Foo $$",
-                Owner => [ $todd->Id, $RT::SystemUser->Id ],
-                Status => 'production',
-                Admin => $todd->Id,
-                Type => '1'
-                );
-ok ($id, "Asset $id was created");
-ok( my $group = $asset->LoadAssetRoleGroup(Type=> 'Admin'));
-ok ($group->Id, "Found the requestors object for this asset");
-
-
-ok ($asset->IsWatcher(Type => 'Admin', PrincipalId => $todd->PrincipalId), "The asset actually has todd at example.com as a admin");
-my ($add_id, $add_msg) = $asset->AddWatcher(Type => 'Owner', Email => 'bob@example.com');
-ok ($add_id, "Add bob\@example.com as Owner succeeded: ($add_msg)");
-
-ok ($asset->IsWatcher(Type => 'Owner', PrincipalId => $bob->PrincipalId), "The asset actually has bob at example.com as a owner");;
-my ($add_id, $add_msg) = $asset->DeleteWatcher(Type =>'Owner', Email => 'bob@example.com');
-ok (!$asset->IsWatcher(Type => 'Owner', Principal => $bob->PrincipalId), "The asset no longer has bob at example.com as a owner");;
-
-
-ok( $group = $asset->LoadAssetRoleGroup(Type=> 'Owner'));
-ok ($group->Id, "Found the owner object for this asset");
-ok($group->HasMember($RT::SystemUser->UserObj->PrincipalObj), "the owner group has the member 'RT_System'");
-ok($group = $asset->LoadAssetRoleGroup(Type=> 'Admin'));
-ok ($group->Id, "Found the Admin object for this asset");
-
-=end testing
 
 =cut
 
@@ -1663,27 +1605,6 @@ Set this asset\'s status. STATUS can be one of:
 
 Alternatively, you can pass in a list of named parameters (Status => STATUS, Force => FORCE).  If FORCE is true, ignore unresolved dependencies and force a status change.
 
-=begin testing
-
-my $tt = RTx::AssetTracker::Asset->new($RT::SystemUser);
-my ($id, $tid, $msg)= $tt->Create(Type => 'Servers', Name => "SetStatus test $$",
-            Description => 'test');
-ok($id, $msg);
-is($tt->Status, 'production', "New asset is created as production");
-
-($id, $msg) = $tt->SetStatus('development');
-ok($id, $msg);
-like($msg, qr/development/i, "Status message is correct");
-($id, $msg) = $tt->SetStatus('qa');
-ok($id, $msg);
-like($msg, qr/qa/i, "Status message is correct");
-($id, $msg) = $tt->SetStatus('qa');
-ok(!$id,$msg);
-
-
-=end testing
-
-
 =cut
 
 sub SetStatus {
@@ -1846,11 +1767,6 @@ sub DeleteLink {
 =head2 AddLink
 
 Takes a paramhash of Type and one of Base or Target. Adds that link to this asset.
-
-=begin testing
-
-
-=end testing
 
 =cut
 

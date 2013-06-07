@@ -11,12 +11,6 @@
 
 =head1 METHODS
 
-=begin testing 
-
-ok (require RTx::AssetTracker::Assets);
-
-=end testing
-
 =cut
 
 
@@ -1905,13 +1899,6 @@ sub LimitURI {
   VALUE is a value to match the ticket\'s watcher email addresses against
   TYPE is the sort of watchers you want to match against. Leave it undef if you want to search all of them
 
-=begin testing
-
-my $t1 = RTx::AssetTracker::Asset->new($RT::SystemUser);
-$t1->Create(Type => 'Servers', Description => "LimitWatchers test", Owners => \['requestor1@example.com']);
-
-=end testing
-
 =cut
 
 sub LimitWatcher {
@@ -3150,15 +3137,6 @@ $tickets->{'flagname'} = 1;
 BUG: There should be an API for this
 
 =cut
-
-=begin testing
-
-# We assume that we've got some assets hanging around from before.
-ok( my $unlimitassets = RTx::AssetTracker::Assets->new( $RT::SystemUser ) );
-ok( $unlimitassets->UnLimit );
-ok( $unlimitassets->Count > 0, "UnLimited assets object should return assets" );
-
-=end testing
 
 
 1;

@@ -53,12 +53,6 @@
 =head1 DESCRIPTION
 
 
-=begin testing
-
-ok (require RTx::AssetTracker::Record);
-
-=end testing
-
 =head1 METHODS
 
 =cut

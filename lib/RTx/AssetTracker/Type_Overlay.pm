@@ -11,12 +11,6 @@
 
 =head1 METHODS
 
-=begin testing 
-
-use RTx::AssetTracker::Type;
-
-=end testing
-
 =cut
 
 
@@ -300,11 +294,6 @@ sub StatusArray {
 
 Returns true if VALUE is a valid status.  Otherwise, returns 0
 
-=for testing
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-ok($t->IsValidStatus('production')== 1, 'New is a valid status');
-ok($t->IsValidStatus('f00')== 0, 'f00 is not a valid status');
-
 =cut
 
 sub IsValidStatus {
@@ -324,12 +313,6 @@ sub IsValidStatus {
 
 Returns true if VALUE is a Active status.  Otherwise, returns 0
 
-=for testing
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-ok($t->IsActiveStatus('production')== 1, 'New is a Active status');
-ok($t->IsActiveStatus('retired')== 0, 'Rejected is an inactive status');
-ok($t->IsActiveStatus('f00')== 0, 'f00 is not a Active status');
-
 =cut
 
 sub IsActiveStatus {
@@ -348,12 +331,6 @@ sub IsActiveStatus {
 =head2 IsInactiveStatus VALUE
 
 Returns true if VALUE is a Inactive status.  Otherwise, returns 0
-
-=for testing
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-ok($t->IsInactiveStatus('production')== 0, 'New is a Active status');
-ok($t->IsInactiveStatus('retired')== 1, 'rejeected is an Inactive status');
-ok($t->IsInactiveStatus('f00')== 0, 'f00 is not a Active status');
 
 =cut
 
@@ -395,19 +372,6 @@ sub RightCategories {
 
 Create takes the name of the new type
 If you pass the ACL check, it creates the type and returns its type id.
-
-=begin testing
-
-my $type = RTx::AssetTracker::Type->new($RT::SystemUser);
-my ($id, $val) = $type->Create( Name => 'Test1');
-ok($id, $val);
-
-($id, $val) = $type->Create( Name => '66');
-ok(!$id, $val);
-
-
-=end testing
-
 
 =cut
 
@@ -772,31 +736,6 @@ It will create two groups for this asset: Admin and Owner ( Or,
 whatever roles were configured in AT_SiteConfig.
 
 It will return true on success and undef on failure.
-
-=begin testing
-
-my $Type = RTx::AssetTracker::Type->new($RT::SystemUser); my ($id, $msg) = $Type->Create(Name => "Foo",);
-ok ($id, "Foo $id was created");
-ok(my $group = $Type->LoadTypeRoleGroup(Type=> 'Owner'));
-ok ($group->Id, "Found the owners object for this Type");
-
-ok(my $bob = RT::User->new($RT::SystemUser), "Creating a bob rt::user");
-$bob->LoadOrCreateByEmail('bob@example.com');
-ok($bob->Id,  "Found the bob rt user");
-
-ok ((my $add_id, $add_msg) = $Type->AddWatcher(Type => 'Owner', Email => 'bob@example.com'), "Added bob at example.com as a owner");
-ok ($add_id, "Add succeeded: ($add_msg)");
-ok ($Type->IsWatcher(Type => 'Owner', PrincipalId => $bob->PrincipalId), "The Type actually has bob at example.com as a owner");;
-ok ((my $add_id, $add_msg) = $Type->DeleteWatcher(Type =>'Owner', Email => 'bob@example.com'), "Added bob at example.com as a owner");
-ok (!$Type->IsWatcher(Type => 'Owner', Principal => $bob->PrincipalId), "The Type no longer has bob at example.com as a owner");;
-
-
-ok($group = $Type->LoadTypeRoleGroup(Type=> 'Owner'));
-ok ($group->Id, "Found the owner object for this Type");
-ok($group = $Type->LoadTypeRoleGroup(Type=> 'Admin'));
-ok ($group->Id, "Found the Admin object for this Type");
-
-=end testing
 
 =cut
 
