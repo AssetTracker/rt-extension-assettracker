@@ -6,6 +6,7 @@ CREATE TABLE AT_Types (
   Name varchar2(200) NOT NULL  ,
   Description varchar2(255) ,
   DefaultAdmin number(11,0) DEFAULT 0  ,
+  Lifecycle varchar2(32) ,
   Creator number(11,0) DEFAULT 0 NOT NULL ,
   Created DATE  ,
   LastUpdatedBy Number(11,0) DEFAULT 0  NOT NULL ,
