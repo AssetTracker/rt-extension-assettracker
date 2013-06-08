@@ -1,38 +1,40 @@
 # BEGIN BPS TAGGED BLOCK {{{
-# 
+#
 # COPYRIGHT:
-#  
-# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-#                                          <jesse@bestpractical.com>
-# 
+#
+# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+#                                          <sales@bestpractical.com>
+#
 # (Except where explicitly superseded by other copyright notices)
-# 
-# 
+#
+#
 # LICENSE:
-# 
+#
 # This work is made available to you under the terms of Version 2 of
 # the GNU General Public License. A copy of that license should have
 # been provided with this software, but in any event can be snarfed
 # from www.gnu.org.
-# 
+#
 # This work is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-# 
-# 
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301 or visit their web page on the internet at
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+#
+#
 # CONTRIBUTION SUBMISSION POLICY:
-# 
+#
 # (The following paragraph is not intended to limit the rights granted
 # to you to modify and distribute this software under the terms of
 # the GNU General Public License and is only of importance to you if
 # you choose to contribute your changes and enhancements to the
 # community by submitting them to Best Practical Solutions, LLC.)
-# 
+#
 # By intentionally submitting any modifications, corrections or
 # derivatives to this work, or any other work intended for use with
 # Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,7 +43,7 @@
 # royalty-free, perpetual, license to use, copy, create derivative
 # works based on those contributions, and sublicense and distribute
 # those contributions and any derivatives thereof.
-# 
+#
 # END BPS TAGGED BLOCK }}}
 
 # rip-off of Tickets_Overlay_SQL.pm rev 1992
@@ -399,68 +401,6 @@ Convert a RT-SQL string into a set of SearchBuilder restrictions.
 
 Returns (1, 'Status message') on success and (0, 'Error Message') on
 failure.
-
-
-=begin testing
-
-use RTx::AssetTracker::Assets;
-
-
-
-my $assets = RTx::AssetTracker::Assets->new($RT::SystemUser);
-
-my $query = "Status = 'production'";
-my ($id, $msg)  = $assets->FromSQL($query);
-
-ok ($id, $msg);
-
-
-my (@ids, @expectedids);
-
-my $a = RTx::AssetTracker::Asset->new($RT::SystemUser);
-
-my $string = 'subject/content SQL test';
-my ($aid, undef, undef) = $a->Create(Type => 'Servers', Name => 'Assets_Overlay_SQL 1', Description => $string);
-ok( $aid, "Asset Created");
-
-push @ids, $a->Id;
-
-($aid, undef, undef) = $a->Create(Type => 'Servers', Name => 'Assets_Overlay_SQL 2', Description => $string);
-ok( $aid, "Asset Created");
-
-push @ids, $a->Id;
-
-$query = ("Description LIKE '$string'");
-
-my ($id, $msg) = $assets->FromSQL($query);
-
-
-ok ($id, $msg);
-
-is ($assets->Count, scalar @ids, "number of returned assets same as entered");
-while (my $asset = $assets->Next) {
-    push @expectedids, $asset->Id;
-}
-ok (eq_array(\@ids, \@expectedids), "returned expected assets");
-
-#$query = ("id = $ids[0] OR MemberOf = $ids[0]");
-
-my ($id, $msg) = $assets->FromSQL($query);
-
-ok ($id, $msg);
-is ($assets->Count, scalar @ids, "number of returned assets same as entered");
-
-@expectedids = ();
-while (my $asset = $assets->Next) {
-    push @expectedids, $asset->Id;
-}
-
-ok (eq_array(\@ids, \@expectedids), "returned expected assets");
-
-
-
-=end testing
-
 
 =cut
 
