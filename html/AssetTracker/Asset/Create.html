@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,38 +43,55 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc("Create a new asset") &>
+<& /Elements/Header, Title => $title &>
 <& /Elements/Tabs &>
 
 <& /Elements/ListActions, actions => \@results &>
 
-<form action="<%RT->Config->Get('WebPath')%>/AssetTracker/Asset/Create.html" method="post" enctype="multipart/form-data" name="AssetCreate">
-<input type="hidden" Name="id" value="new" />
+<form action="<% RT->Config->Get('WebPath') %>/AssetTracker/Asset/Create.html" method="post" enctype="multipart/form-data" name="AssetCreate">
+  <input type="hidden" class="hidden" name="id" value="new" />
+
+% $m->callback( CallbackName => 'FormStart', TypeObj => $TypeObj, ARGSRef => \%ARGS );
+
 <div id="Asset-Create-basics">
 <a name="basics"></a>	
-<&| /Widgets/TitleBox, title => loc("Create a new asset") &>
-<table border="0" cellpadding="0" cellspacing="0">
-<tr><td class="label"><&|/l&>Type</&>:</td>
-<td class="value"><% $TypeObj->Name %>
-<input type="hidden" name="Type" Value="<%$TypeObj->Name%>" />
-</td>
-<tr>
-<td class="labeltop">
-<&|/l&>Name</&>:
-</td>
-<td class="value" colspan="5">
-<input name="Name" size="40" maxlength="200" VALUE="<% $ARGS{Name} %>" />
-</td>
-</tr>
-<tr>
-<td class="label"><&|/l&>Status</&>:
-</td>
-<td class="value">
-<& /AssetTracker/Elements/SelectStatus, Name => "Status", Default => $ARGS{Status}||'new', DefaultValue => 0 &>
-</td>
-</tr>
+
+<div id="asset-create-metadata">
+    <&| /Widgets/TitleBox, title => loc("Create a new asset"), class=>'asset-info-basics' &>
+    <input type="hidden" class="hidden" name="Type" value="<% $TypeObj->Id %>" />
+    <table width="100%" border="0">
+    <& /AssetTracker/Asset/Elements/EditBasics,
+        InTable => 1,
+        fields  => [
+            {
+                name => 'Name',
+                html => '<input name="Name" value="'.$m->interp->apply_escapes( $ARGS{'Name'} || '', 'h' ).'" />',
+            },
+            {   name => 'Type',
+                comp => '/AssetTracker/Asset/Elements/ShowType',
+                args => {
+                    TypeObj => $TypeObj,
+                },
+            },
+            {   name => 'Status',
+                comp => '/AssetTracker/Elements/SelectStatus',
+                args => {
+                    Name            => "Status",
+                    Default         => $ARGS{Status} || $TypeObj->Lifecycle->DefaultOnCreate,
+                    DefaultValue    => 0,
+                    SkipDeleted     => 1,
+                    TypeObj        => $TypeObj,
+                },
+            },
+            {
+                name => 'Description',
+                html => '<input name="Description" value="'.$m->interp->apply_escapes( $ARGS{'Description'} || '', 'h' ).'" />',
+            },
+        ]
+        &>
+
 %foreach my $role ( $TypeObj->ActiveRoleArray() ) {
 <tr>
 <td class="label">
@@ -81,28 +100,17 @@
 <td class="value" colspan="5"><& /Elements/EmailInput, Name => $role, Size => 80, Default => $ARGS{$role} &></td>
 </tr>
 %}
-<tr>
-<td class="label">
-<&|/l&>Description</&>:
-</td>
-<td class="value" colspan="5">
-<input Name="Description" size="100" maxlength="255" value="<%$ARGS{Description} || ''%>" />
-</td>
-</tr>
-<tr>
-<td colspan="6">
-<& /AssetTracker/Asset/Elements/EditCustomFields, TypeObj => $TypeObj &>
-</td>
-</tr>
-<tr>
-<td align="right" colspan="2">
-</td>
-</tr>
-</table>
-</&>
 
+% $m->callback( CallbackName => 'AfterRoles', ARGSRef => \%ARGS );
+
+      <& /AssetTracker/Asset/Elements/EditCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
+      <& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
+    </table>
+  </&>
 % $m->callback( CallbackName => 'AfterBasics', TypeObj => $TypeObj, ARGSRef => \%ARGS );
+</div>
 
+<div id="asset-info-links">
 <&| /Widgets/TitleBox, title => loc('Links'), class=> 'asset-info-links' &>
 
 <em><&|/l&>(Enter ticket ids or URLs, separated with spaces)</&></em>
@@ -116,32 +124,14 @@
 % }
 </tr>
 %}
+
 </table>
 </&>
-
-<&| /Widgets/TitleBox, title => 'Change Comment',  class => 'asset-info-comment', width => "100%" &>
-<& /AssetTracker/Asset/Elements/ChangeComment, Name => "GlobalComment", Default => $ARGS{ChangeComment} &>
-</&>
+</div>
+<br />
 
 <& /Elements/Submit, Label => loc("Create")&>
 </div>
-
-<br>
-<table width="100%" border="0">
-<tr>
-<td width="50%" valign="top">
-
-<br>
-
-<br>
-</td>
-
-<td valign="top">
-<br>
-
-</td>
-</tr>
-</table>
 </form>
 
 <%INIT>
@@ -224,6 +214,8 @@ if ($CloneAsset) {
 }
 
 my @results;
+
+my $title = loc("Create a new asset");
 
 my $TypeObj = new RTx::AssetTracker::Type($session{'CurrentUser'});
 $TypeObj->Load($Type) || Abort(loc("Type could not be loaded."));

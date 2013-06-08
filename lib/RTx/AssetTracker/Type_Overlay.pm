@@ -75,6 +75,8 @@ foreach my $right ( keys %{$RIGHTS} ) {
     $RT::ACE::LOWERCASERIGHTNAMES{ lc $right } = $right;
 }
 
+require RT::Lifecycle;
+
 # Custom field support
 RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type' => "Asset Types" );
 
@@ -239,137 +241,7 @@ sub ConfigureRole {
 
 # }}}
 
-# {{{ ActiveStatusArray
 
-=head2 ActiveStatusArray
-
-Returns an array of all ActiveStatuses for this queue
-
-=cut
-
-sub ActiveStatusArray {
-    my $self = shift;
-    if (@RT::AssetActiveStatus) {
-        return (@RT::AssetActiveStatus)
-    } else {
-        $RT::Logger->warning("RT::AssetActiveStatus undefined, falling back to deprecated defaults");
-        return (@DEFAULT_ACTIVE_STATUS);
-    }
-}
-
-# }}}
-
-# {{{ InactiveStatusArray
-
-=head2 InactiveStatusArray
-
-Returns an array of all InactiveStatuses for this queue
-
-=cut
-
-sub InactiveStatusArray {
-    my $self = shift;
-    if (@RT::AssetInactiveStatus) {
-        return (@RT::AssetInactiveStatus)
-    } else {
-        $RT::Logger->warning("RTx::AssetTracker::InactiveStatus undefined, falling back to deprecated defaults");
-        return (@DEFAULT_INACTIVE_STATUS);
-    }
-}
-
-# }}}
-
-# {{{ StatusArray
-
-=head2 StatusArray
-
-Returns an array of all statuses for this queue
-
-=cut
-
-sub StatusArray {
-    my $self = shift;
-    return ($self->ActiveStatusArray(), $self->InactiveStatusArray());
-}
-
-# }}}
-
-# {{{ IsValidStatus
-
-=head2 IsValidStatus VALUE
-
-Returns true if VALUE is a valid status.  Otherwise, returns 0
-
-=for testing
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-ok($t->IsValidStatus('production')== 1, 'New is a valid status');
-ok($t->IsValidStatus('f00')== 0, 'f00 is not a valid status');
-
-=cut
-
-sub IsValidStatus {
-    my $self  = shift;
-    my $value = shift;
-
-    my $retval = grep ( /^$value$/, $self->StatusArray );
-    return ($retval);
-
-}
-
-# }}}
-
-# {{{ IsActiveStatus
-
-=head2 IsActiveStatus VALUE
-
-Returns true if VALUE is a Active status.  Otherwise, returns 0
-
-=for testing
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-ok($t->IsActiveStatus('production')== 1, 'New is a Active status');
-ok($t->IsActiveStatus('retired')== 0, 'Rejected is an inactive status');
-ok($t->IsActiveStatus('f00')== 0, 'f00 is not a Active status');
-
-=cut
-
-sub IsActiveStatus {
-    my $self  = shift;
-    my $value = shift;
-
-    my $retval = grep ( /^$value$/, $self->ActiveStatusArray );
-    return ($retval);
-
-}
-
-# }}}
-
-# {{{ IsInactiveStatus
-
-=head2 IsInactiveStatus VALUE
-
-Returns true if VALUE is a Inactive status.  Otherwise, returns 0
-
-=for testing
-my $t = RTx::AssetTracker::Type->new($RT::SystemUser);
-ok($t->IsInactiveStatus('production')== 0, 'New is a Active status');
-ok($t->IsInactiveStatus('retired')== 1, 'rejeected is an Inactive status');
-ok($t->IsInactiveStatus('f00')== 0, 'f00 is not a Active status');
-
-=cut
-
-sub IsInactiveStatus {
-    my $self  = shift;
-    my $value = shift;
-
-    my $retval = grep ( /^$value$/, $self->InactiveStatusArray );
-    return ($retval);
-
-}
-
-# }}}
-
-
-    
 =head2 AvailableRights
 
 Returns a hash of available rights for this object. The keys are the right names and the values are a description of what the righ
@@ -385,6 +257,123 @@ sub AvailableRights {
 sub RightCategories {
         return $RIGHT_CATEGORIES;
 }
+
+
+sub Lifecycle {
+    my $self = shift;
+    unless (ref $self && $self->id) { 
+        return RT::Lifecycle->Load('')
+    }
+
+    my $name = $self->_Value( Lifecycle => @_ );
+    $name ||= 'at_default';
+
+    my $res = RT::Lifecycle->Load( $name );
+    unless ( $res ) {
+        $RT::Logger->error("Lifecycle '$name' for asset type '".$self->Name."' doesn't exist");
+        return RT::Lifecycle->Load('at_default');
+    }
+    return $res;
+}
+
+sub SetLifecycle {
+    my $self = shift;
+    my $value = shift || 'at_default';
+
+    return ( 0, $self->loc( '[_1] is not a valid lifecycle', $value ) )
+      unless $self->ValidateLifecycle($value);
+
+    return $self->_Set( Field => 'Lifecycle', Value => $value, @_ );
+}
+
+=head2 ValidateLifecycle NAME
+
+Takes a lifecycle name. Returns true if it's an ok name and such
+lifecycle is configured. Returns undef otherwise.
+
+=cut
+
+sub ValidateLifecycle {
+    my $self = shift;
+    my $value = shift;
+    return undef unless RT::Lifecycle->Load( $value );
+    return 1;
+}
+
+
+=head2 ActiveStatusArray
+
+Returns an array of all ActiveStatuses for this asset type
+
+=cut
+
+sub ActiveStatusArray {
+    my $self = shift;
+    return $self->Lifecycle->Valid('initial', 'active');
+}
+
+=head2 InactiveStatusArray
+
+Returns an array of all InactiveStatuses for this asset type
+
+=cut
+
+sub InactiveStatusArray {
+    my $self = shift;
+    return $self->Lifecycle->Inactive;
+}
+
+=head2 StatusArray
+
+Returns an array of all statuses for this asset type
+
+=cut
+
+sub StatusArray {
+    my $self = shift;
+    return $self->Lifecycle->Valid( @_ );
+}
+
+=head2 IsValidStatus value
+
+Returns true if value is a valid status.  Otherwise, returns 0.
+
+=cut
+
+sub IsValidStatus {
+    my $self  = shift;
+    return $self->Lifecycle->IsValid( shift );
+}
+
+=head2 IsActiveStatus value
+
+Returns true if value is a Active status.  Otherwise, returns 0
+
+=cut
+
+sub IsActiveStatus {
+    my $self  = shift;
+    return $self->Lifecycle->IsValid( shift, 'initial', 'active');
+}
+
+
+
+=head2 IsInactiveStatus value
+
+Returns true if value is a Inactive status.  Otherwise, returns 0
+
+
+=cut
+
+sub IsInactiveStatus {
+    my $self  = shift;
+    return $self->Lifecycle->IsInactive( shift );
+}
+
+
+
+
+    
 
 # {{{ sub Create
 
@@ -416,6 +405,7 @@ sub Create {
     my %args = (
         Name              => undef,
         Description       => '',
+        Lifecycle         => 'at_default',
         @_
     );
 
@@ -427,6 +417,11 @@ sub Create {
     unless ( $self->ValidateName( $args{'Name'} ) ) {
         return ( 0, $self->loc('Asset type already exists') );
     }
+
+    $args{'Lifecycle'} ||= 'at_default';
+
+    return ( 0, $self->loc('[_1] is not a valid lifecycle', $args{'Lifecycle'} ) )
+      unless $self->ValidateLifecycle( $args{'Lifecycle'} );
 
     #TODO better input validation
     $RT::Handle->BeginTransaction();

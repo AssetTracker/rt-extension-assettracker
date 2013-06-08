@@ -66,6 +66,15 @@
 <TD ALIGN=RIGHT>
 <&|/l&>Description</&>:</TD><TD COLSPAN=3><INPUT name="Description" value="<% ($Create) ? "" : $TypeObj->Description %>" size=60></TD></TR>
 
+<tr><td align="right"><&|/l&>Lifecycle</&>:</td>
+<td colspan="3"><& /Widgets/Form/Select:InputOnly,
+    Name         => 'Lifecycle',
+    Values       => [ sort { loc($a) cmp loc($b) } RT::Lifecycle->List ],
+    CurrentValue => $Create ? "at_default" : $TypeObj->Lifecycle || $ARGS{'Lifecycle'},
+    Default      => 0,
+&></td>
+</tr>
+
 % my $CFs = $TypeObj->CustomFields;
 % while (my $CF = $CFs->Next) {
 <tr valign="top"><td align="right">
@@ -124,7 +133,7 @@ if ($Create) {
 }
 if ($TypeObj->Id()) {
     delete $session{'create_in_types'};
-my @attribs= qw(Description Name );
+my @attribs= qw(Description Name Lifecycle);
 
   push @results, UpdateRecordObject( AttributesRef => \@attribs, 
 				    Object => $TypeObj, 

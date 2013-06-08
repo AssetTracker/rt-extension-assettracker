@@ -1,0 +1,32 @@
+use RTx::AssetTracker::Types;
+
+@Initial = (
+    sub {
+        $RT::Logger->debug(
+            'Going to update empty Type Lifecycle column to "at_default"');
+
+        my $types = RTx::AssetTracker::Types->new( RT->SystemUser );
+        $types->FindAllRows;
+        $types->Limit(
+            FIELD    => 'Lifecycle',
+            OPERATOR => 'IS',
+            VALUE    => 'NULL',
+        );
+
+        $types->Limit(
+            FIELD           => 'Lifecycle',
+            VALUE           => '',
+            ENTRYAGGREGATOR => 'OR',
+        );
+
+        $types->Limit(
+            FIELD           => 'Lifecycle',
+            VALUE           => 0,
+            ENTRYAGGREGATOR => 'OR',
+        );
+
+        while ( my $q = $types->Next ) {
+            $q->SetLifecycle('at_default');
+        }
+    },
+);
