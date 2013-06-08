@@ -1,40 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%# 
-%# This software is Copyright (c) 1996-2008 Best Practical Solutions, LLC
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
 %# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 %# 02110-1301 or visit their web page on the internet at
 %# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
-%# 
-%# 
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -43,53 +43,55 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
+table.type-summary {
+  margin-top: 0.75em;
+  font-size: 0.9em;
+  border: 1px solid #aaa;
+  border-bottom: 2px solid #999;
+  border-right: 2px solid #999;
+  border-spacing: 0;
+  width: 100%;
 
-.quick-create .select-assettype {
-   width: 12em;
 }
 
-#CreateAssetOfType {
- text-align: right; 
-}
+table.type-summary tr>*:first-child {
+ padding-left: 1em;
 
-#CreateAssetOfType input.button {
- width: 10em;
-}
-
-div.asset-info-basics div.titlebox-content .labeltop{
-  width: 10em;
-}
-
-.asset-info-IPs .titlebox-title .left { background-color: #369;  color: #fff;}
-.asset-info-tickets .titlebox-title .left { background-color: #316531;  color: #fff;}
-.asset-info-comment .titlebox-title .left { background-color: #999;  color: #fff;}
-
-.asset-info-cfs .titlebox-title .left { background-color: #b32; color: #fff;}
-.asset-info-basics .titlebox-title .left { background-color: #b32;  color: #fff;}
-.asset-info-people .titlebox-title .left { background-color: #48c;  color: #fff;}
-.asset-info-requestor .titlebox-title .left { white-space: nowrap; background-color: #48c;  color: #fff;}
-.asset-info-links .titlebox-title .left { background-color: #316531;  color: #fff;}
-.asset-info-reminders .titlebox-title .left { background-color: #369;  color: #fff;}
-.asset-info-dates .titlebox-title .left { background-color: #633063;  color: #fff;}
-.asset-info-attachments .titlebox-title .left { background-color: #993366;  color: #fff;}
-
-
-.asset-summary .titlebox-title a, div#body .asset-summary .titlebox-title a:visited { color: #fff;}
-div#body .ticketlinks .titlebox-title .left a { color: #fff; }
-div#body .ticketlinks .titlebox-title .left a:visited { color: #fff; }
-
-.asset-inactive {
-  text-decoration: line-through;
-  color: #666
 }
 
 
-#comp-AssetTracker-Search-Build .submit {
- width: 58%;
+table.type-summary tr>*:last-child {
+ padding-right: 1em;
+
 }
 
-#display-options .submit {
- width: 100%;
+table.type-summary a {
+  font-weight: bold;
+}
+
+
+table.type-summary th.collection-as-table {
+ font-size: 0.9em;
+  margin-bottom: 0.5em;
+  text-align: right;
+
+}
+
+table.type-summary th.collection-as-table:first-child {
+  text-align: left;
+
+}
+
+
+table.type-summary td {
+  border-bottom: 1px solid #ccc;
+}
+
+
+
+/* full-page asset lists */
+#comp-AssetTracker-Search-Results #body>table.collection {
+    margin-bottom: 2em;
 }

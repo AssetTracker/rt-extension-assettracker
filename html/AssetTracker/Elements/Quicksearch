@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,68 +43,22 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 <div class="asset-overview">
-<&| /Widgets/TitleBox, title => loc("Asset Quick search"), bodyclass => "" &>
-
-<table border="0" cellspacing="0" cellpadding="1" width="100%">                       
-<tr>                                                                          
-<th class="collection-as-table" align=left><&|/l&>Asset Type</&></th>                                         
-% foreach ((sort keys %status), 'all') {
-<th class="collection-as-table" align=center width="10%"><&|/l&><%$_%></&></th>          
-% }
-</tr>
-
-% my $i;
-% foreach my $type (sort keys %sql) {
-% $i++;                                                                         
-<tr class="<% $i%2 ? 'oddline' : 'evenline'%>" >                                
-<td align="left">
-<a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{'all'}%>&Rows=50"><%$type%></a>
-</td>
-%     foreach my $status ((sort keys %status), 'all') {
-<td align="center">
-<a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{$status}%>&Rows=50"><% $count{$type}{$status} %></a>
-</td>
-%     }
-</tr>
-% }
-
-</table>
+<&|/Widgets/TitleBox,
+    title => loc("Quick search"),
+    bodyclass => "",
+&>
+<& $comp,
+   type_filter => sub { $_->CurrentUserHasRight('ShowAsset') && !exists $unwanted->{$_->Name} },
+&>
 </&>
 </div>
 <%INIT>
-my $Types = RTx::AssetTracker::Types->new($session{'CurrentUser'}); 
-$Types->UnLimit();
-my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
-
-my %status;
-my %sql;
-my %count;
-
-$sql{all}{all} = join( " AND ", map "Status != '$_'", RTx::AssetTracker::Type->InactiveStatusArray);
-$Assets->FromSQL($sql{all}{all});
-$count{all}{all} = $Assets->Count();
-
-while (my $type = $Types->Next) {
-       next unless ($type->CurrentUserHasRight('ShowAsset'));
-       foreach my $status ($type->ActiveStatusArray) {
-           $status{$status} = 1;
-
-           $sql{$type->Name}{$status} = "Type='".$type->Name."' AND Status='$status'";
-           $Assets->FromSQL($sql{$type->Name}{$status});
-           $count{$type->Name}{$status} = $Assets->Count();
-
-       }
-       $sql{$type->Name}{'all'} = "Type = '".$type->Name."' AND ".$sql{'all'}{'all'};
-       $Assets->FromSQL($sql{$type->Name}{'all'});
-       $count{$type->Name}{'all'} = $Assets->Count();
-}
-foreach my $status ( RTx::AssetTracker::Type->ActiveStatusArray ) {
-    $sql{all}{$status} = "Status='$status'";
-    $Assets->FromSQL($sql{all}{$status});
-    $count{all}{$status} = $Assets->Count();
-}
-
+my $unwanted = $session{'CurrentUser'}->UserObj->Preferences('QuickSearch', {});
+my $comp = $SplitByLifecycle? '/AssetTracker/Elements/TypeSummaryByLifecycle' : '/AssetTracker/Elements/TypeSummaryByStatus';
 </%INIT>
+<%ARGS>
+$SplitByLifecycle => 1
+</%ARGS>
