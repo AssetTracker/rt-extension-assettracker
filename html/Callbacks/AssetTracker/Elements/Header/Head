@@ -51,6 +51,4 @@
 <!--[if lt IE 7]>
 <link rel="stylesheet" href="<%RT->Config->Get('WebPath')%>/NoAuth/css/<%RT->Config->Get('WebDefaultStylesheet')%>/webatmsie6.css" type="text/css" media="all" />
 <![endif]-->
-%if ($RT::VERSION !~ /^3/) {
 <script language="javascript" src="<%RT->Config->Get('WebPath')%>/NoAuth/js/assetautocomplete.js"></script>
-%}

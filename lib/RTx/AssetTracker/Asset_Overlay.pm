@@ -208,7 +208,7 @@ sub Load {
 
 # }}}
 
-# {{{ sub Create
+
 
 =head2 Create (ARGS)
 
@@ -228,17 +228,6 @@ Arguments: ARGS is a hash of named parameters.  Valid parameters are:
 Returns: ASSETID, Transaction Object, Error Message
 
 
-=begin testing
-
-my $a = RTx::AssetTracker::Asset->new($RT::SystemUser);
-
-my ($id, undef, undef) = $a->Create(Type => 'Servers', Name => "An test asset $$", Description => 'This is a description');
-ok( $a->Id, "Asset Created");
-
-ok ( my $id = $a->Id, "Got asset id");
-
-=end testing
-
 =cut
 
 sub Create {
@@ -249,7 +238,7 @@ sub Create {
         Type               => undef,
         Name               => undef,
         Description        => '',
-        Status             => 'production',
+        Status             => undef,
         Owner              => undef,
         Admin              => undef,
         TransactionData    => undef,
@@ -264,20 +253,20 @@ sub Create {
 
     my ($ErrStr, @non_fatal_errors);
 
-    my $TypeObj = RTx::AssetTracker::Type->new($RT::SystemUser);
+    my $TypeObj = RTx::AssetTracker::Type->new( RT->SystemUser );
 
-    if ( ( defined( $args{'Type'} ) ) && ( !ref( $args{'Type'} ) ) ) {
-        $TypeObj->Load( $args{'Type'} );
-    }
-    elsif ( ref( $args{'Type'} ) eq 'RTx::AssetTracker::Type' ) {
+    if ( ref $args{'Type'} eq 'RTx::AssetTracker::Type' ) {
         $TypeObj->Load( $args{'Type'}->Id );
     }
+    elsif ( $args{'Type'} ) {
+        $TypeObj->Load( $args{'Type'} );
+    }
     else {
-        $RT::Logger->debug( $args{'Type'} . " not a recognized type object." );
+        $RT::Logger->debug("'". ( $args{'Type'} ||'') . "' not a recognized type object." );
     }
 
     #Can't create a asset without a type.
-    unless ( defined($TypeObj) && $TypeObj->Id ) {
+    unless ( $TypeObj->Id ) {
         $RT::Logger->debug("$self No type given for asset creation.");
         return ( 0, 0, $self->loc('Could not create asset. Type not set') );
     }
@@ -293,11 +282,27 @@ sub Create {
     {
         return (
             0, 0,
-            $self->loc( "No permission to create assets of this type '[_1]'", $TypeObj->Name));
+            $self->loc( "No permission to create assets of type '[_1]'", $TypeObj->Name));
     }
 
-    unless ( $TypeObj->IsValidStatus( $args{'Status'} ) ) {
-        return ( 0, 0, $self->loc('Invalid value for status') );
+    my $cycle = $TypeObj->Lifecycle;
+    unless ( defined $args{'Status'} && length $args{'Status'} ) {
+        $args{'Status'} = $cycle->DefaultOnCreate;
+    }
+
+    $args{'Status'} = lc $args{'Status'};
+    unless ( $cycle->IsValid( $args{'Status'} ) ) {
+        return ( 0, 0,
+            $self->loc("Status '[_1]' isn't a valid status for assets of this type.",
+                $self->loc($args{'Status'}))
+        );
+    }
+
+    unless ( $cycle->IsTransition( '' => $args{'Status'} ) ) {
+        return ( 0, 0,
+            $self->loc("New assets of this type can not have status '[_1]'.",
+                $self->loc($args{'Status'}))
+        );
     }
 
 
@@ -1655,34 +1660,12 @@ sub ComponentsAsList {
 
 }
 
-# {{{ sub SetStatus
 
 =head2 SetStatus STATUS
 
-Set this asset\'s status. STATUS can be one of: 
+Set this asset's status.
 
-Alternatively, you can pass in a list of named parameters (Status => STATUS, Force => FORCE).  If FORCE is true, ignore unresolved dependencies and force a status change.
-
-=begin testing
-
-my $tt = RTx::AssetTracker::Asset->new($RT::SystemUser);
-my ($id, $tid, $msg)= $tt->Create(Type => 'Servers', Name => "SetStatus test $$",
-            Description => 'test');
-ok($id, $msg);
-is($tt->Status, 'production', "New asset is created as production");
-
-($id, $msg) = $tt->SetStatus('development');
-ok($id, $msg);
-like($msg, qr/development/i, "Status message is correct");
-($id, $msg) = $tt->SetStatus('qa');
-ok($id, $msg);
-like($msg, qr/qa/i, "Status message is correct");
-($id, $msg) = $tt->SetStatus('qa');
-ok(!$id,$msg);
-
-
-=end testing
-
+Alternatively, you can pass in a list of named parameters (Status => STATUS).
 
 =cut
 
@@ -1699,44 +1682,42 @@ sub SetStatus {
 
     $args{Status} = $args{Status} || $args{Value};
 
-    #Check ACL
-    if ( $args{Status} eq 'deleted') {
-            unless ($self->CurrentUserHasRight('DeleteAsset')) {
-            return ( 0, $self->loc('Permission Denied') );
-       }
-        # We don't want deleted assets to have IP addresses
-        my $ips = $self->IPs();
-        while (my $ip = $ips->Next) {
-            my($a, $b) = $self->DeleteIP( IP => $ip->IP );
-        }
-    } elsif ( $args{Status} eq 'retired') {
-            unless ($self->CurrentUserHasRight('RetireAsset')) {
-            return ( 0, $self->loc('Permission Denied') );
-       }
-        # We don't want retired assets to have IP addresses
-        my $ips = $self->IPs();
-        while (my $ip = $ips->Next) {
-            my($a, $b) = $self->DeleteIP( IP => $ip->IP );
-        }
-    } else {
-            unless ($self->CurrentUserHasRight('ModifyAsset')) {
-            return ( 0, $self->loc('Permission Denied') );
-       }
+
+    my $lifecycle = $self->TypeObj->Lifecycle;
+
+    my $new = lc $args{'Status'};
+    unless ( $lifecycle->IsValid( $new ) ) {
+        return (0, $self->loc("Status '[_1]' isn't a valid status for assets of this type.", $self->loc($new)));
     }
 
-    unless (grep {$_ eq $args{'Status'}} (@RT::AssetActiveStatus,@RT::AssetInactiveStatus)) {
-      return (0, $self->loc('[_1] is not a valid Asset Status', $args{'Status'})
-);
+    my $old = $self->__Value('Status');
+    unless ( $lifecycle->IsTransition( $old => $new ) ) {
+        return (0, $self->loc("You can't change status from '[_1]' to '[_2]'.", $self->loc($old), $self->loc($new)));
+    }
+
+    my $check_right = $lifecycle->CheckRight( $old => $new );
+    unless ( $self->CurrentUserHasRight( $check_right ) ) {
+        return ( 0, $self->loc('Permission Denied') );
+    }
+
+    if ( $lifecycle->IsInactive( $new ) ) {
+        # We don't want inactive assets to have IP addresses
+        my $ips = $self->IPs();
+        while (my $ip = $ips->Next) {
+            my($a, $b) = $self->DeleteIP( IP => $ip->IP );
+        }
     }
 
     #Actually update the status
-    my ($val, $msg)= $self->_Set( %args,
-                          Field           => 'Status',
-                          Value           => $args{Status},
-                          TimeTaken       => 0,
-                          TransactionType => 'Status', );
-
-    return($val,$msg);
+    my ($val, $msg)= $self->_Set(
+        %args,
+        Field           => 'Status',
+        Value           => $new,
+        TimeTaken       => 0,
+        CheckACL        => 0,
+        TransactionType => 'Status',
+    );
+    return ($val, $msg);
 }
 
 # }}}
@@ -2147,8 +2128,68 @@ sub SetDescription {
 
 sub SetType {
     my $self = shift;
-           
-    $self->_SetBasic(@_, Field => 'Type');
+    my %args = (
+        @_
+    );
+
+    my $NewType = $args{'Value'};
+
+    #Redundant. ACL gets checked in _Set;
+    unless ( $self->CurrentUserHasRight('ModifyAsset') ) {
+        return ( 0, $self->loc("Permission Denied") );
+    }
+
+    my $NewTypeObj = RTx::AssetTracker::Type->new( $self->CurrentUser );
+    $NewTypeObj->Load($NewType);
+
+    unless ( $NewTypeObj->Id() ) {
+        return ( 0, $self->loc("That type does not exist") );
+    }
+
+    if ( $NewTypeObj->Id == $self->TypeObj->Id ) {
+        return ( 0, $self->loc('That is the same value') );
+    }
+    unless ( $self->CurrentUser->HasRight( Right    => 'CreateAsset', Object => $NewTypeObj)) {
+        return ( 0, $self->loc("You may not create assets of that type.") );
+    }
+
+    my $new_status;
+    my $old_lifecycle = $self->TypeObj->Lifecycle;
+    my $new_lifecycle = $NewTypeObj->Lifecycle;
+    if ( $old_lifecycle->Name ne $new_lifecycle->Name ) {
+        unless ( $old_lifecycle->HasMoveMap( $new_lifecycle ) ) {
+            return ( 0, $self->loc("There is no mapping for statuses between these types. Contact your system administrator.") );
+        }
+        $new_status = $old_lifecycle->MoveMap( $new_lifecycle )->{ lc $self->Status };
+        return ( 0, $self->loc("Mapping between types' lifecycles is incomplete. Contact your system administrator.") )
+            unless $new_status;
+    }
+
+    if ( $new_status ) {
+        my $clone = RTx::AssetTracker::Asset->new( RT->SystemUser );
+        $clone->Load( $self->Id );
+        unless ( $clone->Id ) {
+            return ( 0, $self->loc("Couldn't load copy of asset #[_1].", $self->Id) );
+        }
+
+        #Actually update the status
+        my ($val, $msg)= $clone->_Set(
+            Field             => 'Status',
+            Value             => $new_status,
+            RecordTransaction => 0,
+        );
+        $RT::Logger->error( 'Status change failed on type change: '. $msg )
+            unless $val;
+    }
+
+    my ($status, $msg) = $self->_Set( %args, Field => 'Type', Value => $NewTypeObj->Id() );
+
+    if ( $status ) {
+        # Clear the type object cache;
+        $self->{_type_obj} = undef;
+    }
+
+    return ($status, $msg);
 }
 
 sub _SetBasic {

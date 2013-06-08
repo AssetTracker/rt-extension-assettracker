@@ -119,6 +119,7 @@ Set(%Lifecycles,
             deleted     => [qw(production development qa dr pilot test retired)],
         },
         rights => {
+            '* -> retired'  => 'RetireAsset',
             '* -> deleted'  => 'DeleteAsset',
             '* -> *'        => 'ModifyAsset',
         },

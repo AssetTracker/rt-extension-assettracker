@@ -40,7 +40,7 @@ sub LoadAsset {
 
 # }}}
 
-# {{{ sub ProcessAssetBasics
+
 
 =head2 ProcessAssetBasics ( AssetObj => $Asset, ARGSRef => \%ARGS );
 
@@ -58,41 +58,40 @@ sub ProcessAssetBasics {
     );
 
     my $AssetObj = $args{'AssetObj'};
-    my $ARGSRef   = $args{'ARGSRef'};
+    my $ARGSRef  = $args{'ARGSRef'};
 
-    # {{{ Set basic fields 
+    # Set basic fields 
     my @attribs = qw(
-      Name
-      Description
-      Status
-      Type
+        Name
+        Description
+        Status
+        Type
     );
 
+    # Canonicalize Type to its ID if it isn't numeric
     if ( $ARGSRef->{'Type'} and ( $ARGSRef->{'Type'} !~ /^(\d+)$/ ) ) {
-        my $temptype = RTx::AssetTracker::Type->new($RT::SystemUser);
-        $temptype->Load( $ARGSRef->{'Type'} );
-        if ( $temptype->id ) {
-            $ARGSRef->{'Type'} = $temptype->Id();
+        my $temp = RTx::AssetTracker::Type->new(RT->SystemUser);
+        $temp->Load( $ARGSRef->{'Type'} );
+        if ( $temp->id ) {
+            $ARGSRef->{'Type'} = $temp->id;
         }
     }
 
+    # Status isn't a field that can be set to a null value.
+    # RT core complains if you try
+    delete $ARGSRef->{'Status'} unless $ARGSRef->{'Status'};
 
-   # Status isn't a field that can be set to a null value.
-   # RT core complains if you try
-    delete $ARGSRef->{'Status'} unless ($ARGSRef->{'Status'});
-    
     my @results = UpdateRecordObject(
         AttributesRef => \@attribs,
         Object        => $AssetObj,
         ARGSRef       => $ARGSRef
     );
 
-     #}}}
+    # }}}
 
     return (@results);
 }
 
-# }}}
 
 # {{{ sub ProcessAssetIPs
 

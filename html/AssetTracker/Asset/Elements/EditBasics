@@ -58,7 +58,7 @@ unless ( @fields ) {
             html => '<input name="Name" value="'.$m->interp->apply_escapes( $defaults{'Name'} || $AssetObj->Name, 'h' ).'" />',
         },
         {   name => 'Status',
-            comp => '/Elements/SelectStatus',
+            comp => '/AssetTracker/Elements/SelectStatus',
             args => {
                 Name => 'Status',
                 DefaultLabel => loc("[_1] (Unchanged)",loc($AssetObj->Status)),
@@ -68,7 +68,7 @@ unless ( @fields ) {
             },
         },
         {   name => 'Type',
-            comp => '/Elements/SelectType',
+            comp => '/AssetTracker/Elements/SelectType',
             args => {
                 Name => 'Type',
                 Default => $defaults{'Type'} || $AssetObj->TypeObj->Id,
