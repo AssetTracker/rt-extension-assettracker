@@ -75,6 +75,11 @@ my $COLUMN_MAP = {
         value => sub { return $_[1] % 2 ? 'oddline' : 'evenline' }
     },
 
+    Lifecycle => {
+        title => 'Lifecycle',
+        attribute => 'Lifecycle',
+        value => sub { return $_[0]->Lifecycle->Name },
+    },
 };
 
 # }}}
