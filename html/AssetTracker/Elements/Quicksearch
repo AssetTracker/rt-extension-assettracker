@@ -46,11 +46,11 @@
 <div class="asset-overview">
 <&| /Widgets/TitleBox, title => loc("Asset Quick search"), bodyclass => "" &>
 
-<table border="0" cellspacing="0" cellpadding="1" width="100%">                       
+<table border="0" cellspacing="0" cellpadding="1" width="100%" class="type-summary">
 <tr>                                                                          
-<th class="collection-as-table" align=left><&|/l&>Asset Type</&></th>                                         
+<th class="collection-as-table"><&|/l&>Asset Type</&></th>                                         
 % foreach ((sort keys %status), 'all') {
-<th class="collection-as-table" align=center width="10%"><&|/l&><%$_%></&></th>          
+<th class="collection-as-table"><&|/l&><%$_%></&></th>          
 % }
 </tr>
 
@@ -58,11 +58,11 @@
 % foreach my $type (sort keys %sql) {
 % $i++;                                                                         
 <tr class="<% $i%2 ? 'oddline' : 'evenline'%>" >                                
-<td align="left">
+<td>
 <a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{'all'}%>&Rows=50"><%$type%></a>
 </td>
 %     foreach my $status ((sort keys %status), 'all') {
-<td align="center">
+<td align="right">
 <a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.html?Query=<%$sql{$type}{$status}%>&Rows=50"><% $count{$type}{$status} %></a>
 </td>
 %     }
