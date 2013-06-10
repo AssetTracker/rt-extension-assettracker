@@ -24,16 +24,25 @@ ok $user && $user->id, 'loaded or created user';
         { Type => $type->id },
         { },
     );
-    my $rights = $user->PrincipalObj->HasRights( Object => $a );
-    is_deeply( $rights, { SeeType => 1 }, 'got it' );
+    my $rights;
+    if ( $RT::VERSION =~ /^3/ ) {
+        ok( $user->HasRight( Object => $a, Right => 'SeeType' ) && !$user->HasRight( Object => $a, Right => 'ShowAsset' ), 'got it' );
+    } else {
+        $rights = $user->PrincipalObj->HasRights( Object => $a );
+        is_deeply( $rights, { SeeType => 1 }, 'got it' );
+    }
 
     ($a) = RTx::AssetTracker::Test->create_assets(
         { Type => $type->id },
         { Owner => $user->EmailAddress },
     );
     ok($a->OwnerRoleGroup->HasMember( $user->id ), 'user is owner');
-    $rights = $user->PrincipalObj->HasRights( Object => $a );
-    is_deeply( $rights, { SeeType => 1, ShowAsset => 1 }, 'got it' )
+    if ( $RT::VERSION =~ /^3/ ) {
+        ok( $user->HasRight( Object => $a, Right => 'SeeType' ) && $user->HasRight( Object => $a, Right => 'ShowAsset' ), 'got it' );
+    } else {
+        $rights = $user->PrincipalObj->HasRights( Object => $a );
+        is_deeply( $rights, { SeeType => 1, ShowAsset => 1 }, 'got it' )
+    }
 }
 
 sub cleanup {
