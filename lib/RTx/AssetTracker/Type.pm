@@ -203,6 +203,7 @@ sub ConfigureRole {
         $group->_Create( Domain            => 'RTx::AssetTracker::System-Role',
                          Instance          => 0,
                          Type              => $role,
+                         Description       => 'SystemRolegroup for internal use',  # loc
                          InsideTransaction => 0 );
         $group->id or $RT::Logger->error("Couldn't create group for system role '$role'");
     }

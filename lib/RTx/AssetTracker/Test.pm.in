@@ -36,4 +36,127 @@ sub import {
     require RTx::AssetTracker;
 }
 
+=head2 load_or_create_type
+
+=cut
+
+sub load_or_create_type {
+    my $self = shift;
+    my %args = ( Disabled => 0, @_ );
+    my $obj = RTx::AssetTracker::Type->new( RT->SystemUser );
+    if ( $args{'Name'} ) {
+        $obj->LoadByCols( Name => $args{'Name'} );
+    } else {
+        die "Name is required";
+    }
+    unless ( $obj->id ) {
+        my ($val, $msg) = $obj->Create( %args );
+        die "$msg" unless $val;
+    }
+
+    return $obj;
+}
+
+sub delete_type_watchers {
+    my $self = shift;
+    my @types = @_;
+
+    foreach my $q ( @types ) {
+        foreach my $t ( RTx::AssetTracker::Type->ActiveRoleArray ) {
+            $q->DeleteWatcher( Type => $t, PrincipalId => $_->MemberId )
+                foreach @{ $q->$t()->MembersObj->ItemsArrayRef };
+        }
+    }
+}
+
+sub create_assets {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $self = shift;
+    my $defaults = shift;
+    my @data = @_;
+    @data = sort { rand(100) <=> rand(100) } @data
+        if delete $defaults->{'RandomOrder'};
+
+    $defaults->{'Type'} ||= 'Servers';
+
+    my @res = ();
+    my $i = 0;
+    while ( @data ) {
+        my %args = %{ shift @data };
+        $args{$_} = $res[ $args{$_} ]->id foreach
+            grep $args{ $_ }, keys %RTx::AssetTracker::Asset::LINKTYPEMAP;
+        $args{'Name'} ||= $defaults->{'Type'} . " asset #" . ++$i;
+        push @res, $self->create_asset( %$defaults, %args );
+    }
+    return @res;
+}
+
+sub create_asset {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $self = shift;
+    my %args = @_;
+
+    unless ( $args{'Name'} ) {
+        die "Name is required";
+    }
+    if ($args{Type} && $args{Type} =~ /\D/) {
+        my $type = RTx::AssetTracker::Type->new(RT->SystemUser);
+        if (my $id = $type->Load($args{Type}) ) {
+            $args{Type} = $id;
+        } else {
+            die ("Error: Invalid type $args{Type}");
+        }
+    }
+
+    my $asset = RTx::AssetTracker::Asset->new( RT->SystemUser );
+    my ( $id, undef, $msg ) = $asset->Create( %args );
+    Test::More::ok( $id, "asset created" )
+        or Test::More::diag("error: $msg");
+
+    # hackish, but simpler
+    if ( $args{'LastUpdatedBy'} ) {
+        $asset->__Set( Field => 'LastUpdatedBy', Value => $args{'LastUpdatedBy'} );
+    }
+
+
+    for my $field ( keys %args ) {
+        #TODO check links and watchers
+
+        if ( $field =~ /CustomField-(\d+)/ ) {
+            my $cf = $1;
+            my $got = join ',', sort map $_->Content,
+                @{ $asset->CustomFieldValues($cf)->ItemsArrayRef };
+            my $expected = ref $args{$field}
+                ? join( ',', sort @{ $args{$field} } )
+                : $args{$field};
+            Test::More::is( $got, $expected, 'correct CF values' );
+        }
+        else {
+            next if ref $args{$field};
+            next unless $asset->can($field) or $asset->_Accessible($field,"read");
+            next if ref $asset->$field();
+            Test::More::is( $asset->$field(), $args{$field}, "$field is correct" );
+        }
+    }
+
+    return $asset;
+}
+
+sub delete_assets {
+    my $self = shift;
+    my $query = shift;
+    my $assets = RTx::AssetTracker::Assets->new( RT->SystemUser );
+    if ( $query ) {
+        $assets->FromSQL( $query );
+    }
+    else {
+        $assets->UnLimit;
+    }
+    while ( my $asset = $assets->Next ) {
+        $asset->Delete;
+    }
+}
+
 1;
