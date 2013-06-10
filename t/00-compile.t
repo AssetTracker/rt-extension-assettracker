@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use RTx::AssetTracker::Test tests => 42;
+use RTx::AssetTracker::Test tests => 28;
 
 require_ok("RTx::AssetTracker");
 require_ok("RTx::AssetTracker::Test");
@@ -30,22 +30,6 @@ require_ok("RT::Graph::AssetTracker::Assets");
 require_ok("RT::Shredder::Plugin::AssetObjects");
 require_ok("RT::Shredder::Plugin::Assets");
 require_ok("RT::URI::at");
-
-require_ok("RT::CustomField");
-require_ok("RT/CustomField_Vendor.pm");
-require_ok("RT::CustomFields");
-require_ok("RT/CustomFields_Vendor.pm");
-require_ok("RT::Interface::Web");
-require_ok("RT/Interface/Web_Vendor.pm");
-require_ok("RT::Interface::Web::QueryBuilder::Tree");
-require_ok("RT/Interface/Web/QueryBuilder/Tree_Vendor.pm");
-require_ok("RT::System");
-require_ok("RT/System_Vendor.pm");
-require_ok("RT::Ticket");
-require_ok("RT/Ticket_Vendor.pm");
-require_ok("RT::Transaction");
-require_ok("RT/Transaction_Vendor.pm");
-
 
 # no the following doesn't work yet
 __END__

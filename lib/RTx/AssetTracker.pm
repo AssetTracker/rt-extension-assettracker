@@ -21,6 +21,25 @@ use strict;
 use warnings;
 use version; our $VERSION = version->declare("2.9.0");
 
+
+# load overlays for RT classes
+my @Classes = qw(
+    RT::CustomField
+    RT::CustomFields
+    RT::Interface::Web
+    RT::Interface::Web::QueryBuilder::Tree
+    RT::System
+    RT::Ticket
+    RT::Transaction
+);
+
+for (@Classes) {
+    s|::|/|g;
+    require $_.'.pm';
+    require $_.'_ATOverlay.pm';
+}
+
+
 use RTx::AssetTracker::System;
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Asset;
