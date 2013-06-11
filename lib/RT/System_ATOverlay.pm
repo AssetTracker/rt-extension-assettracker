@@ -5,7 +5,15 @@ no warnings qw(redefine);
 
 use RTx::AssetTracker::Type;
 
-my $Orig_AvailableRights = \&AvailableRights;
+
+=head2 AvailableRights
+
+Asset Tracker wraps this method to add the Asset Type rights
+
+=cut
+
+my $Orig_AvailableRights = __PACKAGE__->can('AvailableRights')
+    or die "API change? Can't find method 'AvailableRights'";
 *AvailableRights = sub {
     my $self = shift;
 
@@ -13,14 +21,22 @@ my $Orig_AvailableRights = \&AvailableRights;
 
     my $tr = $type->AvailableRights();
 
-    # Build a merged list of all system wide rights, queue rights and group rights.
+    # Build a merged list that adds asset type rights.
     my %rights = (%{$Orig_AvailableRights->($self)}, %$tr);
 
     return(\%rights);
 };
 
 
-my $Orig_RightCategories = \&RightCategories;
+=head2 RightCategories
+
+Asset Tracker wraps this method to assign categories to the Asset Type
+rights
+
+=cut
+
+my $Orig_RightCategories = __PACKAGE__->can('RightCategories;')
+    or die "API change? Can't find method 'RightCategories;'";
 *RightCategories = sub {
     my $self = shift;
 
@@ -28,7 +44,7 @@ my $Orig_RightCategories = \&RightCategories;
 
     my $tr = $type->RightCategories();
 
-    # Build a merged list of all system wide rights, queue rights and group rights.
+    # Build a merged list that adds asset type rights.
     my %rights = (%{$Orig_RightCategories->($self)}, %$tr);
 
     return(\%rights);

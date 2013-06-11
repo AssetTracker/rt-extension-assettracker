@@ -4,8 +4,16 @@ package RT::Ticket;
 use strict;
 no warnings qw(redefine);
 
-my $Orig_AddLink = \&_AddLink;
 
+=head2 _AddLink
+
+Asset Tracker wraps this method to add a "TicketLink" transaction when
+an asset is referred to by a ticket
+
+=cut
+
+my $Orig_AddLink = __PACKAGE__->can('_AddLink')
+    or die "API change? Can't find method '_AddLink'";
 *_AddLink = sub {
 
     my $self = shift;
@@ -36,8 +44,15 @@ my $Orig_AddLink = \&_AddLink;
 
 };
 
-my $Orig_LINKTYPEMAP = \&LINKTYPEMAP;
 
+=head2 LINKTYPEMAP
+
+Asset Tracker wraps this method to add the asset link types
+
+=cut
+
+my $Orig_LINKTYPEMAP = __PACKAGE__->can('LINKTYPEMAP')
+    or die "API change? Can't find method 'LINKTYPEMAP'";
 *LINKTYPEMAP = sub {
 
     my $self = shift;

@@ -3,8 +3,16 @@ package RT::Transaction;
 use strict;
 no warnings qw(redefine);
 
-# Wrapper to execute Asset Scrips
-my $Orig_Create = \&Create;
+
+=head2 Create
+
+Asset Tracker wraps this method to enable the execution of Asset
+Scrips
+
+=cut
+
+my $Orig_Create = __PACKAGE__->can('Create')
+    or die "API change? Can't find method 'Create'";
 *Create = sub {
     my $self = shift;
     my %args = (
@@ -40,7 +48,15 @@ my $Orig_Create = \&Create;
 };
 
 
-my $Orig_FriendlyObjectType = \&FriendlyObjectType;
+=head2 FriendlyObjectType
+
+Asset Tracker wraps this method so history can just show eg "Asset" or
+"Type" instead of the full class name
+
+=cut
+
+my $Orig_FriendlyObjectType = __PACKAGE__->can('FriendlyObjectType')
+    or die "API change? Can't find method 'FriendlyObjectType'";
 *FriendlyObjectType = sub {
     my $self = shift;
     my $type = $self->ObjectType or return undef;
@@ -52,6 +68,15 @@ my $Orig_FriendlyObjectType = \&FriendlyObjectType;
         return $Orig_FriendlyObjectType->($self);
     }
 };
+
+
+=head2 BriefDescription
+
+Asset Tracker adds new transaction types, adds more link types to the
+AddLink and DeleteLink transaction types, and adds the asset Type
+field to the Set transaction type.
+
+=cut
 
 $_BriefDescriptions{Update} = sub {
         my $self = shift;
