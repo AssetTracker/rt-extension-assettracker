@@ -3021,10 +3021,16 @@ sub _fixup_import {
         $fixed{'IP Address'} = $import_ips;
     }
 
+    unless ( $fixed{'Type'} ) {
+        my $a = RTx::AssetTracker::Asset->new($self->CurrentUser);
+        $fixed{'Type'} = $a->Type
+            if defined($a->Type);
+    }
+
     #custom fields are last
     for my $possible_cf (keys %asset) {
         my $cf = RT::CustomField->new($self->CurrentUser);
-        $cf->LoadByName(Name => $possible_cf);
+        $cf->LoadByNameAndType( Name => $possible_cf, Type => $fixed{'Type'} || '0' );
         if ($cf->id) {
             my $type = $cf->Type;
             if ($cf->MaxValues && $type =~ /^(Wikitext|Text|Freeform)$/) {

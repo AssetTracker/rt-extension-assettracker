@@ -1516,9 +1516,9 @@ sub CustomFieldValues {
     if ( $field and $field !~ /^\d+$/ ) {
         my $cf = RT::CustomField->new( $self->CurrentUser );
         $cf->SetContextObject( $self );
-        $cf->LoadByName( Name => $field, Type => $self->TypeObj->Id );
+        $cf->LoadByNameAndType( Name => $field, Type => $self->TypeObj->Id );
         unless ( $cf->id ) {
-            $cf->LoadByName( Name => $field, Type => '0' );
+            $cf->LoadByNameAndType( Name => $field, Type => '0' );
         }
         $field = $cf->id;
         unless ($field) { return RT::CustomFieldValues->new( $self->CurrentUser ); }
