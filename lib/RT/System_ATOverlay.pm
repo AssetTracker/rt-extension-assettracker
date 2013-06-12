@@ -35,8 +35,8 @@ rights
 
 =cut
 
-my $Orig_RightCategories = __PACKAGE__->can('RightCategories;')
-    or die "API change? Can't find method 'RightCategories;'";
+my $Orig_RightCategories = __PACKAGE__->can('RightCategories')
+    or die "API change? Can't find method 'RightCategories'";
 *RightCategories = sub {
     my $self = shift;
 

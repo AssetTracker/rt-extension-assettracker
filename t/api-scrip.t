@@ -4,7 +4,6 @@ use warnings;
 
 use RTx::AssetTracker::Test tests => 25;
 use RT;
-require 'RT/Transaction_Vendor.pm';
 
 {
 
