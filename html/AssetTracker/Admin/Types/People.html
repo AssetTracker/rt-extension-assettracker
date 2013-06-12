@@ -59,7 +59,7 @@
 <h3><&|/l&>Current watchers</&></h3>
 
 
-% for my $role ( ActiveRoleArray() ) {
+% for my $role ( RTx::AssetTracker::Type->RoleGroupTypes ) {
 %     my $role_group_method = $role . 'RoleGroup';
 <&|/l&><% RTx::AssetTracker::Type->RoleLabel( $role ) %></&>:
 
@@ -151,17 +151,20 @@ foreach my $key (keys %ARGS) {
 # }}}
 
 # {{{ Add new watchers
-foreach my  $key (keys %ARGS) {
-    #They're in this order because otherwise $1 gets clobbered :/
-    my $roles = join('|', ActiveRoleArray());
-    if ( ($ARGS{$key} =~ /^($roles)$/) and
-	 ($key =~ /^Type-AddWatcher-Principal-(\d*)$/) ) {
-	$RT::Logger->debug("Adding a watcher $1 to ".$ARGS{$key}."\n");
-	my ($code, $msg) = $TypeObj->AddWatcher(Type => $ARGS{$key},
-				                             PrincipalId => $1);
-	push @results, $msg;
+    foreach my $key (keys %ARGS) {
+        my $type = $ARGS{$key};
+
+        next unless $key =~ /^Type-AddWatcher-Principal-(\d*)$/;
+        my $id = $1;
+
+        next unless RTx::AssetTracker::Type->IsRoleGroupType($type);
+
+        my ($code, $msg) = $TypeObj->AddWatcher(
+            Type => $type,
+            PrincipalId => $id,
+        );
+        push @results, $msg;
     }
-}
 
 # }}}
 

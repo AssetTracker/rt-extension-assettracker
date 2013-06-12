@@ -782,6 +782,36 @@ sub AssetCustomFields {
 
 # {{{ Routines dealing with watchers.
 
+=head2 RoleGroupTypes
+
+Returns a list of the names of the various role group types that this
+asset type has.
+
+=cut
+
+sub RoleGroupTypes {
+    my $self = shift;
+    return ($self->ActiveRoleArray);
+}
+
+=head2 IsRoleGroupType
+
+Returns whether the passed-in type is a role group type.
+
+=cut
+
+sub IsRoleGroupType {
+    my $self = shift;
+    my $type = shift;
+
+    for my $valid_type ($self->RoleGroupTypes) {
+        return 1 if $type eq $valid_type;
+    }
+
+    return 0;
+}
+
+
 # {{{ _CreateTypeGroups
 
 =head2 _CreateTypeGroups
@@ -800,28 +830,93 @@ It will return true on success and undef on failure.
 sub _CreateTypeGroups {
     my $self = shift;
 
-    #my @types = qw(Cc Admin Requestor Owner);
-    my @types = $self->ActiveRoleArray();
+    my @types = $self->RoleGroupTypes();
 
     foreach my $type (@types) {
-        my $type_obj = RT::Group->new($self->CurrentUser);
-        #my ($id, $msg) = $type_obj->CreateRoleGroup(TypeCheck => 0,
-        my ($id, $msg) = $type_obj->_Create(Instance => $self->Id,
-                                            Type => $type,
-                                            Domain => 'RTx::AssetTracker::Type-Role',
-                                            InsideTransaction => 1);
-        unless ($id) {
-            $RT::Logger->error("Couldn't create a Type group of type '$type' for asset ".
-                               $self->Id.": ".$msg);
-            return(undef);
-        }
-     }
-    return(1);
+        my $ok = $self->_CreateTypeRoleGroup($type);
+        return undef if !$ok;
+    }
 
+    return 1;
+}
+
+{
+    package RT::Group;
+    no warnings qw(redefine);
+
+    my $Orig_CreateRoleGroup = __PACKAGE__->can('CreateRoleGroup')
+        or die "API change? Can't find method 'CreateRoleGroup'";
+    *CreateRoleGroup = sub {
+        my $self = shift;
+        my %args = ( Instance => undef,
+                     Type     => undef,
+                     Domain   => undef,
+                     @_ );
+
+        return $Orig_CreateRoleGroup->($self, %args)
+            unless $args{'Domain'} =~ /^RTx::AssetTracker/;
+
+        unless (RTx::AssetTracker::Type->IsRoleGroupType($args{Type})) {
+            return ( 0, $self->loc("Invalid Group Type") );
+        }
+
+
+        return ( $self->_Create( Domain            => $args{'Domain'},
+                                 Instance          => $args{'Instance'},
+                                 Type              => $args{'Type'},
+                                 InsideTransaction => 1 ) );
+    }
+}
+
+
+sub _CreateTypeRoleGroup {
+    my $self = shift;
+    my $type = shift;
+
+    my $type_obj = RT::Group->new($self->CurrentUser);
+    my ($id, $msg) = $type_obj->CreateRoleGroup(Instance => $self->Id, 
+                                                    Type => $type,
+                                                    Domain => 'RTx::AssetTracker::Type-Role');
+    unless ($id) {
+        $RT::Logger->error("Couldn't create an Asset Type group of type '$type' for type ".
+                            $self->Id.": ".$msg);
+        return(undef);
+    }
+
+    return $id;
 }
 
 
 # }}}
+
+# _HasModifyWatcherRight {{{
+sub _HasModifyWatcherRight {
+    my $self = shift;
+    my %args = (
+        Type  => undef,
+        PrincipalId => undef,
+        Email => undef,
+        @_
+    );
+
+    return 1 if $self->CurrentUserHasRight('ModifyTypeWatchers');
+
+    #If the watcher we're trying to add is for the current user
+    if ( defined $args{'PrincipalId'} && $self->CurrentUser->PrincipalId  eq $args{'PrincipalId'}) {
+
+        if ( $self->IsRoleGroupType( $args{'Type'} ) ) {
+            return 1 if $self->CurrentUserHasRight( $self->RoleRight($args{'Type'}) );
+        }
+        else {
+            $RT::Logger->warning( "$self -> _HasModifyWatcher got passed a bogus type $args{Type}");
+            return ( 0, $self->loc('Invalid asset type role group type [_1]', $args{Type}) );
+        }
+
+    }
+
+    return ( 0, $self->loc("Permission Denied") );
+}
+
 
 # {{{ sub AddWatcher
 
@@ -850,33 +945,22 @@ sub AddWatcher {
         @_
     );
 
-    # {{{ Check ACLS
-    #If the watcher we're trying to add is for the current user
-    if ( $self->CurrentUser->PrincipalId  eq $args{'PrincipalId'}) {
- 
-        unless ( $self->CurrentUserHasRight('ModifyTypeWatchers')
-            or $self->CurrentUserHasRight( $self->RoleRight( $args{'Type'} ) ) ) {
-            return ( 0, $self->loc('Permission Denied'));
-        }
+    return ( 0, "No principal specified" )
+        unless $args{'Email'} or $args{'PrincipalId'};
 
-     else {
-            $RT::Logger->warning( "$self -> AddWatcher got passed a bogus type");
-            return ( 0, $self->loc('Error in parameters to Type->AddWatcher') );
-        }
+    if ( !$args{'PrincipalId'} && $args{'Email'} ) {
+        my $user = RT::User->new( $self->CurrentUser );
+        $user->LoadByEmail( $args{'Email'} );
+        $args{'PrincipalId'} = $user->PrincipalId if $user->id;
     }
 
-    # If the watcher isn't the current user
-    # and the current user  doesn't have 'ModifyQueueWatcher'
-    # bail
-    else {
-        unless ( $self->CurrentUserHasRight('ModifyTypeWatchers') ) {
-            return ( 0, $self->loc("Permission Denied") );
-        }
-    }
+    return ( 0, "Unknown watcher type [_1]", $args{Type} )
+        unless $self->IsRoleGroupType($args{Type});
 
-    # }}}
+    my ($ok, $msg) = $self->_HasModifyWatcherRight(%args);
+    return ($ok, $msg) if !$ok;
 
-    return ( $self->_AddWatcher(%args) );
+    return $self->_AddWatcher(%args);
 }
 
 #This contains the meat of AddWatcher. but can be called from a routine like
@@ -998,34 +1082,11 @@ sub DeleteWatcher {
         return(0,$self->loc("Group not found"));
     }
 
-    # {{{ Check ACLS
-    #If the watcher we're trying to add is for the current user
-    if ( $self->CurrentUser->PrincipalId  eq $args{'PrincipalId'}) {
-        #  If it's an Admin and they don't have
-        #   the proper RoleRight or 'ModifyTypeWatchers', bail
-        if ( grep { $_ eq $args{'Type'} } $self->ActiveRoleArray() ) {
-            unless ( $self->CurrentUserHasRight('ModifyTypeWatchers')
-                or $self->CurrentUserHasRight($self->RoleRight( $args{'Type'} )) ) {
-                return ( 0, $self->loc('Permission Denied'))
-            }
-        }
+    return ( 0, $self->loc('Unknown watcher type [_1]', $args{Type}) )
+        unless $self->IsRoleGroupType($args{Type});
 
-        else {
-            $RT::Logger->warning( "$self -> DeleteWatcher got passed a bogus type: $args{'Type'}");
-            return ( 0, $self->loc('Error in parameters to Type->DeleteWatcher') );
-        }
-    }
-
-    # If the watcher isn't the current user
-    # and the current user  doesn't have 'ModifyQueueWathcers' bail
-    else {
-        unless ( $self->CurrentUserHasRight('ModifyTypeWatchers') ) {
-            return ( 0, $self->loc("Permission Denied") );
-        }
-    }
-
-    # }}}
-
+    my ($ok, $msg) = $self->_HasModifyWatcherRight(%args);
+    return ($ok, $msg) if !$ok;
 
     # see if this user is already a watcher.
 

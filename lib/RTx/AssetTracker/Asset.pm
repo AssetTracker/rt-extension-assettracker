@@ -389,7 +389,7 @@ sub Create {
     }
 
     #Deal with setting up watchers
-    foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+    foreach my $type ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
         next unless ( defined $args{$type} );
         foreach my $watcher (
             ref( $args{$type} ) ? @{ $args{$type} } : ( $args{$type} ) )
@@ -650,7 +650,7 @@ sub UpdateAsset {
     }
 
     #watchers
-    foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+    foreach my $type ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
         next unless ( exists $args{$type} );
 
         my $role_method = $type . 'RoleGroup';
@@ -833,7 +833,7 @@ sub _CreateAssetGroups {
     my $self = shift;
     my %args = @_;
 
-    foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+    foreach my $type ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
         my $type_obj = RT::Group->new($self->CurrentUser);
         my ($id, $msg) = $type_obj->_Create(Domain => 'RTx::AssetTracker::Asset-Role',
                                                        Instance => $self->Id,

@@ -63,13 +63,13 @@
 <%INIT>
 my @types;
 if ($Scope =~ 'type') {
-   @types = ActiveRoleArray();
+   @types = RTx::AssetTracker::Type->RoleGroupTypes();
 }
 elsif ($Suffix eq 'Group') {
-   @types = ( ActiveRoleArray(), qw(Watcher) );
+   @types = ( RTx::AssetTracker::Type->RoleGroupTypes(), qw(Watcher) );
 }
 else { 
-   @types = ( ActiveRoleArray(), qw(Watcher) ); #, map( { "Type$_" } ActiveRoleArray() ), qw(TypeWatcher) );
+   @types = ( RTx::AssetTracker::Type->RoleGroupTypes(), qw(Watcher) ); #, map( { "Type$_" } RTx::AssetTracker::Type->RoleGroupTypes() ), qw(TypeWatcher) );
 }
 
 my @subtypes = @{ $RTx::AssetTracker::Assets::SEARCHABLE_SUBFIELDS{'User'} };

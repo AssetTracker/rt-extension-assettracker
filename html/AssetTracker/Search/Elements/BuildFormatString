@@ -74,7 +74,7 @@ my @fields = qw(
     Status ExtendedStatus
 );
 
-push @fields, ActiveRoleArray();
+push @fields, RTx::AssetTracker::Type->RoleGroupTypes();
 
 push @fields, qw(
     CreatedBy LastUpdatedBy

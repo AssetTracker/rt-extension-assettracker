@@ -108,7 +108,7 @@ for my $field (keys %FieldDescriptions) {
 }
 
 $fields{ $_ . '.EmailAddress' } = $_ . '.EmailAddress'
-    for ActiveRoleArray();
+    for RTx::AssetTracker::Type->RoleGroupTypes();
 
 # Add all available CustomFields to the list of sortable columns.
 my @cfs = grep /^CustomField/, @{$ARGS{AvailableColumns}};

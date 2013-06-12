@@ -2990,7 +2990,7 @@ sub _fixup_import {
     $fixed{$_} = delete $asset{$_} for qw(id Name Type Status Description);
 
     #roles
-    foreach my $type ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+    foreach my $type ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
         next unless $asset{$type};
         $fixed{$type} = [ split(/,\s*/, delete $asset{$type}) ];
     }

@@ -57,7 +57,7 @@ my @data;
 my ($c, $o, $k, $e) = ("", [], {}, 0);
 my %data = %$changes;
 my $assettype = new RTx::AssetTracker::Type $session{CurrentUser};
-my @people = ActiveRoleArray();
+my @people = RTx::AssetTracker::Type->RoleGroupTypes();
 my @basics = qw(Name Description);
 $assettype->Load($id);
 if (!$assettype->Id) {

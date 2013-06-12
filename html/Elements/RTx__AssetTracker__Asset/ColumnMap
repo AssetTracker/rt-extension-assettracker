@@ -177,7 +177,7 @@ $COLUMN_MAP = {
 
 };
 
-for my $role ( ActiveRoleArray() ) {
+for my $role ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
     my $group_method = $role . 'RoleGroup';
     my $export_method = $role . 'RoleGroupExportString';
     $COLUMN_MAP->{$role} = {

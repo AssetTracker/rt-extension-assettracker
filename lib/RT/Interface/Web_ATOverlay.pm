@@ -293,7 +293,7 @@ $RT::Logger->debug("Processing asset watchers");
     # }}}
     # Modify Asset watchers as given by Grid.html
     my $id = $Asset->id;
-    for my $role ( RTx::AssetTracker::Type->ActiveRoleArray() ) {
+    for my $role ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
         if (  $ARGSRef->{"Asset-$id-$role"}  ) {
             $ARGSRef->{"Asset-$id-$role"} =~ s/\r\n/\n/g;
             my $watchers = [split('\n', $ARGSRef->{"Asset-$id-$role"})];
@@ -906,12 +906,6 @@ sub _ProcessATObjectCustomFieldUpdates {
         }
     }
     return @results;
-}
-
-sub ActiveRoleArray {
-
-    return RTx::AssetTracker::Type->ActiveRoleArray();
-
 }
 
 1;

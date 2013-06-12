@@ -62,7 +62,7 @@ sub delete_type_watchers {
     my @types = @_;
 
     foreach my $q ( @types ) {
-        foreach my $t ( RTx::AssetTracker::Type->ActiveRoleArray ) {
+        foreach my $t ( RTx::AssetTracker::Type->RoleGroupTypes ) {
             $q->DeleteWatcher( Type => $t, PrincipalId => $_->MemberId )
                 foreach @{ $q->$t()->MembersObj->ItemsArrayRef };
         }

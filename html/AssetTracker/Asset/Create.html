@@ -92,7 +92,7 @@
         ]
         &>
 
-%foreach my $role ( $TypeObj->ActiveRoleArray() ) {
+%foreach my $role ( $TypeObj->RoleGroupTypes() ) {
 <tr>
 <td class="label">
 <% $role %>:
@@ -147,7 +147,7 @@ if ($CloneAsset) {
 
     my $clone = { };
 
-    foreach my $role ( $CloneAssetObj->TypeObj->ActiveRoleArray() ) {
+    foreach my $role ( $CloneAssetObj->TypeObj->RoleGroupTypes() ) {
 	my $role_method = $role . 'RoleGroup';
         $clone->{$role} = join( ',', $CloneAssetObj->$role_method->MemberEmailAddressesAsString );
     }

@@ -49,7 +49,7 @@
 
 <h3><&|/l&>Current watchers</&></h3>
 
-% for my $role ( ActiveRoleArray() ) {
+% for my $role ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
 <&|/l&><% RTx::AssetTracker::Type->RoleLabel( $role ) %></&>:
 <& EditWatchers, AssetObj => $AssetObj, TypeObj => $TypeObj, Role => $role, %ARGS &>
 % }

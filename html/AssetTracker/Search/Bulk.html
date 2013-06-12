@@ -79,7 +79,7 @@
 <tr>
 <td valign="top">
 <table>
-% for my $role ( ActiveRoleArray() ) {
+% for my $role ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
 <tr><td class=label> <&|/l&>Add <% $role %></&>: </td>
 <td class=value> <INPUT Name="Add<% $role %>" SIZE=20> </td></tr>
 <tr><td class=label> <&|/l&>Remove <% $role %></&>: </td>

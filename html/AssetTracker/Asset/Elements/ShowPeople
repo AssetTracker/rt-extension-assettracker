@@ -44,7 +44,7 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <table>
-% for my $role ( ActiveRoleArray() ) {
+% for my $role ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
 %    my $group = $role . 'RoleGroup';
   <tr>
     <td class="label"><&|/l&><% RTx::AssetTracker::Type->RoleLabel($role) %></&>:</td>

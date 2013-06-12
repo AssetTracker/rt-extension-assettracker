@@ -64,9 +64,9 @@ my ($c, $o, $k, $e) = ("", [], {}, 0);
 my %data   = %$changes;
 my $asset  = new RTx::AssetTracker::Asset $session{CurrentUser};
 my @dates  = qw(Created LastUpdated);
-my @people = ActiveRoleArray();
+my @people = RTx::AssetTracker::Type->RoleGroupTypes();
 my @create = ( qw(Type Name Description Status),
-               ActiveRoleArray() );
+               RTx::AssetTracker::Type->RoleGroupTypes() );
 my @simple = qw(Name Status);
 my %dates  = map {lc $_ => $_} @dates;
 my %people = map {lc $_ => $_} @people;
@@ -96,7 +96,7 @@ else {
         return [
             "# Required: id, Type",
             [ ( qw(id Type Name Description Status TransactionData),
-                ActiveRoleArray() ) ],
+                RTx::AssetTracker::Type->RoleGroupTypes() ) ],
             {
                 id               => "asset/new",
                 Type             => $type->Name,
@@ -104,7 +104,7 @@ else {
                 Description      => "",
                 Status           => "new",
                 TransactionData  => "",
-		map { $_ => [] } ActiveRoleArray(),
+		map { $_ => [] } RTx::AssetTracker::Type->RoleGroupTypes(),
             },
             0
         ];
