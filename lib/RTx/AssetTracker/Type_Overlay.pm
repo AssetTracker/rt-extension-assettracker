@@ -57,6 +57,7 @@ our $RIGHT_CATEGORIES = {
         ModifyAsset        => 'General',
         CreateAsset        => 'General',
         AdminType          => 'Admin',
+        AssignCustomFields => 'Staff',
         ModifyTypeAdmins   => 'Staff',
         ModifyTypeWatchers   => 'Staff',
         RetireAsset        => 'Staff',
