@@ -476,6 +476,55 @@ sub CurrentUserHasAssetTypeRight {
 }
 
 
+=head2 CompileCheck
+
+If the template's Type is Perl, then compile check all the codeblocks to see if
+they are syntactically valid. We eval them in a codeblock to avoid actually
+executing the code.
+
+Returns an (ok, message) pair.
+
+=cut
+
+sub CompileCheck {
+    my $self = shift;
+
+    return (1, $self->loc("Template does not include Perl code"))
+        unless $self->Type eq 'Perl';
+
+    my $content = $self->Content;
+    $content = '' if !defined($content);
+
+    my $template = Text::Template->new(
+        TYPE   => 'STRING',
+        SOURCE => $content,
+    );
+    my ($ok) = $template->compile;
+    return ( undef, $self->loc('Template parsing error: [_1]', $Text::Template::ERROR) ) if !$ok;
+
+    # copied from Text::Template::fill_in and refactored to be compile checks
+    foreach my $fi_item (@{$template->{SOURCE}}) {
+        my ($fi_type, $fi_text, $fi_lineno) = @$fi_item;
+        next unless $fi_type eq 'PROG';
+
+        do {
+            no strict 'vars';
+            eval "sub { $fi_text }";
+        };
+        next if !$@;
+
+        my $error = $@;
+
+        # provide a (hopefully) useful line number for the error, but clean up
+        # all the other extraneous garbage
+        $error =~ s/\(eval \d+\) line (\d+).*/"template line " . ($1+$fi_lineno-1)/es;
+
+        return (0, $self->loc("Couldn't compile template codeblock '[_1]': [_2]", $fi_text, $error));
+    }
+
+    return (1, $self->loc("Template compiles"));
+}
+
 
 =head2 id
 

@@ -908,4 +908,50 @@ sub _ProcessATObjectCustomFieldUpdates {
     return @results;
 }
 
+
+=head2 LimitToRolesForQueue QUEUE_ID
+
+Limits the set of groups found to role groups for queue QUEUE_ID
+
+=cut
+
+sub RT::Groups::LimitToRolesForAssetType {
+    my $self = shift;
+    my $type = shift;
+    $self->Limit(FIELD => 'Domain', OPERATOR => '=', VALUE => 'RTx::AssetTracker::Type-Role');
+    $self->Limit(FIELD => 'Instance', OPERATOR => '=', VALUE => $type);
+}
+
+
+
+=head2 GetPrincipalsMap OBJECT, CATEGORIES
+
+Gets the Role principals for Asset Types, or falls back on the
+original version.
+
+=cut
+
+my $Orig_GetPrincipalsMap = __PACKAGE__->can('GetPrincipalsMap')
+    or die "API change? Can't find method 'GetPrincipalsMap'";
+*GetPrincipalsMap = sub {
+    my $object = shift;
+    my @map;
+    for (@_) {
+        if (/Roles/ && $object->isa('RTx::AssetTracker::Type')) {
+            my $roles = RT::Groups->new($session{'CurrentUser'});
+            $roles->LimitToRolesForAssetType($object->Id);
+            $roles->OrderBy( FIELD => 'Type', ORDER => 'ASC' );
+            push @map, [
+                'Roles' => $roles,  # loc_left_pair
+                'Type'  => 1
+            ];
+        }
+        else {
+            push @map, $Orig_GetPrincipalsMap->( $object, $_ );
+        }
+    }
+    return @map;
+};
+
+
 1;

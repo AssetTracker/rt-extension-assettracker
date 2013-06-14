@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,30 +43,26 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 <& /Admin/Elements/Header, Title => $title &>
 <& /Elements/Tabs &>
-
 <& /Elements/ListActions, actions => \@results &>
 
 
 
-<FORM ACTION="<%$RT::WebPath%>/AssetTracker/Admin/Types/Modify.html" METHOD=POST>
-%if ($Create ) { 
-<INPUT TYPE=HIDDEN NAME=id VALUE="new">
-% } else {
-<INPUT TYPE=HIDDEN NAME=id VALUE="<%$TypeObj->Id%>">
-% }
+<form action="<%RT->Config->Get('WebPath')%>/AssetTracker/Admin/Types/Modify.html" name="ModifyType" method="post" enctype="multipart/form-data">
+<input type="hidden" class="hidden" name="SetEnabled" value="1" />
+<input type="hidden" class="hidden" name="id" value="<% $Create? 'new': $TypeObj->Id %>" />
 
-<TABLE>
-<TR><TD ALIGN=RIGHT>
-<&|/l&>Type Name</&>: 
-</TD>
-<TD><INPUT name="Name" value="<% ($Create) ? "" : $TypeObj->Name %>"></TD>
-</TR><TR>
-<TD ALIGN=RIGHT>
-<&|/l&>Description</&>:</TD><TD COLSPAN=3><INPUT name="Description" value="<% ($Create) ? "" : $TypeObj->Description %>" size=60></TD></TR>
+<table>
+<tr><td align="right"><&|/l&>Type Name</&>:</td>
+<td colspan="3"><input name="Name" value="<% $Create ? "" : $TypeObj->Name || $Name %>" /></td>
+</tr>
+
+<tr><td align="right"><&|/l&>Description</&>:</td>
+<td colspan="3"><input name="Description" value="<% $Create ? "" : $TypeObj->Description || $Description || '' %>" size="60" /></td>
+</tr>
 
 <tr><td align="right"><&|/l&>Lifecycle</&>:</td>
 <td colspan="3"><& /Widgets/Form/Select:InputOnly,
@@ -80,101 +78,93 @@
 <tr valign="top"><td align="right">
 <% loc($CF->Name) %>:
 </td><td>
-<& /Elements/EditCustomField, CustomField => $CF,
-                              Object => $TypeObj,
-                              ($Create ? (NamePrefix => 'Object-RTx::AssetTracker::Type--CustomField-')
+<& /Elements/EditCustomField, CustomField => $CF, 
+                              Object => $TypeObj, 
+                              ($Create ? (NamePrefix => 'Object-RTx::AssetTracker::Type--CustomField-') 
                                        : () )&>
 </td></tr>
 % }
 
-<TR>
-<TD>
-</TD>
-<TD COLSPAN=4><INPUT TYPE=HIDDEN NAME="SetEnabled" VALUE="1">
-<INPUT TYPE=CHECKBOX NAME="Enabled" VALUE="1" <%$EnabledChecked%>> <&|/l&>Enabled (Unchecking this box disables this type)</&><BR>
+<tr><td align="right"><input type="checkbox" class="checkbox" name="Enabled" value="1" <%$EnabledChecked|n%> /></td>
+<td colspan="3"><&|/l&>Enabled (Unchecking this box disables this type)</&><br />
 % $m->callback( %ARGS, TypeObj => $TypeObj, results => \@results );
-</TD>
-</TR>
+</td></tr>
 
-
-</TABLE>
+</table>
+% if ( $Create ) {
+<& /Elements/Submit, Label => loc('Create') &>
+% } else {
 <& /Elements/Submit, Label => loc('Save Changes') &>
+% }
 </form>
 
 
 
 <%INIT>
-my $current_tab;
-my $TypeObj = new RTx::AssetTracker::Type($session{'CurrentUser'});
-$TypeObj->Load($id);
-my  ($title, @results, $Disabled, $EnabledChecked);
-$EnabledChecked = "CHECKED";
+my ($title, @results, @no_redirect_results, $Disabled, $EnabledChecked);
+my $TypeObj = RTx::AssetTracker::Type->new( $session{'CurrentUser'} );
+$TypeObj->Load( $id ) if !$id || $id eq 'new';
 
-if ($Create) {
-    $current_tab = 'AssetTracker/Admin/Types/Modify.html?Create=1';
-    $title = loc("Create a type");
-} else {
-    if ($id eq 'new') {
-       my ($val, $msg) =  $TypeObj->Create(Name => $Name);
-       delete $session{'create_in_types'};
-       if ($val == 0 ) {
-           Abort("$msg");
-	   }
-	   else {
-	        push @results, $msg;
-	   }    
-     }
-     else {
-        $TypeObj->Load($id) || $TypeObj->Load($Name) || Abort("Couldn't load type '$Name'");
+$EnabledChecked = 'checked="checked"';
+
+unless ($Create) {
+    if ( defined $id && $id eq 'new' ) {
+        my ($val, $msg) = $TypeObj->Create( Name => $Name );
+        if (!$val) {
+            $Create = 1; # Create failed, so bring us back to step 1
+        }
+        push @results, $msg;
+    } else {
+        $TypeObj->Load($id) || $TypeObj->Load($Name) || Abort(loc("Couldn't load asset type '[_1]'", $Name));
     }
-        $title = loc('Editing Configuration for type [_1]', $TypeObj->Name);
-    
-    $current_tab = 'AssetTracker/Admin/Types/Modify.html?id='.$TypeObj->id;
 }
-if ($TypeObj->Id()) {
-    delete $session{'create_in_types'};
-my @attribs= qw(Description Name Lifecycle);
 
-  push @results, UpdateRecordObject( AttributesRef => \@attribs, 
-				    Object => $TypeObj, 
-				    ARGSRef => \%ARGS);
+if ( $TypeObj->Id ) {
+    $title = loc('Configuration for asset type [_1]', $TypeObj->Name );
+    my @attribs= qw(Description Name Lifecycle);
 
-  #we're asking about enabled on the web page but really care about disabled.
-  if (defined $Enabled && $Enabled == 1) {
-      $Disabled = 0;
-  }	
-  else {
-      $Disabled = 1;
-  }
+    # we're asking about enabled on the web page but really care about disabled
+    if ( $SetEnabled ) {
+        $Disabled = $ARGS{'Disabled'} = $Enabled? 0: 1;
+    }
 
-  if  ( ($SetEnabled) and ( $Disabled != $TypeObj->Disabled) ) { 
-      my  ($code, $msg) = $TypeObj->SetDisabled($Disabled);
-      push @results, loc('Enabled status: [_1]', loc_fuzzy($msg));
-  }
-  
-  if ($TypeObj->Disabled()) {
-      $EnabledChecked ="";
-  }
+    $m->callback(
+        CallbackName => 'BeforeUpdate',
+        Type => $TypeObj,
+        AttributesRef => \@attribs,
+        ARGSRef => \%ARGS,
+    );
 
+    push @results, UpdateRecordObject(
+        AttributesRef => \@attribs,
+        Object => $TypeObj,
+        ARGSRef => \%ARGS
+    );
+
+    $Disabled = $ARGS{'Disabled'} = $Enabled? 0: 1;
+
+    $EnabledChecked = "" if $TypeObj->Disabled;
+
+    my @linkresults;
+    $m->callback(
+        results      => \@linkresults,
+        RecordObj    => $TypeObj,
+        ARGSRef      => \%ARGS, 
+        CallbackName => 'ProcessLinks'
+    );
+    push @results, @linkresults;
     push @results, ProcessObjectCustomFieldUpdates( ARGSRef => \%ARGS, Object => $TypeObj );
-#    my @linkresults;
-#    $m->callback(
-#        results      => \@linkresults,
-#        RecordObj    => $TypeObj,
-#        ARGSRef      => \%ARGS, 
-#        CallbackName => 'ProcessLinks'
-#    );
-#    push @results, @linkresults;
+} else {
+    $title = loc("Create a type");
+}
 
 # This code does automatic redirection if any updates happen.
-  if ($RT::VERSION =~ /^4/) {
-    MaybeRedirectForResults(
-        Actions   => \@results,
-        Arguments => { id => $TypeObj->Id },
-    );
-  }
+MaybeRedirectForResults(
+    Actions   => \@results,
+    Arguments => { id => $TypeObj->Id },
+) if $TypeObj->id;
 
-}
+push @results, @no_redirect_results;
 </%INIT>
 
 

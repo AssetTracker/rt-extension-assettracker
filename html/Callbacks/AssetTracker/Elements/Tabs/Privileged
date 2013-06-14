@@ -199,8 +199,10 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         if ( $m->request_args->{'id'} && $m->request_args->{'id'} =~ /^\d+$/
                 ||
               $m->request_args->{'Type'} && $m->request_args->{'Type'} =~ /^\d+$/
+                ||
+              $m->request_args->{'AssetType'} && $m->request_args->{'AssetType'} =~ /^\d+$/
                 ) {
-            my $id = $m->request_args->{'Type'} || $m->request_args->{'id'};
+            my $id = $m->request_args->{'Type'} || $m->request_args->{'AssetType'} || $m->request_args->{'id'};
             my $type_obj = RTx::AssetTracker::Type->new( $session{'CurrentUser'} );
             $type_obj->Load($id);
 
@@ -223,6 +225,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
 
             $type->child( 'group-rights' => title => loc('Group Rights'), path => "/AssetTracker/Admin/Types/GroupRights.html?id=".$id );
             $type->child( 'user-rights' => title => loc('User Rights'), path => "/AssetTracker/Admin/Types/UserRights.html?id=" . $id );
+            $type->child( 'history' => title => loc('History'), path => "/AssetTracker/Admin/Types/History.html?id=" . $id );
 
         }
     }

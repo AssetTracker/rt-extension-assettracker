@@ -101,6 +101,7 @@ our $RIGHT_CATEGORIES = {
         ModifyAsset        => 'General',
         CreateAsset        => 'General',
         AdminType          => 'Admin',
+        AssignCustomFields => 'Staff',
         ModifyTypeAdmins   => 'Staff',
         ModifyTypeWatchers   => 'Staff',
         RetireAsset        => 'Staff',
@@ -610,6 +611,19 @@ sub CurrentUserHasRight {
     );
 
 }
+
+=head2 CurrentUserCanSee
+
+Returns true if the current user can see the type, using SeeType
+
+=cut
+
+sub CurrentUserCanSee {
+    my $self = shift;
+
+    return $self->CurrentUserHasRight('SeeType');
+}
+
 
 # }}}
 

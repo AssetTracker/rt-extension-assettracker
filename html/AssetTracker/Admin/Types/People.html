@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,66 +43,68 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc('Modify people related to type [_1]', $TypeObj->Name) &>
+<& /Elements/Header, Title => $title &>
+
 <& /Elements/Tabs &>
 
 <& /Elements/ListActions, actions => \@results &>
 
  
-<FORM METHOD=POST ACTION="People.html">
-<INPUT TYPE=HIDDEN NAME=id VALUE="<%$TypeObj->Id%>">
+<form method="post" action="People.html">
+<input type="hidden" class="hidden" name="id" value="<%$TypeObj->Id%>" />
 
-<TABLE WIDTH=100%>
-<TR>
-<TD VALIGN=TOP >
+<table width="100%">
+<tr>
+<td valign="top" >
 
 <h3><&|/l&>Current watchers</&></h3>
 
-
-% for my $role ( RTx::AssetTracker::Type->RoleGroupTypes ) {
-%     my $role_group_method = $role . 'RoleGroup';
-<&|/l&><% RTx::AssetTracker::Type->RoleLabel( $role ) %></&>:
-
-<& /AssetTracker/Admin/Elements/EditTypeWatchers, TypeObj => $TypeObj, Watchers => $TypeObj->$role_group_method() &>
+% for my $Name (RTx::AssetTracker::Type->RoleGroupTypes) {
+%     my $role_group_method = $Name . 'RoleGroup';
+<& /AssetTracker/Admin/Elements/EditTypeWatcherGroup, Label => loc($Name), TypeObj => $TypeObj, Watchers => $TypeObj->$role_group_method &>
 % }
 
-</TD>
-<TD VALIGN=TOP>
+% $m->callback(CallbackName => 'CurrentWatchers', TypeObj => $TypeObj);
+
+</td>
+<td valign="top">
 <h3><&|/l&>New watchers</&></h3>
 
-<&|/l&>Find people whose</&><BR>
+<&|/l&>Find people whose</&><br />
 <& /Elements/SelectUsers &>
-<input type=submit name="OnlySearchForPeople" value="<&|/l&>Go!</&>">
-<BR>
-<&|/l&>Find groups whose</&><BR>
+<input type="submit" class="button" name="OnlySearchForPeople" value="<&|/l&>Go!</&>" />
+<br />
+<&|/l&>Find groups whose</&><br />
 <& /Elements/SelectGroups &>
-<input type=submit name="OnlySearchForGroup" value="<&|/l&>Go!</&>">
+<input type="submit" class="button" name="OnlySearchForGroup" value="<&|/l&>Go!</&>" />
 
 <p>
-<&|/l&>Add new watchers</&>:<br>
+<&|/l&>Add new watchers</&>:<br />
 <p>
-<b><&|/l&>Users</&></b>
+<strong><&|/l&>Users</&></strong>
 % if ($user_msg) {
-<br>
-<i><%$user_msg%></i>
+<br />
+<em><%$user_msg%></em>
 % } elsif ($Users) {
 <ul>
 % while (my $u = $Users->Next ) {
-<li><&/AssetTracker/Elements/SelectWatcherType, Scope=>'type', Name =>
-"Type-AddWatcher-Principal-".$u->PrincipalId &> <%$u->Name%>
-(<%$u->RealName%>)
+<li><& /AssetTrackler/Elements/SelectWatcherType,
+    Scope => 'type',
+    Name => "Type-AddWatcher-Principal-". $u->PrincipalId,
+&>
+<& /Elements/ShowUser, User => $u &></li>
 % }
 </ul>
 % }
 
 <p>
-<b><&|/l&>Groups</&></b>
+<strong><&|/l&>Groups</&></strong>
 
 % if ($group_msg) {
-<br>
-<i><%$group_msg%></i>
+<br />
+<em><%$group_msg%></em>
 % } elsif ($Groups) {
 <ul>
 % while (my $g = $Groups->Next ) {
@@ -111,9 +115,9 @@
 </ul>
 % }
 
-</TD>
-</TR>
-</TABLE>
+</td>
+</tr>
+</table>
 
 
 
@@ -123,34 +127,25 @@
 
 <%INIT>
 
-my $current_tab;
 my ($field, @results, $User, $Users, $Groups, $watcher, $user_msg, $group_msg);
 
-# {{{ Load the type
-#If we get handed two ids, mason will make them an array. bleck.
-# We want teh first one. Just because there's no other sensible way
-# to deal
-
-
-
-my $TypeObj = new RTx::AssetTracker::Type($session{'CurrentUser'});
+my $TypeObj = RTx::AssetTracker::Type->new($session{'CurrentUser'});
 $TypeObj->Load($id) || Abort(loc("Couldn't load type", $id));
-# }}}
 
-# {{{ Delete deletable watchers
+unless ($OnlySearchForPeople or $OnlySearchForGroup) {
+# Delete deletable watchers
 
-foreach my $key (keys %ARGS) {
-        my $id = $TypeObj->Id;
+    foreach my $key (keys %ARGS) {
+            my $id = $TypeObj->Id;
 
-    if (($key =~ /^Type-$id-DeleteWatcher-Type-(.*?)-Principal-(\d*)$/)) {;
-	    my ($code, $msg) = $TypeObj->DeleteWatcher(Type => $1,
-                                                    PrincipalId => $2);
-	    push @results, $msg;
+        if (($key =~ /^Type-$id-DeleteWatcher-Type-(.*?)-Principal-(\d*)$/)) {;
+            my ($code, $msg) = $TypeObj->DeleteWatcher(Type => $1,
+                                                        PrincipalId => $2);
+            push @results, $msg;
+        }
     }
-}
-# }}}
 
-# {{{ Add new watchers
+# Add new watchers
     foreach my $key (keys %ARGS) {
         my $type = $ARGS{$key};
 
@@ -165,36 +160,38 @@ foreach my $key (keys %ARGS) {
         );
         push @results, $msg;
     }
-
-# }}}
-
+}
  
 
-if (!length $ARGS{'UserString'}) {
-$user_msg = loc("No principals selected.");
- }
-else {
-    $Users = new RT::Users($session{'CurrentUser'});
-    $Users->Limit(FIELD => $ARGS{'UserField'},
-                 VALUE => $ARGS{'UserString'},
-                 OPERATOR => $ARGS{'UserOp'});
-     }
+if ( $ARGS{'UserString'} ) {
+    $Users = RT::Users->new( $session{'CurrentUser'} );
+    $Users->Limit( FIELD    => $ARGS{'UserField'},
+                   VALUE    => $ARGS{'UserString'},
+                   OPERATOR => $ARGS{'UserOp'}
+                 );
+} else {
+    $user_msg = loc("No principals selected.");
+    }
 
-if (!length $ARGS{'GroupString'}) {
-$group_msg = loc("No principals selected.");
- }
-else {
-$Groups = new RT::Groups($session{'CurrentUser'});
-$Groups->Limit(FIELD => 'Domain', OPERATOR => '=', VALUE => 'UserDefined');
-$Groups->Limit(FIELD => $ARGS{'GroupField'},
-		VALUE => $ARGS{'GroupString'},
-		OPERATOR => $ARGS{'GroupOp'});
-     }
-
-$current_tab = 'AssetTracker/Admin/Types/People.html?id='.$TypeObj->id;
+if ( $ARGS{'GroupString'} ) {
+    $Groups = RT::Groups->new( $session{'CurrentUser'} );
+    $Groups->Limit( FIELD    => 'Domain',
+                    OPERATOR => '=',
+                    VALUE    => 'UserDefined'
+                  );
+    $Groups->Limit( FIELD    => $ARGS{'GroupField'},
+                    VALUE    => $ARGS{'GroupString'},
+                    OPERATOR => $ARGS{'GroupOp'}
+                  );
+} else {
+    $group_msg = loc("No principals selected.");
+}
+my $title = loc('People related to type [_1]', $TypeObj->Name);
 </%INIT>
 
 <%ARGS>
+$OnlySearchForPeople => undef
+$OnlySearchForGroup => undef
 $UserField => 'Name'
 $UserOp => '='
 $UserString => undef
@@ -204,4 +201,3 @@ $GroupString => undef
 $Type => undef
 $id => undef
 </%ARGS>
-

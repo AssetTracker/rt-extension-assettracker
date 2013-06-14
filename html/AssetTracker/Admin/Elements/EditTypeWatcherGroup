@@ -45,34 +45,12 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<& /Admin/Elements/Header, Title => loc('Modify group rights for asset type [_1]', $TypeObj->Name) &>
-<& /Elements/Tabs &>
-<& /Elements/ListActions, actions => \@results &>
-
-<form method="post" action="GroupRights.html" id="ModifyGroupRights" name="ModifyGroupRights">
-  <input type="hidden" class="hidden" name="id" value="<% $TypeObj->id %>" />
-
-% $m->callback( %ARGS, TypeObj => $TypeObj, results => \@results, principals => \@principals );
-
-  <& /Admin/Elements/EditRights, Context => $TypeObj, Principals => \@principals &>
-
-  <& /Elements/Submit, Label => loc('Save Changes') &>
-</form>
-
-<%INIT>
-# Update the acls.
-my @results = ProcessACLs(\%ARGS);
-
-if (!defined $id) {
-    Abort(loc("No Asset Type defined"));
-}
-
-my $TypeObj = RTx::AssetTracker::Type->new($session{'CurrentUser'});
-$TypeObj->Load($id) || Abort(loc("Couldn't load type [_1]",$id));
-
-# Principal collections
-my @principals = GetPrincipalsMap($TypeObj, qw(System Roles Groups));
-</%INIT>
 <%ARGS>
-$id => undef
+$Label
+$TypeObj
+$Watchers
 </%ARGS>
+<span><% $Label %>:</span>
+
+<& /AssetTracker/Admin/Elements/EditTypeWatchers, TypeObj => $TypeObj, Watchers => $Watchers &>
+
