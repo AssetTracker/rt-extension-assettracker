@@ -88,7 +88,7 @@ my $build_search_link = sub {
     $type_name =~ s/(['\\])/\\$1/g; #'
 
     return RT->Config->Get('WebPath')
-         . "/Search/Results.html?Query="
+         . "/AssetTracker/Search/Results.html?Query="
          . $m->interp->apply_escapes("Type = '$type_name' AND $extra_query", 'u');
 };
 

@@ -68,17 +68,25 @@ strings per RT class.
 
 =cut
 
-Set(%AT_AdminSearchResultFormat,
-    Types =>
+Set(%AdminSearchResultFormat,
+    AT_Types =>
         q{'<a href="__WebPath__/AssetTracker/Admin/Types/Modify.html?id=__id__">__id__</a>/TITLE:#'}
         .q{,'<a href="__WebPath__/AssetTracker/Admin/Types/Modify.html?id=__id__">__Name__</a>/TITLE:Name'}
         .q{,__Description__,__Disabled__},
-    Scrips =>
-        q{'<a href="__WebPath__/__WebRequestPathDir__/Scrip.html?id=__id__&AssetType=__AssetTypeId__">__id__</a>/TITLE:#'}
-        .q{,'<a href="__WebPath__/__WebRequestPathDir__/Scrip.html?id=__id__&AssetType=__AssetTypeId__">__Description__</a>/TITLE:Description'
+
+    AT_Scrips =>
+        q{'<a href="__WebPath__/AssetTracker/Admin/Types/Scrip.html?id=__id__&AssetType=__AssetTypeId__">__id__</a>/TITLE:#'}
+        .q{,'<a href="__WebPath__/AssetTracker/Admin/Types/Scrip.html?id=__id__&AssetType=__AssetTypeId__">__Description__</a>/TITLE:Description'
 }
         .q{,__Stage__, __Condition__, __Action__, __Template__},
-    Templates =>
+
+    AT_GlobalScrips =>
+        q{'<a href="__WebPath__/AssetTracker/Admin/Global/Scrip.html?id=__id__">__id__</a>/TITLE:#'}
+        .q{,'<a href="__WebPath__/AssetTracker/Admin/Global/Scrip.html?id=__id__">__Description__</a>/TITLE:Description'
+}
+        .q{,__Stage__, __Condition__, __Action__, __Template__},
+
+    AT_Templates =>
         q{'<a href="__WebPath__/__WebRequestPathDir__/Template.html?AssetType=__AssetTypeId__&Template=__id__">__id__</a>/TITLE:#'}
         .q{,'<a href="__WebPath__/__WebRequestPathDir__/Template.html?AssetType=__AssetTypeId__&Template=__id__">__Name__</a>/TITLE:Name'}
         .q{,'__Description__'},

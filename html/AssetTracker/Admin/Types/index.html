@@ -111,7 +111,7 @@ if ( defined $TypeString && length $TypeString ) {
         : loc("Enabled Asset Types");
 }
 
-$Format ||= RT->Config->Get('AT_AdminSearchResultFormat')->{'Types'};
+$Format ||= RT->Config->Get('AdminSearchResultFormat')->{'AT_Types'};
 
 </%INIT>
 <%ARGS>

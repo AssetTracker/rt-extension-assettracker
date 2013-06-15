@@ -120,7 +120,6 @@ which can be used with any asset type.
 
 sub LimitToGlobal {
     my $self = shift;
-    my $type_id = shift;
     $self->Limit(FIELD => 'AssetType',
                  VALUE => "0",
                  OPERATOR => '='

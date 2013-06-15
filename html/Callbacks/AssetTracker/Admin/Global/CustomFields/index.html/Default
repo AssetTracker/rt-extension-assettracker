@@ -1,0 +1,16 @@
+<%INIT>
+  $tabs->{'ZZ'} = { 'title' => loc('Assets'),
+                                text => loc('Select custom fields for all assets'),
+                           path => $RT::WebPath.'/AssetTracker/Admin/Global/CustomFields/Type-Assets.html',
+                         };
+  $tabs->{'ZZZ'} = { 'title' => loc('Asset Types'),
+                                text => loc('Select custom fields for asset types'),
+                           path => $RT::WebPath.'/AssetTracker/Admin/Global/CustomFields/Types.html',
+                         };
+</%INIT>
+
+
+<%ARGS>
+$tabs
+</%ARGS>
+

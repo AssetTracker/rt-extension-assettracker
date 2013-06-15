@@ -80,11 +80,17 @@ $RT::ACE::OBJECT_TYPES{'RTx::AssetTracker::System'} = 1;
 
 # System rights are rights granted to the whole system
 # XXX TODO Can't localize these outside of having an object around.
-$RIGHTS = {
+our $RIGHTS = {
 	SuperUser => "Do anything with assets",     # loc_pair
 	BulkUpdate => "Allow educated users to perform bulk updates",     # loc_pair
 	AssetImport => "Allow educated users to import assets",     # loc_pair
 	#ShowConfigTab => "show Configuration tab",     # loc_pair
+};
+
+our $RIGHT_CATEGORIES = {
+    SuperUser              => 'Admin',
+    BulkUpdate             => 'Staff',
+    AssetImport            => 'Staff',
 };
 
 
@@ -106,11 +112,31 @@ sub AvailableRights {
 
     my $tr = $type->AvailableRights();
 
-    # Build a merged list of all system wide rights, queue rights and group rights.
+    # Build a merged list of all system wide rights and type rights.
     my %rights = (%{$RIGHTS}, %{$tr},);
     return(\%rights);
 }
 
+
+=head2 RightCategories
+
+Returns a hashref where the keys are rights for this type of object and the
+values are the category (General, Staff, Admin) the right falls into.
+
+=cut
+
+sub RightCategories {
+    my $self = shift;
+
+    my $type = RTx::AssetTracker::Type->new(RT->SystemUser);
+
+    my $tr = $type->RightCategories();
+
+    # Build a merged list of all system wide rights and type rights
+    my %rights = (%{$RIGHT_CATEGORIES}, %{$tr});
+
+    return(\%rights);
+}
 
 =head2 new
 

@@ -230,6 +230,18 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         }
     }
 
+    if ( $request_path =~ m{^/AssetTracker/Admin/Global/(Scrip|Template)s?\.html} ) {
+        my $type = $1;
+        my $tabs = PageMenu();
+
+        # With only two elements, swapping between dropdown and menu is kinda dumb
+        # In the glorious future this should be cleaner.
+
+        $tabs->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Global/${type}s.html" );
+        $tabs->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Global/${type}.html?Create=1" );
+    }
+
+
     my $tools = Menu->child("tools");
 
     $tools->child( asset_import =>
@@ -238,18 +250,50 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         path        => '/AssetTracker/Tools/Import.html',
     );
 
-    my $admin = $tools->child("config");
-    if ($admin) {
+    if ( my $admin = $tools->child("config") ) {
         my $types = $admin->child( 'asset-types' => title => loc('Asset Types'), path => '/AssetTracker/Admin/Types/', description => loc('Manage asset types and asset-specific properties') );
         $types->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Types/index.html" );
         $types->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Types/Modify.html?Create=1" );
 
-        my $cfadmin = $admin->child("global")->child("custom-fields");
-        $cfadmin->child( assets => title => loc('Assets') => text => loc('Select custom fields for all assets'),
-                            path => '/AssetTracker/Admin/Global/CustomFields/Type-Assets.html');
-        $cfadmin->child( types => title => loc('Asset Types') => text => loc('Select custom fields for asset types'),
-                            path => '/AssetTracker/Admin/Global/CustomFields/Types.html');
+        my $admin_global = $admin->child("global");
 
+        my $scrips = $admin_global->child( at_scrips =>
+            title       => loc('AT Scrips'),
+            description => loc('Modify scrips which apply to all asset types'),
+            path        => '/AssetTracker/Admin/Global/Scrips.html',
+        );
+        $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Global/Scrips.html" );
+        $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Global/Scrip.html?Create=1" );
+
+        my $templates = $admin_global->child( at_templates =>
+            title       => loc('AT Templates'),
+            description => loc('Edit system templates for asset tracker'),
+            path        => '/AssetTracker/Admin/Global/Templates.html',
+        );
+        $templates->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Global/Templates.html" );
+        $templates->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Global/Template.html?Create=1" );
+
+        my $cfadmin = $admin_global->child("custom-fields");
+        $cfadmin->child( types =>
+            title       => loc('Asset Types'),
+            description => loc('Select custom fields for all asset types'),
+            path        => '/AssetTracker/Admin/Global/CustomFields/Types.html');
+        $cfadmin->child( assets =>
+            title       => loc('Assets'),
+            description => loc('Select custom fields for assets of all types'),
+            path        => '/AssetTracker/Admin/Global/CustomFields/Type-Assets.html',
+        );
+
+        $admin_global->child( 'at_group-rights' =>
+            title       => loc('AT Group Rights'),
+            description => loc('Modify global group rights for asset tracker'),
+            path        => '/AssetTracker/Admin/Global/GroupRights.html',
+        );
+        $admin_global->child( 'at_user-rights' =>
+            title       => loc('AT User Rights'),
+            description => loc('Modify global user rights for asset tracker'),
+            path        => '/AssetTracker/Admin/Global/UserRights.html',
+        );
     }
 
     PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset'), sort_order => 99 );

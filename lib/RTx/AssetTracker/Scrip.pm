@@ -593,6 +593,37 @@ sub HasRight {
 # }}}
 
 
+=head2 CompileCheck
+
+This routine compile-checks the custom prepare, commit, and is-applicable code
+to see if they are syntactically valid Perl. We eval them in a codeblock to
+avoid actually executing the code.
+
+If one of the fields has a compile error, only the first is reported.
+
+Returns an (ok, message) pair.
+
+=cut
+
+sub CompileCheck {
+    my $self = shift;
+
+    for my $method (qw/CustomPrepareCode CustomCommitCode CustomIsApplicableCode/) {
+        my $code = $self->$method;
+        next if !defined($code);
+
+        do {
+            no strict 'vars';
+            eval "sub { $code \n }";
+        };
+        next if !$@;
+
+        my $error = $@;
+        return (0, $self->loc("Couldn't compile [_1] codeblock '[_2]': [_3]", $method, $code, $error));
+    }
+}
+
+
 =head2 SetScripAction
 
 =cut
