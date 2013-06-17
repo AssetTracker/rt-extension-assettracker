@@ -146,7 +146,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         }
 
         if ( $has_query ) {
-            my $bulk = $current_search_menu->child( bulk => title => loc('Bulk Update'));
+            my $bulk = $current_search_menu->child( bulk => title => loc('Bulk Update'), path => "/AssetTracker/Search/Bulk.html$args" );
             $bulk->child( batch => title => loc('Batch Update multiple assets'), path => "/AssetTracker/Search/Bulk.html$args" );
             $bulk->child( grid  => title => loc('Grid Update multiple assets'),  path => "/AssetTracker/Search/Grid.html$args" );
 
