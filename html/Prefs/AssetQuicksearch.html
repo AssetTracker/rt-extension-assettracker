@@ -45,22 +45,64 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<div class="asset-overview">
-<&|/Widgets/TitleBox,
-    title => loc("Quick search"),
-    bodyclass => "",
-    titleright => loc("Edit"),
-    titleright_href => RT->Config->Get('WebPath').'/Prefs/AssetQuicksearch.html',
+<& /Elements/Header, Title => $title &>
+<& /Elements/Tabs
 &>
-<& $comp,
-   type_filter => sub { $_->CurrentUserHasRight('ShowAsset') && !exists $unwanted->{$_->Name} },
-&>
-</&>
-</div>
+<& /Elements/ListActions, actions => \@actions &>
+<h1><&|/l&>Select asset types to be displayed on the "RT at a glance" page</&></h1>
+<form method="post" action="AssetQuicksearch.html" name="Preferences">
+<ul>
+% for my $type (@types) {
+<li><input type="checkbox" class="checkbox" name="Want-<%$type->Name%>" value="1"
+% unless ($unwanted->{$type->Name}) {
+checked="checked"
+% }
+/><%$type->Name%><% $type->Description ? ': '.$type->Description : '' %></li>
+% }
+</ul>
+
+<& /Elements/Submit,
+    Caption             => loc("Save Changes"),
+    Label               => loc('Save'),
+    Name                => 'Save',
+    Reset               => 1,
+    CheckAll            => 1,
+    ClearAll            => 1,
+    CheckboxNameRegex   => '/^Want-/',
+    &>
+
+</form>
+
 <%INIT>
-my $unwanted = $session{'CurrentUser'}->UserObj->Preferences('AssetQuickSearch', {});
-my $comp = $SplitByLifecycle? '/AssetTracker/Elements/TypeSummaryByLifecycle' : '/AssetTracker/Elements/TypeSummaryByStatus';
+my @actions;
+my $title = loc("Customize").' '.loc("Asset quick search");
+my $user = $session{'CurrentUser'}->UserObj;
+my $unwanted = $user->Preferences('AssetQuickSearch', {});
+my $Types = RTx::AssetTracker::Types->new($session{'CurrentUser'});
+$Types->UnLimit;
+
+my $right = 'ShowAsset';
+$m->callback(
+    CallbackName    => 'ModifyTypes',
+    Types           => \$Types,
+    Right           => \$right,
+    Unwanted        => $unwanted,
+);
+
+my @types = grep { $right ? $_->CurrentUserHasRight($right) : 1 } @{$Types->ItemsArrayRef};
+
+if ($ARGS{'Save'}) {
+    for my $type (@types) {
+        if ($ARGS{"Want-".$type->Name}) {
+	    delete $unwanted->{$type->Name};
+	}
+        else {
+	    ++$unwanted->{$type->Name};
+        }
+    }
+
+    my ($ok, $msg) = $user->SetPreferences('AssetQuickSearch', $unwanted);
+    push @actions, $ok ? loc('Preferences saved.') : $msg;
+}
+
 </%INIT>
-<%ARGS>
-$SplitByLifecycle => 1
-</%ARGS>
