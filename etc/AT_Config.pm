@@ -13,6 +13,22 @@ use AT::Config;
 
 =cut
 
+=item C<$AssetsItemMapSize>
+
+On the display page of a asset from search results, RT provides links
+to the first, next, previous and last asset from the results.  In
+order to build these links, RT needs to fetch the full result set from
+the database, which can be resource-intensive.
+
+Set C<$AssetsItemMapSize> to number of assets you want RT to examine
+to build these links. If the full result set is larger than this
+number, RT will omit the "last" link in the menu.  Set this to zero to
+always examine all results.
+
+=cut
+
+Set($AssetsItemMapSize, 1000);
+
 # $DefaultAssetSearchResultFormat is the default format for RT search results
 Set ($DefaultAssetSearchResultFormat, 
  qq{'<B><A HREF="$RT::WebPath/AssetTracker/Asset/Display.html?id=__id__">__Name__</a></B>/TITLE:Name',

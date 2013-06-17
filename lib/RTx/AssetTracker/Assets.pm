@@ -2406,8 +2406,6 @@ sub CountAll {
 # }}}
 
 
-# {{{ sub ItemsArrayRef
-
 =head2 ItemsArrayRef
 
 Returns a reference to the set of all items found in this search
@@ -2416,21 +2414,44 @@ Returns a reference to the set of all items found in this search
 
 sub ItemsArrayRef {
     my $self = shift;
-    my @items;
 
-    unless ( $self->{'items_array'} ) {
+    return $self->{'items_array'} if $self->{'items_array'};
 
-        my $placeholder = $self->_ItemsCounter;
-        $self->GotoFirstItem();
-        while ( my $item = $self->Next ) {
-            push( @{ $self->{'items_array'} }, $item );
-        }
-        $self->GotoItem($placeholder);
-        $self->{'items_array'} = $self->ItemsOrderBy( $self->{'items_array'});
+    my $placeholder = $self->_ItemsCounter;
+    $self->GotoFirstItem();
+    while ( my $item = $self->Next ) {
+        push( @{ $self->{'items_array'} }, $item );
     }
-    return ( $self->{'items_array'} );
+    $self->GotoItem($placeholder);
+    $self->{'items_array'}
+        = $self->ItemsOrderBy( $self->{'items_array'} );
+
+    return $self->{'items_array'};
 }
-# }}}
+
+sub ItemsArrayRefWindow {
+    my $self = shift;
+    my $window = shift;
+
+    my @old = ($self->_ItemsCounter, $self->RowsPerPage, $self->FirstRow+1);
+
+    $self->RowsPerPage( $window );
+    $self->FirstRow(1);
+    $self->GotoFirstItem;
+
+    my @res;
+    while ( my $item = $self->Next ) {
+        push @res, $item;
+    }
+
+    $self->RowsPerPage( $old[1] );
+    $self->FirstRow( $old[2] );
+    $self->GotoItem( $old[0] );
+
+    return \@res;
+}
+
+
 
 # {{{ sub Next
 sub Next {
@@ -2710,75 +2731,81 @@ sub _ProcessRestrictions {
 
 =head2 _BuildItemMap
 
-    # Build up a map of first/last/next/prev items, so that we can display search nav quickly
+Build up a L</ItemMap> of first/last/next/prev items, so that we can
+display search nav quickly.
 
 =cut
 
 sub _BuildItemMap {
     my $self = shift;
 
-    my $items = $self->ItemsArrayRef;
-    my $prev  = 0;
+    my $window = RT->Config->Get('AssetsItemMapSize');
 
-    delete $self->{'item_map'};
-    if ( $items->[0] ) {
-        #$self->{'item_map'}->{'first'} = $items->[0]->EffectiveId;
-        $self->{'item_map'}->{'first'} = $items->[0]->Id;
-        while ( my $item = shift @$items ) {
-            #my $id = $item->EffectiveId;
-            my $id = $item->Id;
-            $self->{'item_map'}->{$id}->{'defined'} = 1;
-            $self->{'item_map'}->{$id}->{prev}      = $prev;
-            #$self->{'item_map'}->{$id}->{next}      = $items->[0]->EffectiveId
-            $self->{'item_map'}->{$id}->{next}      = $items->[0]->Id
-              if ( $items->[0] );
-            $prev = $id;
-        }
-        $self->{'item_map'}->{'last'} = $prev;
+    $self->{'item_map'} = {};
+
+    my $items = $self->ItemsArrayRefWindow( $window );
+    return unless $items && @$items;
+
+    my $prev = 0;
+    $self->{'item_map'}{'first'} = $items->[0]->Id;
+    for ( my $i = 0; $i < @$items; $i++ ) {
+        my $item = $items->[$i];
+        my $id = $item->Id;
+        $self->{'item_map'}{$id}{'defined'} = 1;
+        $self->{'item_map'}{$id}{'prev'}    = $prev;
+        $self->{'item_map'}{$id}{'next'}    = $items->[$i+1]->Id
+            if $items->[$i+1];
+        $prev = $id;
     }
-} 
-
+    $self->{'item_map'}{'last'} = $prev
+        if !$window || @$items < $window;
+}
 
 =head2 ItemMap
 
-Returns an a map of all items found by this search. The map is of the form
+Returns an a map of all items found by this search. The map is a hash
+of the form:
 
-$ItemMap->{'first'} = first assetid found
-$ItemMap->{'last'} = last assetid found
-$ItemMap->{$id}->{prev} = the asset id found before $id
-$ItemMap->{$id}->{next} = the asset id found after $id
+    {
+        first => <first asset id found>,
+        last => <last asset id found or undef>,
+
+        <asset id> => {
+            prev => <the asset id found before>,
+            next => <the asset id found after>,
+        },
+        <asset id> => {
+            prev => ...,
+            next => ...,
+        },
+    }
 
 =cut
 
 sub ItemMap {
     my $self = shift;
-    $self->_BuildItemMap()
-      unless ( $self->{'items_array'} and $self->{'item_map' });
-    return ( $self->{'item_map'} );
-}
-
-=cut
- 
-
+    $self->_BuildItemMap unless $self->{'item_map'};
+    return $self->{'item_map'};
 }
 
 
 
-# }}}
-
-# }}}
 
 =head2 PrepForSerialization
 
-You don't want to serialize a big assets object, as the {items} hash will be instantly invalid _and_ eat lots of space
+You don't want to serialize a big assets object, as
+the {items} hash will be instantly invalid _and_ eat
+lots of space
 
 =cut
 
 sub PrepForSerialization {
     my $self = shift;
     delete $self->{'items'};
+    delete $self->{'items_array'};
     $self->RedoSearch();
 }
+
 
 sub Export {
     my ($self, $format) = @_;
@@ -3184,15 +3211,14 @@ package RTx::AssetTracker::Assets;
 
 =head1 FLAGS
 
-RT::Tickets supports several flags which alter search behavior:
+RTx::AssetTracker::Assets supports several flags which alter search behavior:
 
 
-allow_deleted_search  (Otherwise never show deleted tickets in search results)
-looking_at_type (otherwise limit to type=ticket)
+allow_deleted_search  (Otherwise never show deleted assets in search results)
 
 These flags are set by calling
 
-$tickets->{'flagname'} = 1;
+$assets->{'flagname'} = 1;
 
 BUG: There should be an API for this
 
