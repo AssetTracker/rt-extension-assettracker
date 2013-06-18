@@ -44,17 +44,37 @@
 %# 
 %# END BPS TAGGED BLOCK }}}
 <select name="AssetField">
-% foreach my $col (RTx::AssetTracker::Asset->BasicColumns) {
-<option value="<% $col->[0] %>"><% loc($col->[1]) %>
+% foreach my $col (@fields) {
+<option <% ($AssetField eq $col->[0]) ? 'selected="selected"' : '' |n %> value="<% $col->[0] %>"><% loc($col->[1]) %></option>
 % }
 % while (my $CF = $CFs->Next) {
-<option value="<% $CF->Id %>"><&|/l&>CustomField</&>: <% $CF->Name %>
+%#   my $val = "CustomField-" . $CF->Id;
+%   my $val = $CF->Id;
+<option <% ($AssetField eq $val) ? 'selected="selected"' : '' |n %> value="<% $val %>"><&|/l&>CustomField</&>: <% $CF->Name %></option>
 % }
 </select>
-<& /Elements/SelectMatch, Name=> 'AssetOp' &>
-<input size=15 name="AssetString">
+<& /Elements/SelectMatch, Name => 'AssetOp', Default => $AssetOp &>
+<input size="15" name="AssetString" value="<% $AssetString %>" />
 <%INIT>
 my $CFs = RT::CustomFields->new($session{'CurrentUser'});
 $CFs->LimitToChildType('RTx::AssetTracker::Type-RTx::AssetTracker::Asset');
 $CFs->OrderBy( FIELD => 'Name' );
+
+my @fields = RTx::AssetTracker::Asset->BasicColumns;
+
+if ( $Fields and ref $Fields eq 'ARRAY' ) {
+    if ( ref $Fields->[0] eq 'ARRAY' ) {
+        @fields = @$Fields;
+    }
+    else {
+        # make the name equal the label
+        @fields = [ @$Fields, @$Fields ];
+    }
+}
 </%INIT>
+<%ARGS>
+$AssetField  => ''
+$AssetOp     => ''
+$AssetString => ''
+$Fields      => undef
+</%ARGS>

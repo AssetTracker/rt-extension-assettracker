@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2005 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,7 +43,7 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 <& /Elements/Header, Title => $title &>
 <& /Elements/Tabs &>
@@ -69,7 +71,6 @@
 % $m->callback(CallbackName => 'AfterAssetList', ARGSRef => \%ARGS);
 
 <hr />
-
 <& /Elements/Submit, Label => loc('Update'), CheckboxNameRegex => '/^UpdateAsset\d+$/', CheckAll => 1, ClearAll => 1 &>
 
 
@@ -160,27 +161,17 @@ $Assets->GotoPage( $Page - 1 );    # SB uses page 0 as the first page
 
 Abort( loc("No search to operate on.") ) unless ($Assets);
 
-my %allcfs;
-my %cfqnames;
-my %cfqs;
-my $count = 0;
-while (my $Asset = $Assets->Next) {
-    my $cfq = $Asset->TypeObj;
-    my $cfqid = $cfq->Id;
-    my $cfqn = $cfq->Name;
-    unless ( exists $cfqs{$cfqid} ) {
-	$cfqs{$cfqid} = 1;
-	$count++;
-	my $cfs = $cfq->AssetCustomFields;
-	while (my $cf = $cfs->Next) {
-	    $allcfs{$cf->Id} = $cf;
-	    $cfqnames{$cf->Id}{$cfqn} = 1;
-            $m->notes->{TypeCFs}{$cfqn}{$cf->Name} = 1;
-            $m->notes->{TypeCFs}{$cfqid}{$cf->Name} = 1;
-	}
+# build up a list of all custom fields for assets that we're displaying, so
+# we can display sane edit widgets.
+
+while ( my $asset = $Assets->Next ) {
+    next if $m->notes->{seen_types}{ $asset->Type }++;
+
+    my $custom_fields = $asset->CustomFields;
+    while ( my $field = $custom_fields->Next ) {
+        next if $m->notes->{fields}{ $asset->Type }{ $field->Name }++;
     }
 }
-
 
 #Iterate through each asset we've been handed
 

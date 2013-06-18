@@ -45,50 +45,28 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<%ARGS>
-$Class        => 'RTx__AssetTracker__Asset'
-
-@Format => undef
-$AllowSorting => undef
-$Order=>undef
-$BaseURL => undef
-$Query => undef
-$Rows => undef
-$Page => undef
-$maxitems => undef
-</%ARGS>
-<%perl>
-
-$Rows = 0;
-
-my %generic_query_args = ( Query => $Query, Rows => $Rows, Page => $Page );
-
-foreach my $col (@Format) {
-    my $title = $col->{'title'} || '';
-    if ( $title eq 'NEWLINE' ) {
-        $m->out(qq{\n});
-        next;
-    } elsif ( $title eq 'NBSP' ) {
-        $m->out("\t");
-        next;
+<%INIT>
+my $Transactions = RT::Transactions->new($session{'CurrentUser'});
+if ($Assets) {
+    while (my $t = $Assets->Next) {
+        $Transactions->LimitToAsset($t->id);
     }
-
-    # if title is not defined then use defined attribute or last
-    # one we saw in the format
-    unless ( defined $col->{'title'} ) {
-        my $attr = $col->{'attribute'} || $col->{'last_attribute'};
-        my $tmp = $m->comp( '/Elements/ColumnMap',
-            Class => $Class,
-            Name  => $attr,
-            Attr  => 'title',
-        );
-        $title = ProcessColumnMapValue( $tmp, Arguments => [ $attr ], Escape => 0 );
-    }
-    $title =~ s/(?:\n|\r)//g;
-    $title =~ s{\t}{    }g;
-
-    $m->out( loc($title) );
-    $m->out("\t");
+} else {
+    $Transactions = $Asset->Transactions;
 }
-</%perl>
 
+
+my $OldestFirst = RT->Config->Get( 'OldestTransactionsFirst', $session{'CurrentUser'} );
+my $SortOrder = $OldestFirst? 'ASC': 'DESC';
+$Transactions->OrderByCols( { FIELD => 'Created',
+                              ORDER => $SortOrder },
+                            { FIELD => 'id',
+                              ORDER => $SortOrder },
+                          );
+$Transactions->Next(); $Transactions->GotoFirstItem(); # actually do the search
+return ($Transactions);
+</%INIT>
+<%ARGS>
+$Asset => undef
+$Assets => undef
+</%ARGS>

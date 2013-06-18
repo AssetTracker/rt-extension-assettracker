@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,17 +43,18 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 <& /Elements/Header, 
-    Title => $title &>
+    Title => $title,
+    LinkRel => \%link_rel &>
 <& /Elements/Tabs &>
 
 % $m->callback(CallbackName => 'BeforeActionList', %ARGS, Actions => \@Actions, ARGSRef => \%ARGS, Asset => $AssetObj);
 
 <& /Elements/ListActions, actions => \@Actions &>
 
-% $m->callback( %ARGS, Asset => $AssetObj, CallbackName => 'BeforeShowSummary' );
+% $m->callback( %ARGS, Asset => $AssetObj, Transactions => $transactions, CallbackName => 'BeforeShowSummary' );
 <div class="summary">
 <&| /Widgets/TitleBox, title => loc('Asset metadata') &>
 <& /AssetTracker/Asset/Elements/ShowSummary,  Asset => $AssetObj &>
@@ -65,12 +68,13 @@
 </div>
 <br />
 
-% $m->callback( Asset => $AssetObj, %ARGS, CallbackName => 'BeforeShowHistory' );
+% $m->callback( Asset => $AssetObj, %ARGS, Transactions => $transactions, CallbackName => 'BeforeShowHistory' );
 
 % if ( $RT::ShowAssetHistory ) {
 <& /Ticket/Elements/ShowHistory , 
       Ticket => $AssetObj, 
       Tickets => $Assets, 
+      Transactions => $transactions,
       ShowDisplayModes => 0,
       DisplayPath => RT->Config->Get('WebPath')."/AssetTracker/Asset/Display.html?id=".$AssetObj->id
       &> 
@@ -78,6 +82,7 @@
 
 % $m->callback( %ARGS,
 %     Asset        => $AssetObj,
+%     Transactions => $transactions,
 %     CallbackName => 'AfterShowHistory',
 % );
   
@@ -94,7 +99,14 @@ $Actions => undef
 
 $m->callback( AssetObj => $AssetObj, ARGSRef => \%ARGS, CallbackName => 'Initial' );
 
-my ($linkid, $message, @Actions, $tid, $Assets, $title);
+#if ( ! $ARGS{'NoRedirect'} && RT::Interface::Web->MobileClient()) {
+#    $id ||= $AssetObj->id if $AssetObj;
+#    RT::Interface::Web::Redirect(RT->Config->Get('WebURL').'m/asset/show?id='.$id);
+#    $m->abort;
+#}
+
+
+my (@Actions, $Assets, $title);
 push(@Actions, @$Actions) if $Actions;
 
 unless ($id || $AssetObj) {
@@ -104,66 +116,58 @@ unless ($id || $AssetObj) {
 if ($ARGS{'id'} eq 'new') {
     # {{{ Create a new asset
     
-    my $Type = new RTx::AssetTracker::Type($session{'CurrentUser'});	
-    unless ($Type->Load($ARGS{'Type'})) {
+    my $Type = RTx::AssetTracker::Type->new( $session{'CurrentUser'} );
+    $Type->Load($ARGS{'Type'});
+    unless ($Type->Id) {
 	Abort('Type not found');
     }
     
-    unless ($Type->CurrentUserHasRight('CreateAsset')) {
+    unless ( $Type->CurrentUserHasRight('CreateAsset') ) {
 	Abort('You have no permission to create assets of that type.');
     }
-    ($AssetObj, @Actions) =
-	CreateAsset(%ARGS);
-    unless ($AssetObj->CurrentUserHasRight('ShowAsset')) {
+
+    ($AssetObj, @Actions) = CreateAsset(
+        %ARGS,
+    );
+    unless ( $AssetObj->CurrentUserHasRight('ShowAsset') ) {
 	Abort("No permission to view newly created asset #".$AssetObj->id.".");
-	}
-    # }}}
-} else { 
-    if (!$AssetObj) {
-
-	$AssetObj = RTx::AssetTracker::Asset->new($session{'CurrentUser'});
-
-	$AssetObj = LoadAsset($ARGS{'id'});
-	unless ($AssetObj->CurrentUserHasRight('ShowAsset')) {
-	    Abort("No permission to view asset");
-	}
     }
+} else { 
+    $AssetObj ||= LoadAsset($ARGS{'id'});
+
+    $AssetObj->CurrentUser->PrincipalObj->HasRights( Object => $AssetObj );
+
+    my $SkipProcessing;
 
     $m->callback( CallbackName => 'BeforeProcessArguments',
         AssetObj => $AssetObj, Assets => $Assets,
-        ActionsRef => \@Actions, ARGSRef => \%ARGS );
+        ActionsRef => \@Actions, ARGSRef => \%ARGS,
+        SkipProcessing => \$SkipProcessing );
 
-    #if (defined $ARGS{'Action'}) {
-	#if ($ARGS{'Action'} =~ /^(Steal|Kill|Take|SetTold)$/) {
-	    #my $action = $1;
-	    #my ($res, $msg)=$AssetObj->$action();
-	    #push(@Actions, $msg);
-	#}
-    #}
+    if ( !$SkipProcessing ) {
 
-    $m->callback(CallbackName => 'ProcessArguments',
-        Asset => $AssetObj,
-        ARGSRef => \%ARGS,
-        Actions => \@Actions);
+        $m->callback(CallbackName => 'ProcessArguments',
+            Asset => $AssetObj,
+            ARGSRef => \%ARGS,
+            Actions => \@Actions);
         
-    #$ARGS{'UpdateContent'} =~ s/\r\n/\n/g;
-    #if ( $ARGS{'UpdateTimeWorked'} ||
-	 #(   $ARGS{'UpdateContent'} ne ''
-	     #&& $ARGS{'UpdateContent'} ne "-- \n"
-	     #. $session{'CurrentUser'}->UserObj->Signature )) {
-	#ProcessUpdateMessage( ARGSRef   => \%ARGS,
-			      #Actions   => \@Actions,
-			      #AssetObj => $AssetObj );
-    #}
-    #Process status updates
-    my @BasicActions = ProcessAssetBasics(ARGSRef => \%ARGS, AssetObj=>$AssetObj);
-    #my @results = ProcessAssetLinks( AssetObj => $AssetObj, ARGSRef => \%ARGS);
-    my @results;
-    push (@Actions, @BasicActions, @results);
+#        push @Actions, ProcessAssetWatchers(ARGSRef => \%ARGS, AssetObj => $AssetObj );
+        push @Actions, ProcessAssetBasics(  ARGSRef => \%ARGS, AssetObj => $AssetObj );
+        push @Actions, ProcessAssetLinks(   ARGSRef => \%ARGS, AssetObj => $AssetObj );
+#        push @Actions, ProcessObjectCustomFieldUpdates(ARGSRef => \%ARGS, AssetObj => $AssetObj );
+
+        unless ($AssetObj->CurrentUserHasRight('ShowAsset')) {
+            if (@Actions) {
+                Abort("A change was applied successfully, but you no longer have permissions to view the asset", Actions => \@Actions);
+            } else {
+                Abort("No permission to view asset");
+            }
+        }
+    }
 }
 
 
-$title = $AssetObj->Name;
+$title = loc("#[_1]: [_2]", $AssetObj->Id, $AssetObj->Name || '');
 
 $m->callback(
     CallbackName => 'BeforeDisplay',
@@ -175,13 +179,21 @@ $m->callback(
 );
 
 # This code does automatic redirection if any updates happen. 
-if ($RT::VERSION =~ /^4/) {
-  MaybeRedirectForResults(
+MaybeRedirectForResults(
     Actions   => \@Actions,
     Path      => "/AssetTracker/Asset/Display.html",
     Anchor    => $ARGS{'Anchor'},
     Arguments => { id => $AssetObj->id },
-  );
-}
+);
 
+my $transactions = $m->comp('Elements/FindTransactions',Asset => $AssetObj, Assets => $Assets || undef);
+
+my %link_rel;
+if (defined $session{'assets'} and ($ARGS{'Query'} or $session{'CurrentAssetSearchHash'}->{'Query'})) {
+    my $item_map = $session{'assets'}->ItemMap;
+    $link_rel{first} = "AssetTracker/Asset/Display.html?id=" . $item_map->{first}               if $item_map->{$AssetObj->Id}{prev};
+    $link_rel{prev}  = "AssetTracker/Asset/Display.html?id=" . $item_map->{$AssetObj->Id}{prev} if $item_map->{$AssetObj->Id}{prev};
+    $link_rel{next}  = "AssetTracker/Asset/Display.html?id=" . $item_map->{$AssetObj->Id}{next} if $item_map->{$AssetObj->Id}{next};
+    $link_rel{last}  = "AssetTracker/Asset/Display.html?id=" . $item_map->{last}                if $item_map->{$AssetObj->Id}{next};
+}
 </%INIT>

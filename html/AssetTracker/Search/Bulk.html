@@ -80,23 +80,22 @@
 <td valign="top">
 <table>
 % for my $role ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
-<tr><td class=label> <&|/l&>Add <% $role %></&>: </td>
-<td class=value> <INPUT Name="Add<% $role %>" SIZE=20> </td></tr>
-<tr><td class=label> <&|/l&>Remove <% $role %></&>: </td>
-<td class=value> <INPUT Name="Delete<% $role %>" SIZE=20> </td></tr>
+<tr><td class="label"> <&|/l&>Add <% $role %></&>: </td>
+<td class="value"> <input name="Add<% $role %>" size="20" value="<% $ARGS{"Add$role"} || '' %>" /> </td></tr>
+<tr><td class="label"> <&|/l&>Remove <% $role %></&>: </td>
+<td class="value"> <input name="Delete<% $role %>" size="20" value="<% $ARGS{"Delete$role"} || '' %>" /> </td></tr>
 % }
 <tr><td class=label colspan=2> <i>(Username or Email separated by spaces)</i></td>
-<td class=value> </td></tr>
 </table>
 </td>
 <td valign="top">
 <table>
-<tr><td class=label> <&|/l&>Make Description</&>: </td>
-<td class=value> <INPUT Name="Description" SIZE=50> </td></tr>
-<tr><td class=label> <&|/l&>Make Type</&>: </td>
-<td class=value> <& /AssetTracker/Elements/SelectType, Name => "Type" &> </td></tr>
-<tr><td class=label> <&|/l&>Make Status</&>: </td>
-<td class=value> <& /AssetTracker/Elements/SelectStatus, Name => "Status" &> </td></tr>
+<tr><td class="label"> <&|/l&>Make Description</&>: </td>
+<td class="value"> <input name="Description" size="50" value="<% $ARGS{Description} || '' %>" /> </td></tr>
+<tr><td class="label"> <&|/l&>Make Type</&>: </td>
+<td class="value"> <& /AssetTracker/Elements/SelectType, Name => "Type", Default => $ARGS{Type} &> </td></tr>
+<tr><td class="label"> <&|/l&>Make Status</&>: </td>
+<td class="value"> <& /AssetTracker/Elements/SelectStatus, Name => "Status", Default => $ARGS{Status}, Types => $seen_types &> </td></tr>
 </table>
 
 </td>

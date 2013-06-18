@@ -45,7 +45,7 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc('Modify asset #[_1] - ', $AssetObj->id) . $AssetObj->Name &>
+<& /Elements/Header, Title => loc('Modify asset #[_1]: [_2]', $AssetObj->id, $AssetObj->Name) &>
 <& /Elements/Tabs &>
 
 % $m->callback(CallbackName => 'BeforeActionList', Actions => \@results, ARGSRef => \%ARGS, Asset => $AssetObj);
@@ -60,12 +60,12 @@
 </&>
 % $m->callback( CallbackName => 'AfterBasics', Asset => $AssetObj );
 
-<&| /Widgets/TitleBox, title => loc('Comments'), width => "100%", class => 'asset-info-comments' &>
+<&| /Widgets/TitleBox, title => loc('Comments'), class => 'asset-info-comments' &>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "BasicComment" &>
 %#<table><& Elements/EditTransactionCustomFields, AssetObj => $AssetObj, TypeObj => $AssetObj->TypeObj &></table>
 </&>
 
-<& /Elements/Submit, Name => 'SubmitAsset', Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to"), color => "#993333" &>
+<& /Elements/Submit, Name => 'SubmitAsset', Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to") &>
 </form>
 <%INIT>
 

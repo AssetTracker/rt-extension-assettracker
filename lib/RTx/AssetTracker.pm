@@ -41,8 +41,8 @@ for (@Classes) {
 
 
 use RTx::AssetTracker::System;
-use RTx::AssetTracker::Type;
-use RTx::AssetTracker::Asset;
+use RTx::AssetTracker::Types;
+use RTx::AssetTracker::Assets;
 use RTx::AssetTracker::Templates;
 use RTx::AssetTracker::Scrips;
 use RTx::AssetTracker::ScripConditions;

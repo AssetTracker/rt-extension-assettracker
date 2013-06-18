@@ -1,21 +1,21 @@
-<TABLE width=100%>
-  <TR>
-    <TD VALIGN=TOP WIDTH=50%>
+<table width="100%">
+  <tr>
+    <td valign="top" width="50%">
       <h3><&|/l&>Current Links</&></h3>
 
 <table>
+% for my $link ( keys %$link_dir ) {
+    <& DeleteLinkPair, Object => $Object, Base => $link, Map => $link_types &>
+% }
   <tr>
     <td></td>
     <td><i><&|/l&>(Check box to delete)</&></i></td>
   </tr>
-% for my $link ( keys %$link_dir ) {
-    <& DeleteLinkPair, Object => $Object, Base => $link, Map => $link_types &>
-% }
 </table>
 
-</TD>
-</TR>
-</TABLE>
+    </td>
+  </tr>
+</table>
 
 <%INIT>
 my $id;

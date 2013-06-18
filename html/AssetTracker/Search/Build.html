@@ -2,7 +2,7 @@
 %#
 %# COPYRIGHT:
 %#
-%# This software is Copyright (c) 1996-2012 Best Practical Solutions, LLC
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
 %#                                          <sales@bestpractical.com>
 %#
 %# (Except where explicitly superseded by other copyright notices)
@@ -66,7 +66,7 @@
 %#   action does quote it (this breaks SQLite).
 %#
 <& /Elements/Header, Title => $title &>
-<& /Elements/Tabs &>
+<& /Elements/Tabs, %TabArgs &>
 
 <form method="post" action="Build.html" name="BuildQuery" id="BuildQuery">
 <input type="hidden" class="hidden" name="SavedSearchId" value="<% $saved_search{'Id'} %>" />
@@ -190,7 +190,7 @@ my @new_values = ();
 
 # Try to find if we're adding a clause
 foreach my $arg ( keys %ARGS ) {
-    next unless $arg =~ m/^ValueOf(\w+|CF.{.*?})$/
+    next unless $arg =~ m/^ValueOf(\w+|'CF.{.*?}')$/
                 && ( ref $ARGS{$arg} eq "ARRAY"
                      ? grep $_ ne '', @{ $ARGS{$arg} }
                      : $ARGS{$arg} ne '' );
@@ -220,9 +220,8 @@ foreach my $arg ( keys %ARGS ) {
     for ( my $i = 0; $i < @ops; $i++ ) {
         my ( $op, $value ) = ( $ops[$i], $values[$i] );
         next if !defined $value || $value eq '';
-        my $rawvalue = $value;
 
-        if ( $value eq 'NULL' && $op =~ /=/ ) {
+        if ( $value =~ /^NULL$/i && $op =~ /=/ ) {
             if ( $op eq '=' ) {
                 $op = "IS";
             }
@@ -235,15 +234,16 @@ foreach my $arg ( keys %ARGS ) {
             $value = "'$value'";
         }
 
-        if ($keyword =~ s/(['\\])/\\$1/g or $keyword =~ /\s/) {
-            $keyword = "'$keyword'";
+        if ($keyword =~ /^'CF\.{(.*)}'/) {
+            my $cf = $1;
+            $cf =~ s/(['\\])/\\$1/g;
+            $keyword = "'CF.{$cf}'";
         }
 
         my $clause = {
             Key   => $keyword,
             Op    => $op,
-            Value => $value,
-            RawValue => $rawvalue,
+            Value => $value
         };
 
         push @new_values, RT::Interface::Web::QueryBuilder::Tree->new($clause);
@@ -278,6 +278,7 @@ my ( $AvailableColumns, $CurrentFormat );
     types => $types,
     Format => $query{'Format'},
 );
+
 
 # if we're asked to save the current search, save it
 push @actions, $m->comp( '/Search/Elements/EditSearches:Save', %ARGS, Query => \%query, SavedSearch => \%saved_search);
@@ -314,12 +315,12 @@ if ( $ARGS{'DoSearch'} ) {
 
 # Build a querystring for the tabs
 
-my $QueryString = '';
+my %TabArgs = ();
 if ($NewQuery) {
-    $QueryString = 'NewQuery=1';
+    $TabArgs{QueryString} = 'NewQuery=1';
 }
 elsif ( $query{'Query'} ) {
-    $QueryString = $m->comp('/Elements/QueryString', %query );
+    $TabArgs{QueryArgs} = \%query;
 }
 
 </%INIT>

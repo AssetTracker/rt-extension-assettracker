@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,52 +43,48 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc('Modify asset custom fields#[_1]', $Asset->id) &>
+<& /Elements/Header, Title => loc('Modify custom fields for asset #[_1]', $AssetObj->id) &>
 <& /Elements/Tabs &>
 
-<& /Elements/ListActions, actions => \@results &>
+% $m->callback(CallbackName => 'BeforeActionList', Actions => \@results, ARGSRef => \%ARGS, Asset => $AssetObj);
 
-<form method="post" action="ModifyFields.html" enctype="multipart/form-data">
-<input type="hidden" name="id" value="<%$Asset->Id%>" />
-<&| /Widgets/TitleBox, title => loc('Modify asset custom fields#[_1]',	$Asset->Id),   width => "100%", class => 'asset-info-cfs' &>
-<& Elements/EditCustomFields, AssetObj => $Asset &>
+<& /Elements/ListActions, actions => \@results &>
+<form method="post" action="ModifyFields.html" enctype="multipart/form-data" name="AssetModifyFields" id="AssetModifyFields">
+% $m->callback( CallbackName => 'FormStart', ARGSRef => \%ARGS );
+<input type="hidden" class="hidden" name="id" value="<% $AssetObj->Id %>" />
+
+<&| /Widgets/TitleBox, title => loc('Modify custom fields for asset #[_1]', $AssetObj->Id), class => 'asset-info-cfs' &>
+<& Elements/EditCustomFields, AssetObj => $AssetObj, DefaultsFromTopArguments => 0 &>
 </&>
-<&| /Widgets/TitleBox, title => loc('Comments'),   width => "100%", class => 'asset-info-comments' &>
+
+<&| /Widgets/TitleBox, title => loc('Comments'), class => 'asset-info-comments' &>
 <& /AssetTracker/Asset/Elements/ChangeComment, Name => "FieldComment" &>
 </&>
-<& /Elements/Submit, Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to") &>
-</form>
 
+<& /Elements/Submit, Name => 'SubmitAsset', Label => loc('Save Changes'), Caption => loc("If you've updated anything above, be sure to") &>
+</form>
 <%INIT>
 
-my (@results, @cf_results);
+my $AssetObj = LoadAsset($id);
+my $CustomFields = $AssetObj->CustomFields;
 
-my $Asset = LoadAsset($id);
+# call this to show up hints of valid cf values.
+$m->comp(
+    '/Elements/ValidateCustomFields',
+    CustomFields => $CustomFields,
+    ARGSRef => {},
+);
 
-# if we're trying to search for watchers and nothing else
-#unless ($OnlySearchForPeople or $OnlySearchForGroup) {
-    @results = ProcessAssetBasics( AssetObj => $Asset, ARGSRef => \%ARGS);
+# Now let callbacks have a chance at editing %ARGS
+$m->callback( AssetObj => $AssetObj, CustomFields => $CustomFields, ARGSRef => \%ARGS );
 
-    @cf_results = ProcessATObjectCustomFieldUpdates( Object => $Asset, ARGSRef => \%ARGS);
-    push @results, @cf_results;
+my @results = ProcessATObjectCustomFieldUpdates(Object => $AssetObj, ARGSRef => \%ARGS);
 
-#}
+#$AssetObj->ApplyTransactionBatch;
 
 </%INIT>
-
-
-
 <%ARGS>
-$OnlySearchForPeople => undef
-$OnlySearchForGroup => undef
-$UserField => undef
-$UserOp => undef
-$UserString => undef
-$GroupField => undef
-$GroupOp => undef
-$GroupString => undef
 $id => undef
 </%ARGS>
-

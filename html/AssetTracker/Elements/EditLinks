@@ -1,24 +1,24 @@
-<TABLE>
-<TR>
-<TD VALIGN=TOP>
-%#<h3><&|/l&>New links</&></h3>
+<table>
+  <tr>
+    <td valign="top">
+%#    <h3><&|/l&>New links</&></h3>
 
 % if ($ShowFind) {
-<&|/l&>Find assets whose</&><BR>
-<& /AssetTracker/Elements/SelectAssets &>
-<input type=submit name="OnlySearchForAsset" value="<&|/l&>Go!</&>">
+      <&|/l&>Find assets whose</&>
+      <br />
+      <& /AssetTracker/Elements/SelectAssets &>
+      <input type="submit" class="button" name="OnlySearchForAsset" value="<&|/l&>Go!</&>" />
 % }
 
-<& AddLinks, AssetObj => $AssetObj, AssetString => $AssetString,
-        AssetOp => $AssetOp, AssetField => $AssetField, ShowFind => $ShowFind, SearchOnly => $SearchOnly, TicketLinkTypes => $TicketLinkTypes &>
-</TD>
-<TD VALIGN=CENTER>
+      <& AddLinks, %ARGS &>
+    </td>
+    <td valign="center">
 % if (ref $AssetObj) {
-<& DeleteLinks, Object => $AssetObj &>
+      <& DeleteLinks, Object => $AssetObj &>
 % }
-</TD>
-</TR>
-</TABLE>
+    </td>
+  </tr>
+</table>
 
 <%ARGS>
 $AssetField => undef

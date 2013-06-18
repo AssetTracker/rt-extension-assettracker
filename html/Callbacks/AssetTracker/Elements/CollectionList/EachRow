@@ -12,7 +12,7 @@ if ( $request_path =~ m{^/AssetTracker/Search/Grid.html} ) {
             $column->{output} = [ '<input name="Asset-'.$Record->Id.'-Description" size="40" value="'.$Record->Description.'" />' ];
         }
         elsif ( $col eq 'Status' ) {
-            $column->{output} = [ $m->scomp( '/AssetTracker/Elements/SelectStatus', Name => "Asset-".$Record->Id."-Status", Default => $Record->Status ) ];
+            $column->{output} = [ $m->scomp( '/AssetTracker/Elements/SelectStatus', Name => "Asset-".$Record->Id."-Status", Default => $Record->Status, Types => $m->notes->{seen_types} ) ];
             $column->{output}->[0] =~ s/\n//g;
         }
         elsif ( $col eq 'TypeName' ) {
@@ -36,7 +36,7 @@ if ( $request_path =~ m{^/AssetTracker/Search/Grid.html} ) {
         elsif ( $col =~ /^CustomField\.\{(.+)\}$/ ) {
             my $cfname = $1;
             # See if it is a CF for this Asset type
-            if( $m->notes->{TypeCFs}{$Record->Type}{$cfname} ) {
+            if( $m->notes->{fields}{$Record->Type}{$cfname} ) {
                 my $CustomField = RT::CustomField->new($session{CurrentUser});
                 my ($rv, $msg) = $CustomField->LoadByNameAndType( Name => $cfname, Type => $Record->Type );
                 # This must be a global CF

@@ -52,6 +52,13 @@
 
 % $m->callback( ARGSRef => \%ARGS, CallbackName => 'BeforeResults' );
 
+% unless ($ok) {
+%    $msg =~ s{ at .*? line .*}{}s;
+<&| /Widgets/TitleBox, title => loc("Error"), class => "error" &>
+<&|/l_unsafe, "<i>".$m->interp->apply_escapes($msg, "h")."</i>" &>There was an error parsing your search query: [_1].  Your RT admin can find more information in the error logs.</&>
+</&>
+% } else {
+
 <& /Elements/CollectionList, 
     Collection => $session{'assets'},
     Query => $Query,
@@ -64,8 +71,8 @@
     Format => $Format,
     Class => 'RTx::AssetTracker::Assets',
     BaseURL => $BaseURL
-
    &>
+% }
 % $m->callback( ARGSRef => \%ARGS, CallbackName => 'AfterResults' );
 
 % my %hiddens = (Query => $Query, Format => $Format, Rows => $Rows, OrderBy => $OrderBy, Order => $Order, HideResults => $HideResults, Page => $Page, SavedChartSearchId => $SavedChartSearchId );
@@ -78,18 +85,6 @@
 <input type="submit" class="button" value="<&|/l&>Change</&>" />
 </form>
 </div>
-%if ($RT::VERSION =~ /^3/) {
-<div align="right" class="search-result-actions">
-<ul class="search-result-views">
-<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.tsv<%$QueryString%>"><&|/l&>Spreadsheet</&></a></li>
-<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Export.html<%$QueryString%>"><&|/l&>Importable Spreadsheet</&></a></li>
-<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Search/Results.rdf<%$QueryString%>"><&|/l&>RSS Feed</&></a></li>
-%#<li><a href="<%RT->Config->Get('WebPath')%>/AssetTracker/Tools/Offline.html<%$QueryString%>"><&|/l&>Work offline</&></a></li>
-</ul>
-<br/>
-% $m->callback( QueryString => $QueryString, CallbackName => 'SearchActions' );
-</div>
-%}
 <%INIT>
 $m->callback( ARGSRef => \%ARGS, CallbackName => 'Initial' );
 
@@ -118,7 +113,7 @@ $Page = 1 unless $Page && $Page > 0;
 
 my ($title, $assetcount);
 $session{'i'}++;
-$session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'}) ;
+$session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
 my ($ok, $msg) = $Query ? $session{'assets'}->FromSQL($Query) : (1, "Vacuously OK");
 # Provide an empty search if parsing failed
 $session{'assets'}->FromSQL("id < 0") unless ($ok);

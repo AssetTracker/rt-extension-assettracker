@@ -59,7 +59,7 @@
 <a name="basics"></a>	
 
 <div id="asset-create-metadata">
-    <&| /Widgets/TitleBox, title => loc("Create a new asset"), class=>'asset-info-basics' &>
+    <&| /Widgets/TitleBox, title => $title, class=>'asset-info-basics' &>
     <input type="hidden" class="hidden" name="Type" value="<% $TypeObj->Id %>" />
     <table width="100%" border="0">
     <& /AssetTracker/Asset/Elements/EditBasics,
@@ -82,7 +82,7 @@
                     Default         => $ARGS{Status} || $TypeObj->Lifecycle->DefaultOnCreate,
                     DefaultValue    => 0,
                     SkipDeleted     => 1,
-                    TypeObj        => $TypeObj,
+                    TypeObj         => $TypeObj,
                 },
             },
             {
@@ -97,14 +97,14 @@
 <td class="label">
 <% $role %>:
 </td>
-<td class="value" colspan="5"><& /Elements/EmailInput, Name => $role, Size => 80, Default => $ARGS{$role} &></td>
+<td class="value" colspan="5"><& /Elements/EmailInput, Name => $role, Size => undef, Default => $ARGS{$role} &></td>
 </tr>
 %}
 
 % $m->callback( CallbackName => 'AfterRoles', ARGSRef => \%ARGS );
 
       <& /AssetTracker/Asset/Elements/EditCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
-      <& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
+%#      <& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
     </table>
   </&>
 % $m->callback( CallbackName => 'AfterBasics', TypeObj => $TypeObj, ARGSRef => \%ARGS );
@@ -130,18 +130,20 @@
 </div>
 <br />
 
-<& /Elements/Submit, Label => loc("Create")&>
+<& /Elements/Submit, Label => loc("Create"), id => 'SubmitAsset' &>
 </div>
 </form>
 
 <%INIT>
+$m->callback( CallbackName => "Init", ARGSRef => \%ARGS );
+my $Type = $ARGS{Type};
+$session{DefaultType} = $Type;
 
 my %link_types = %{ RTx::AssetTracker::Asset::LINKTYPEMAP() };
 my @link_order =    RTx::AssetTracker::Asset::LINKORDER();
 
-my $CloneAssetObj;
 if ($CloneAsset) {
-    $CloneAssetObj = RTx::AssetTracker::Asset->new( $session{CurrentUser} );
+    my $CloneAssetObj = RTx::AssetTracker::Asset->new( $session{CurrentUser} );
     $CloneAssetObj->Load($CloneAsset)
         or Abort( loc("Asset could not be loaded") );
 
@@ -217,8 +219,13 @@ my @results;
 
 my $title = loc("Create a new asset");
 
-my $TypeObj = new RTx::AssetTracker::Type($session{'CurrentUser'});
+my $TypeObj = RTx::AssetTracker::Type->new($session{'CurrentUser'});
 $TypeObj->Load($Type) || Abort(loc("Type could not be loaded."));
+
+$m->callback( TypeObj => $TypeObj, title => \$title, results => \@results, ARGSRef => \%ARGS );
+
+$TypeObj->Disabled && Abort(loc("Cannot create assets of a disabled type."));
+
 my $CFs = $TypeObj->AssetCustomFields();
 
 my $ValidCFs = $m->comp(
@@ -228,8 +235,12 @@ my $ValidCFs = $m->comp(
     NamePrefix => "Object-RTx::AssetTracker::Asset--CustomField-"
 );
 
+my $skip_create = 0;
+$m->callback( CallbackName => 'BeforeCreate', ARGSRef => \%ARGS, skip_create => \$skip_create, 
+              results => \@results );
+
 if (defined($ARGS{'id'}) and $ARGS{'id'} eq 'new') { # new asset?
-    if ( $ValidCFs ) {
+    if ( $ValidCFs && !$skip_create) {
         $m->comp('Display.html', %ARGS);
         $RT::Logger->crit("After display call; error is $@");
         $m->abort();
@@ -245,6 +256,5 @@ if (defined($ARGS{'id'}) and $ARGS{'id'} eq 'new') { # new asset?
 </%INIT>
 
 <%ARGS>
-$Type => undef
 $CloneAsset => undef
 </%ARGS>

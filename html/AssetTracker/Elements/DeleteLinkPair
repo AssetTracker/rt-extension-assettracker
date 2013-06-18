@@ -1,23 +1,30 @@
   <tr>
-    <td class="labeltop"><&|/l&><% $Base_name %></&>:</td>
+    <td class="labeltop"><& ShowRelationLabel, id => $id, Label => loc($Base_name), Relation => $Base &>:</td>
     <td class="value">
 % while (my $link = $Object->$Base->Next) {
-      <INPUT TYPE=CHECKBOX NAME="DeleteLink--<%$link->Type%>-<%$link->Target%>">
+      <input type="checkbox" class="checkbox" name="DeleteLink--<%$link->Type%>-<%$link->Target%>" value="1" />
         <& /Elements/ShowLink, URI => $link->TargetURI &><br>
 % }
     </td>
   </tr>
   <tr>
-    <td class="labeltop"><&|/l&><% $Target_name %></&>:</td>
+    <td class="labeltop"><& ShowRelationLabel, id => $id, Label => loc($Target_name), Relation => $Target &>:</td>
     <td class="value">
 % while (my $link = $Object->$Target->Next) {
-      <INPUT TYPE=CHECKBOX NAME="DeleteLink-<%$link->Base%>-<%$link->Type%>-">
+      <input type="checkbox" class="checkbox" name="DeleteLink-<%$link->Base%>-<%$link->Type%>-" value="1" />
         <& /Elements/ShowLink, URI => $link->BaseURI &><br>
 % }
     </td>
   </tr>
 
 <%INIT>
+my $id;
+if ($Object && $Object->Id) {
+    $id = $Object->Id;
+} else {
+    $id = 'new';
+}
+
 my ($Target, $Base_name, $Target_name);
 
 $Base_name = $Map->{$Base}{Name};

@@ -22,7 +22,7 @@
 $r->content_type('application/vnd.ms-excel');
 my $maxitems = 0;
 
-$Format ||= $RT::DefaultAssetSearchResultFormat;
+$Format ||= RT->Config->Get('DefaultAssetSearchResultFormat');
 # Scrub the html of the format string to remove any potential nasties.
 $Format = $m->comp('/Elements/ScrubHTML', Content => $Format);
 

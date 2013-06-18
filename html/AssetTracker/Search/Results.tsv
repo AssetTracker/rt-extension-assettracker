@@ -6,7 +6,7 @@
     Rows => $Rows,
     Page => $Page,
     Format => $Format,
-    BaseURL => $RT::WebPath."/AssetTracker/Search/Results.html?"
+    BaseURL => RT->Config->Get('WebPath')."/AssetTracker/Search/Results.html?"
 
 &>
 <%ARGS>

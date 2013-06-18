@@ -2,7 +2,7 @@
 %# 
 %# COPYRIGHT:
 %#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
+%# This software is Copyright (c) 1996-2005 Best Practical Solutions, LLC 
 %#                                          <jesse@bestpractical.com>
 %# 
 %# (Except where explicitly superseded by other copyright notices)
@@ -43,38 +43,43 @@
 %# those contributions and any derivatives thereof.
 %# 
 %# END BPS TAGGED BLOCK }}}
-<SELECT NAME ="<%$Name%>">
-% if ($ShowNullOption) {
-<OPTION VALUE="">-</OPTION>
-% }
-% while (my $asset = $Assets->Next) {
-%    next unless $asset->CurrentUserHasRight($CheckTypeRight);
-<OPTION VALUE="<%$asset->$Method%>" <%( $asset->Id eq $Default ? 'SELECTED' : '')%>><%$asset->Name%>
-%   if (($Verbose) and ($asset->Description) ){
-(<%$asset->Description%>)
-%   }
-</OPTION>
-% }
-</SELECT>
-<%ARGS>
-$CheckTypeRight => 'ShowAsset'
-$ShowNullOption => 1
-$ShowAllTypes => 1
-$Name => undef
-$Verbose => undef
-$NamedValues => 0
-$Default => 0
-$Lite => 0
-$Exclude => undef
-$Method => 'id'
-</%ARGS>
-
 <%INIT>
 
-my $Assets=new RTx::AssetTracker::Assets($session{'CurrentUser'});
-$Assets->UnLimit;
-foreach my $id ( ref( $Exclude ) ? @{ $Exclude } : ( $Exclude ) ) {
-    $Assets->LimitId(VALUE => $id, OPERATOR => '!=') if $id;
-}
+my $Assets = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
+$Assets->FromSQL($ARGS{'Query'});
+$r->content_type('application/rdf+xml');
 
+
+
+        # create an RSS 1.0 file (http://purl.org/rss/1.0/)
+        use XML::RSS;
+        my $rss = new XML::RSS (version => '1.0');
+        $rss->channel(
+          title        => "$RT::rtname: Syndicated Search",
+          link         => $RT::WebURL,
+          description  => "",
+          dc => {
+          },
+          syn => {
+            updatePeriod     => "hourly",
+            updateFrequency  => "1",
+            updateBase       => "1901-01-01T00:00+00:00",
+          },
+        );
+
+
+    while ( my $Asset = $Assets->Next()) {
+       my $row;
+        $rss->add_item(
+          title       => $Asset->Name,
+          link        => $RT::WebURL."/AssetTracker/Asset/Display.html?id=".$Asset->id,
+          description => $Asset->Transactions->Last->Description,
+          dc => {
+            subject  => $Asset->Description,
+            creator  => $Asset->CreatorObj->RealName . "<".$Asset->CreatorObj->EmailAddress.">",
+          },
+        );
+    }
+$m->out($rss->as_string);
+$m->abort();
 </%INIT>
