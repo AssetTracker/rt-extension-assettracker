@@ -319,7 +319,6 @@ sub Create {
         $self->CurrentUser->HasRight(
             Right  => 'CreateAsset',
             Object => $TypeObj,
-            EquivObjects => [ $RTx::AssetTracker::System ],
         )
       )
     {
@@ -602,7 +601,7 @@ sub UpdateAsset {
         unless ( $self->CurrentUser->HasRight(
                 Right  => 'CreateAsset',
                 Object => $TypeObj,
-                EquivObjects => [ $RTx::AssetTracker::System ],)
+            )
         ) {
             return (
                 0, 0,
@@ -1205,7 +1204,6 @@ sub CurrentUserHasRight {
         $self->HasRight(
             Principal => $self->CurrentUser->UserObj(),
             Right     => "$right",
-            EquivObjects => [ $RTx::AssetTracker::System, $self->TypeObj ],
           )
     );
 

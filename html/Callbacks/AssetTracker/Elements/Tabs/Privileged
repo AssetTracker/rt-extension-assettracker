@@ -283,17 +283,6 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
             description => loc('Select custom fields for assets of all types'),
             path        => '/AssetTracker/Admin/Global/CustomFields/Type-Assets.html',
         );
-
-        $admin_global->child( 'at_group-rights' =>
-            title       => loc('AT Group Rights'),
-            description => loc('Modify global group rights for asset tracker'),
-            path        => '/AssetTracker/Admin/Global/GroupRights.html',
-        );
-        $admin_global->child( 'at_user-rights' =>
-            title       => loc('AT User Rights'),
-            description => loc('Modify global user rights for asset tracker'),
-            path        => '/AssetTracker/Admin/Global/UserRights.html',
-        );
     }
 
     PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset'), sort_order => 99 );

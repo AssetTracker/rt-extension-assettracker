@@ -923,19 +923,6 @@ sub RT::Groups::LimitToRolesForAssetType {
 }
 
 
-=head2 LimitToRolesForSystem System_ID
-
-Limits the set of groups found to role groups for System System_ID
-
-=cut
-
-sub RT::Groups::LimitToRolesForATSystem {
-    my $self = shift;
-    $self->Limit(FIELD => 'Domain', OPERATOR => '=', VALUE => 'RTx::AssetTracker::System-Role');
-}
-
-
-
 =head2 GetPrincipalsMap OBJECT, CATEGORIES
 
 Gets the Role principals for Asset Types, or falls back on the
@@ -949,16 +936,7 @@ my $Orig_GetPrincipalsMap = __PACKAGE__->can('GetPrincipalsMap')
     my $object = shift;
     my @map;
     for (@_) {
-        if (/Roles/ && $object->isa('RTx::AssetTracker::System')) {
-            my $roles = RT::Groups->new($session{'CurrentUser'});
-            $roles->LimitToRolesForATSystem();
-            $roles->OrderBy( FIELD => 'Type', ORDER => 'ASC' );
-            push @map, [
-                'Roles' => $roles,  # loc_left_pair
-                'Type'  => 1
-            ];
-        }
-        elsif (/Roles/ && $object->isa('RTx::AssetTracker::Type')) {
+        if (/Roles/ && $object->isa('RTx::AssetTracker::Type')) {
             my $roles = RT::Groups->new($session{'CurrentUser'});
             $roles->LimitToRolesForAssetType($object->Id);
             $roles->OrderBy( FIELD => 'Type', ORDER => 'ASC' );

@@ -2898,7 +2898,7 @@ sub ImportXML {
     my ($self, $xml, $runscrips, $detailed) = @_;
 
     return ['permission denied'] unless RT->Config->Get("AssetImportRequiresRights")
-                                 && $self->CurrentUser->HasRight( Object => $RTx::AssetTracker::System, Right => 'AssetImport');
+                                 && $self->CurrentUser->HasRight( Object => $RT::System, Right => 'AssetImport');
 
     $runscrips = 1 unless defined $runscrips;
 
@@ -2916,7 +2916,7 @@ sub Import {
     my ($self, $headers, $rows, $runscrips, $detailed) = @_;
 
     return 0, ['permission denied'] unless RT->Config->Get("AssetImportRequiresRights")
-                                    && $self->CurrentUser->HasRight( Object => $RTx::AssetTracker::System, Right => 'AssetImport');
+                                    && $self->CurrentUser->HasRight( Object => $RT::System, Right => 'AssetImport');
 
     $runscrips = 1 unless defined $runscrips;
 

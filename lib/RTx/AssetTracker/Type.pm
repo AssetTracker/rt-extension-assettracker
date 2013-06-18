@@ -82,32 +82,28 @@ $RIGHTS = {
     SeeType            => 'Can this principal see this asset type',       # loc_pair
     AdminType          => 'Create, delete and modify asset types',        # loc_pair
     AssignCustomFields => 'Assign and remove custom fields',              # loc_pair
-    ModifyTypeAdmins   => 'Modify administrators for type',              # loc_pair
-    ModifyTypeWatchers   => 'Modify watchers for type',              # loc_pair
-    
+    ModifyTypeAdmins   => 'Modify administrators for asset type',         # loc_pair
+    ModifyTypeWatchers => 'Modify watchers for asset type',               # loc_pair
     ShowAsset      => 'See asset details',                                # loc_pair
-    CreateAsset    => 'Create assets of this type',                       # loc_pair
-    ModifyAsset    => 'Modify assets of this type',                       # loc_pair
-    RetireAsset    => 'Retire assets of this type',                       # loc_pair
+    CreateAsset    => 'Create assets of this asset type',                 # loc_pair
+    ModifyAsset    => 'Modify assets of this asset type',                 # loc_pair
+    RetireAsset    => 'Retire assets of this asset type',                 # loc_pair
     DeleteAsset    => 'Delete assets',                                    # loc_pair
-#    OwnAsset       => 'Own assets of this type',                       # loc_pair
-#    WatchAsAdmin   => 'Right to administer type',
-
 };
 
 our $RIGHT_CATEGORIES = {
-        SeeType            => 'General',
-        ShowAsset          => 'General',
-        ModifyAsset        => 'General',
-        CreateAsset        => 'General',
-        AdminType          => 'Admin',
-        AssignCustomFields => 'Staff',
-        ModifyTypeAdmins   => 'Staff',
-        ModifyTypeWatchers   => 'Staff',
-        RetireAsset        => 'Staff',
-        DeleteAsset        => 'Staff',
-        OwnAsset           => 'General',
-        WatchAsAdmin       => 'General',
+    SeeType            => 'General',
+    ShowAsset          => 'General',
+    ModifyAsset        => 'General',
+    CreateAsset        => 'General',
+    AdminType          => 'Admin',
+    AssignCustomFields => 'Staff',
+    ModifyTypeAdmins   => 'Staff',
+    ModifyTypeWatchers => 'Staff',
+    RetireAsset        => 'Staff',
+    DeleteAsset        => 'Staff',
+    OwnAsset           => 'General',
+    WatchAsAdmin       => 'General',
 };
 
 # Tell RT::ACE that this sort of object can get acls granted
@@ -119,6 +115,12 @@ $RT::ACE::OBJECT_TYPES{'RTx::AssetTracker::Type'} = 1;
 foreach my $right ( keys %{$RIGHTS} ) {
     $RT::ACE::LOWERCASERIGHTNAMES{ lc $right } = $right;
 }
+
+
+use RT::System;
+RT::System::AddRights(%$RIGHTS);
+RT::System::AddRightCategories(%$RIGHT_CATEGORIES);
+
 
 require RT::Lifecycle;
 
@@ -199,9 +201,9 @@ sub ConfigureRole {
 
     # if the system role group doesn't exist, create it
     my $group = RT::Group->new( $RT::SystemUser );
-    $group->LoadByCols( Domain => 'RTx::AssetTracker::System-Role', Type => $role );
+    $group->LoadByCols( Domain => 'RT::System-Role', Type => $role );
     unless ( $group->id ) {
-        $group->_Create( Domain            => 'RTx::AssetTracker::System-Role',
+        $group->_Create( Domain            => 'RT::System-Role',
                          Instance          => 0,
                          Type              => $role,
                          Description       => 'SystemRolegroup for internal use',  # loc
@@ -290,8 +292,7 @@ sub ConfigureRole {
 
 =head2 AvailableRights
 
-Returns a hash of available rights for this object. The keys are the right names and the values are a description of what the righ
-ts do
+Returns a hash of available rights for this object. The keys are the right names and the values are a description of what the rights do
 
 =cut
 
@@ -301,7 +302,7 @@ sub AvailableRights {
 }
 
 sub RightCategories {
-        return $RIGHT_CATEGORIES;
+    return $RIGHT_CATEGORIES;
 }
 
 
@@ -437,7 +438,7 @@ sub Create {
         @_
     );
 
-    unless ( $self->CurrentUser->HasRight(Right => 'AdminType', Object => $RTx::AssetTracker::System) )
+    unless ( $self->CurrentUser->HasRight(Right => 'AdminType', Object => $RT::System) )
     {    #Check them ACLs
         return ( 0, $self->loc("No permission to create asset types") );
     }
@@ -605,8 +606,7 @@ sub CurrentUserHasRight {
     return (
         $self->HasRight(
             Principal => $self->CurrentUser,
-            Right     => "$right",
-            EquivObjects => [$RTx::AssetTracker::System],
+            Right     => "$right"
           )
     );
 
@@ -652,7 +652,7 @@ sub HasRight {
     }
     return (
         $args{'Principal'}->HasRight(
-            Object => $self->Id ? $self : $RTx::AssetTracker::System,
+            Object => $self->Id ? $self : $RT::System,
             Right    => $args{'Right'},
             @_
           )

@@ -63,7 +63,7 @@ foreach my $object (@objects) {
 	my $Users = RT::Users->new($session{CurrentUser});
         $Users->WhoHaveRight(Right => $Right,
                      Object => $object,
-                     EquivObjects => [ @equiv_objects, $RTx::AssetTracker::System ],
+                     EquivObjects => [ @equiv_objects ],
                      IncludeSystemRights => $IncludeSystemRights,
                      IncludeSuperusers => $IncludeSuperusers,
                       );

@@ -52,7 +52,7 @@ foreach my $object (@objects) {
         $Groups->Limit(FIELD => 'Domain', OPERATOR => '=', VALUE => $Domain);
         $Groups->WithRight(Right => $Right,
                      Object => $object,
-                     EquivObjects => [ @equiv_objects, $RTx::AssetTracker::System ],
+                     EquivObjects => [ @equiv_objects ],
                      IncludeSystemRights => $IncludeSystemRights,
                      IncludeSuperusers => $IncludeSuperusers,
                       );

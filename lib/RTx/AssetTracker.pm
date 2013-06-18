@@ -22,13 +22,24 @@ use warnings;
 use version; our $VERSION = version->declare("2.9.0");
 
 
+use RT::System;
+RT::System::AddRights(
+    BulkUpdate  => "Perform bulk updates on assets", # loc_pair
+    AssetImport => "Import assets", # loc_pair
+);
+
+RT::System::AddRightCategories(
+    BulkUpdate  => 'Staff',
+    AssetImport => 'Staff',
+);
+
+
 # load overlays for RT classes
 my @Classes = qw(
     RT::CustomField
     RT::CustomFields
     RT::Interface::Web
     RT::Interface::Web::QueryBuilder::Tree
-    RT::System
     RT::Ticket
     RT::Transaction
 );
@@ -40,16 +51,12 @@ for (@Classes) {
 }
 
 
-use RTx::AssetTracker::System;
 use RTx::AssetTracker::Types;
 use RTx::AssetTracker::Assets;
 use RTx::AssetTracker::Templates;
 use RTx::AssetTracker::Scrips;
 use RTx::AssetTracker::ScripConditions;
 use RTx::AssetTracker::ScripActions;
-
-# Create a system object for AssetTracker
-$RTx::AssetTracker::System = RTx::AssetTracker::System->new($RT::SystemUser);
 
 RTx::AssetTracker::Type->ConfigureRoles();
 RTx::AssetTracker::Asset->ConfigureLinks();

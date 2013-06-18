@@ -25,7 +25,7 @@ will cause a transaction to be recorded for every change in the asset.
 <%INIT>
 my $results = [];
 unless (RT->Config->Get("AssetImportRequiresRights") &&
-        $session{CurrentUser}->HasRight( Object => $RTx::AssetTracker::System, Right => 'AssetImport')) {
+        $session{CurrentUser}->HasRight( Object => $RT::System, Right => 'AssetImport')) {
 	$m->abort;
 }
 

@@ -164,7 +164,7 @@ sub Next {
         # If it's part of an asset type, and the user can read templates in
         # thatn asset type, or the user can globally read templates, show it
         if ($templ->AssetType && $templ->CurrentUserHasAssetTypeRight('ShowTemplate') or
-            $templ->CurrentUser->HasRight(Object => $RTx::AssetTracker::System, Right => 'ShowTemplate')) {
+            $templ->CurrentUser->HasRight(Object => $RT::System, Right => 'ShowTemplate')) {
 	    return($templ);
 	}
 	

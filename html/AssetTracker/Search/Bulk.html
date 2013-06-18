@@ -166,7 +166,7 @@ $cfs->LimitToType($_) for keys %$seen_types;
 
 <%INIT>
 
-unless ($session{'CurrentUser'}->HasRight( Object => $RTx::AssetTracker::System, Right => 'BulkUpdate')) {
+unless ($session{'CurrentUser'}->HasRight( Object => $RT::System, Right => 'BulkUpdate')) {
     Abort(loc("No permission to perform bulk updates of assets."));
 }
 

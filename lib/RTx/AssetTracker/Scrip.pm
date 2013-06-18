@@ -115,7 +115,7 @@ sub Create {
     );
 
     unless ( $args{'AssetType'} ) {
-        unless ( $self->CurrentUser->HasRight( Object => $RTx::AssetTracker::System,
+        unless ( $self->CurrentUser->HasRight( Object => $RT::System,
                                                Right  => 'ModifyScrips' ) )
         {
             return ( 0, $self->loc('Permission Denied') );
@@ -582,7 +582,7 @@ sub HasRight {
     }
     else {
         return $args{'Principal'}->HasRight(
-            Object => $RTx::AssetTracker::System,
+            Object => $RT::System,
             Right  => $args{'Right'},
         );
     }

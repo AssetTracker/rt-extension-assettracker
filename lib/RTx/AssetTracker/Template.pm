@@ -214,7 +214,7 @@ sub Create {
     );
 
     unless ( $args{'AssetType'} ) {
-        unless ( $self->CurrentUser->HasRight(Right =>'ModifyTemplate', Object => $RTx::AssetTracker::System) ) {
+        unless ( $self->CurrentUser->HasRight(Right =>'ModifyTemplate', Object => $RT::System) ) {
             return ( undef, $self->loc('Permission Denied') );
         }
         $args{'AssetType'} = 0;

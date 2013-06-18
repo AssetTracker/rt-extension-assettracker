@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use RTx::AssetTracker::Test tests => 28;
+use RTx::AssetTracker::Test tests => 27;
 
 require_ok("RTx::AssetTracker");
 require_ok("RTx::AssetTracker::Test");
@@ -20,7 +20,6 @@ require_ok("RTx::AssetTracker::ScripActions");
 require_ok("RTx::AssetTracker::ScripCondition");
 require_ok("RTx::AssetTracker::ScripConditions");
 require_ok("RTx::AssetTracker::SearchBuilder");
-require_ok("RTx::AssetTracker::System");
 require_ok("RTx::AssetTracker::Template");
 require_ok("RTx::AssetTracker::Templates");
 require_ok("RTx::AssetTracker::Type");
