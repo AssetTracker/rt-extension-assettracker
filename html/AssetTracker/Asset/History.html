@@ -45,7 +45,7 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc("Asset History # [_1] [_2]", $Asset->Id, $Asset->Name) &>
+<& /Elements/Header, Title => loc("History of asset #[_1]: [_2]", $Asset->Id, $Asset->Name) &>
 <& /Elements/Tabs &>
 
 % $m->callback( %ARGS, Asset => $Asset, CallbackName => 'BeforeActionList' );

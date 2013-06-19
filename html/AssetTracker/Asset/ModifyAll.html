@@ -45,7 +45,7 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<& /Elements/Header, Title => loc("Update Asset #[_1]: [_2]", $Asset->Id, $Asset->Name) &>
+<& /Elements/Header, Title => loc("Update asset #[_1]: [_2]", $Asset->Id, $Asset->Name) &>
 <& /Elements/Tabs &>
 
 % $m->callback(CallbackName => 'BeforeActionList', Actions => \@results, ARGSRef => \%ARGS, Asset => $Asset);

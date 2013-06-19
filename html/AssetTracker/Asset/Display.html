@@ -167,7 +167,7 @@ if ($ARGS{'id'} eq 'new') {
 }
 
 
-$title = loc("#[_1]: [_2]", $AssetObj->Id, $AssetObj->Name || '');
+$title = loc("Asset #[_1]: [_2]", $AssetObj->Id, $AssetObj->Name || '');
 
 $m->callback(
     CallbackName => 'BeforeDisplay',

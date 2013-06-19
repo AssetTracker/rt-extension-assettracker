@@ -118,7 +118,7 @@ ok($m->login, 'logged in');
 $m->follow_link_ok({text => 'Assets'}, 'UI -> AssetTracker');
 $m->content_contains($asset3->Name);
 $m->follow_link_ok( {text => $asset3->Name}, 'AssetTracker -> '. $asset3->Name );
-$m->title_is($asset3->Name);
+$m->title_is("Asset #" . $asset3->Id . ": " . $asset3->Name);
 $m->follow_link_ok( {text => 'Links'}, 'Asset -> ModifyLinks' );
 
 
