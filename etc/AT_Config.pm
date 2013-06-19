@@ -148,6 +148,12 @@ Set(%Lifecycles,
             '* -> *'        => 'ModifyAsset',
         },
         actions => [
+            'production -> retired' => {
+                label => 'Retire',
+            },
+            '* -> deleted' => {
+                label => 'Delete',
+            }
         ],
     },
 );

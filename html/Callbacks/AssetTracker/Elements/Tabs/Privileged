@@ -1,5 +1,6 @@
 <%INIT>
 my $request_path = $HTML::Mason::Commands::r->path_info;
+$request_path =~ s!/{2,}!/!g;
 
 my $query_string = sub {
     my %args = @_;
@@ -20,103 +21,139 @@ if ($@) {
 
 $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Search/Build.html?NewQuery=1" );
 
+if ( $request_path =~ m{^/AssetTracker/} ) {
+    PageWidgets()->delete('simple_search');
+    PageWidgets()->delete('create_ticket');
+    PageWidgets()->child( AT_simple_search => raw_html => $m->scomp('/AssetTracker/Elements/SimpleSearch') );
+    PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset') );
+}
+
     if ( $request_path =~ m{^/AssetTracker/Asset/} ) {
-        if ( ( $m->request_args->{'id'} || '' ) =~ /^(\d+)$/ ) {
+        if ( ( $DECODED_ARGS->{'id'} || '' ) =~ /^(\d+)$/ ) {
             my $id  = $1;
             my $obj = RTx::AssetTracker::Asset->new( $session{'CurrentUser'} );
             $obj->Load($id);
 
-            my $tabs = PageMenu();
+            if ( $obj and $obj->id ) {
+                my $actions = PageMenu()->child('actions');
+                my $tabs = PageMenu();
+                $tabs->child( display => title => loc('Display') => path => "/AssetTracker/Asset/Display.html?id=" . $id );
+                $tabs->child( history => title => loc('History') => path => "/AssetTracker/Asset/History.html?id=" . $id );
 
-            $tabs->child( display => title => loc('Display') => path => "/AssetTracker/Asset/Display.html?id=" . $id );
+                my %can = %{ $obj->CurrentUser->PrincipalObj->HasRights( Object => $obj ) };
+                $can{'_ModifyOwner'} = $can{'OwnAsset'} || $can{'TakeAsset'} || $can{'StealAsset'};
+                my $can = sub {
+                    unless ($_[0] eq 'ExecuteCode') {
+                        return $can{$_[0]} || $can{'SuperUser'};
+                    } else {
+                        return !RT->Config->Get('DisallowExecuteCode')
+                            && ( $can{'ExecuteCode'} || $can{'SuperUser'} );
+                    }
+                };
 
-            $tabs->child( history => title => loc('History') => path => "/AssetTracker/Asset/History.html?id=" . $id );
+                # comment out until we can do it for an individual custom field
+                #if ( $can->('ModifyAsset') || $can->('ModifyCustomField') ) {
+                $tabs->child( basics => title => loc('Basics'), path => "/AssetTracker/Asset/Modify.html?id=" . $id, );
 
-            my %can = %{ $obj->CurrentUser->PrincipalObj->HasRights( Object => $obj ) };
-            $can{'_ModifyOwner'} = $can{'OwnAsset'} || $can{'TakeAsset'} || $can{'StealAsset'};
-            my $can = sub {
-                unless ($_[0] eq 'ExecuteCode') {
-                    return $can{$_[0]} || $can{'SuperUser'};
-                } else {
-                    return !RT->Config->Get('DisallowExecuteCode')
-                        && ( $can{'ExecuteCode'} || $can{'SuperUser'} );
-                }
-            };
+                #}
 
-            # comment out until we can do it for an individual custom field
-            #if ( $can->('ModifyAsset') || $can->('ModifyCustomField') ) {
-            $tabs->child( basics => title => loc('Basics'), path => "/AssetTracker/Asset/Modify.html?id=" . $id, );
-
-            #}
-
-            if ( $can->('ModifyAsset') || $can->('_ModifyOwner') || $can->('Watch') || $can->('WatchAsAdminCc') ) {
-                $tabs->child( people => title => loc('People'), path => "/AssetTracker/Asset/ModifyPeople.html?id=" . $id,);
-            }
-
-            if ( $can->('ModifyAsset') && RT->Config->Get('EnableIP') ) {
-                $tabs->child( ips => title => loc('IPs'), path => "/AssetTracker/Asset/ModifyIPs.html?id=" . $id, );
-            }
-            if ( $can->('ModifyAsset') ) {
-                $tabs->child( fields => title => loc('Fields'), path => "/AssetTracker/Asset/ModifyFields.html?id=" . $id, );
-                $tabs->child( links => title => loc('Links'), path => "/AssetTracker/Asset/ModifyLinks.html?id=" . $id, );
-            }
-            #if ( $can->('ModifyAsset') || $can->('ModifyCustomField') || $can->('_ModifyOwner') ) {
-            $tabs->child( jumbo => title => loc('Jumbo'), path => "/AssetTracker/Asset/ModifyAll.html?id=" . $id, );
-            #}
-
-            #AT removed lifecycle stuff
-
-            #AT removed ticket taking/stealing
-
-            if ( defined $session{"assets"} ) {
-                # we have to update session data if we get new ItemMap
-                my $updatesession = 1 unless ( $session{"assets"}->{'item_map'} );
-
-                my $item_map = $session{"assets"}->ItemMap;
-
-                if ($updatesession) {
-                    $session{"assets"}->PrepForSerialization();
+                if ( $can->('ModifyAsset') || $can->('_ModifyOwner') || $can->('Watch') || $can->('WatchAsAdminCc') ) {
+                    $tabs->child( people => title => loc('People'), path => "/AssetTracker/Asset/ModifyPeople.html?id=" . $id,);
                 }
 
-                my $search = $assets; #Menu()->child('search');
-                # Don't display prev links if we're on the first ticket
-                if ( $item_map->{$id}->{prev} ) {
-                    $search->child( 'first', title => ' ' . loc('First'), escape_title => 0, class => "nav",
-                                    path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{first});
-                    $search->child( prev => title => '< ' . loc('Prev') => class => "nav",
-                                    path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{$id}->{prev});
+                if ( $can->('ModifyAsset') && RT->Config->Get('EnableIP') ) {
+                    $tabs->child( ips => title => loc('IPs'), path => "/AssetTracker/Asset/ModifyIPs.html?id=" . $id, );
                 }
-                # Don't display next links if we're on the last ticket
-                if ( $item_map->{$id}->{next} ) {
-                    $search->child( next       => title => loc('Next') . ' >' => class => "nav",
-                                    path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{$id}->{next});
-                    $search->child( last        => title => loc('Last') . ' >>' => class => "nav",
-                                    path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{last});
+                if ( $can->('ModifyAsset') ) {
+                    $tabs->child( fields => title => loc('Fields'), path => "/AssetTracker/Asset/ModifyFields.html?id=" . $id, );
+                    $tabs->child( links => title => loc('Links'), path => "/AssetTracker/Asset/ModifyLinks.html?id=" . $id, );
+                }
+
+                #if ( $can->('ModifyAsset') || $can->('ModifyCustomField') || $can->('_ModifyOwner') ) {
+                $tabs->child( jumbo => title => loc('Jumbo'), path => "/AssetTracker/Asset/ModifyAll.html?id=" . $id, );
+                #}
+
+                my $hide_resolve_with_deps = RT->Config->Get('HideResolveActionsWithDependencies')
+                    && $obj->HasUnresolvedDependencies;
+
+                my $current   = $obj->Status;
+                my $lifecycle = $obj->TypeObj->Lifecycle;
+                my $i         = 1;
+                foreach my $info ( $lifecycle->Actions($current) ) {
+                    my $next = $info->{'to'};
+                    next unless $lifecycle->IsTransition( $current => $next );
+
+                    my $check = $lifecycle->CheckRight( $current => $next );
+                    next unless $can->($check);
+
+                    next if $hide_resolve_with_deps
+                        && $lifecycle->IsInactive($next)
+                        && !$lifecycle->IsInactive($current);
+
+                    my $url = '/AssetTracker/Asset/Display.html?'
+                        . $query_string->(
+                        Status => $next,
+                        id     => $id,
+                    );
+                    my $key = $info->{'label'} || ucfirst($next);
+                    $actions->child( $key => title => loc( $key ), path => $url);
+                }
+
+                #AT removed ticket taking/stealing
+
+                if ( defined $session{"assets"} ) {
+                    # we have to update session data if we get new ItemMap
+                    my $updatesession = 1 unless ( $session{"assets"}->{'item_map'} );
+
+                    my $item_map = $session{"assets"}->ItemMap;
+
+                    if ($updatesession) {
+                        $session{"assets"}->PrepForSerialization();
+                    }
+
+                    my $search = $assets; #Menu()->child('search');
+                    # Don't display prev links if we're on the first ticket
+                    if ( $item_map->{$id}->{prev} ) {
+                        $search->child( first =>
+                            title => '<< ' . loc('First'), class => "nav", path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{first});
+                        $search->child( prev => title => '< ' . loc('Prev'),   class => "nav", path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{$id}->{prev});
+                    }
+                    # Don't display next links if we're on the last ticket
+                    if ( $item_map->{$id}->{next} ) {
+                        $search->child( next =>
+                            title => loc('Next') . ' >',  class => "nav", path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{$id}->{next});
+                        $search->child( last =>
+                            title => loc('Last') . ' >>', class => "nav", path => "/AssetTracker/Asset/Display.html?id=" . $item_map->{last});
+                    }
                 }
             }
         }
     }
 
-    if ( $request_path =~ m{^/AssetTracker/(?:Asset|Search)/}
-        || ( $request_path =~ m{^/AssetTracker/index\.html} && $DECODED_ARGS->{'q'} ) ) {
+    if (
+        $request_path =~ m{^/AssetTracker/(?:Asset|Search)/}
+        || ( $request_path =~ m{^/AssetTracker/index\.html}
+            && $DECODED_ARGS->{'q'} )
+      )
+    {
         my $search = $assets; #->child('search');
         my $args      = '';
         my $has_query = '';
         my $current_search = $session{"CurrentAssetSearchHash"} || {};
-        my $search_id = $m->request_args->{'SavedSearchLoad'} || $m->request_args->{'SavedSearchId'} || $search->{'SearchId'} || '';
+        my $search_id = $DECODED_ARGS->{'SavedSearchLoad'} || $DECODED_ARGS->{'SavedSearchId'} || $search->{'SearchId'} || '';
 
-        $has_query = 1 if ( $m->request_args->{'Query'} or $current_search->{'Query'} );
+        $has_query = 1 if ( $DECODED_ARGS->{'Query'} or $current_search->{'Query'} );
 
         my %query_args = (
             SavedSearchId => ( $search_id eq 'new' ) ? undef : $search_id,
-            SavedChartSearchId => $m->request_args->{'SavedChartSearchId'} || $current_search->{SavedChartSearchId},
-            Query => $m->request_args->{'Query'} || $current_search->{'Query'},
-            Format => $m->request_args->{'Format'} || $current_search->{'Format'},
-            OrderBy => $m->request_args->{'OrderBy'} || $current_search->{'OrderBy'} ||'',
-            Order => $m->request_args->{'Order'} || $current_search->{'Order'} ||'',
-            Page => $m->request_args->{'Page'} || $current_search->{'Page'},
-            RowsPerPage => ( defined $m->request_args->{'RowsPerPage'}
-                             ? $m->request_args->{'RowsPerPage'}
+            SavedChartSearchId => $DECODED_ARGS->{'SavedChartSearchId'} || $current_search->{SavedChartSearchId},
+            Query => $DECODED_ARGS->{'Query'} || $current_search->{'Query'},
+            Format => $DECODED_ARGS->{'Format'} || $current_search->{'Format'},
+            OrderBy => $DECODED_ARGS->{'OrderBy'} || $current_search->{'OrderBy'} ||'',
+            Order => $DECODED_ARGS->{'Order'} || $current_search->{'Order'} ||'',
+            Page => $DECODED_ARGS->{'Page'} || $current_search->{'Page'},
+            RowsPerPage => ( defined $DECODED_ARGS->{'RowsPerPage'}
+                             ? $DECODED_ARGS->{'RowsPerPage'}
                              : $current_search->{'RowsPerPage'})
                          );
         for my $field (qw(Order OrderBy)) {
@@ -138,11 +175,12 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
             $current_search_menu = PageMenu();
         }
 
-        $current_search_menu->child( edit_search => title => loc('Edit Search') =>
-                                     path => "/AssetTracker/Search/Build.html" . ( ($has_query) ? $args : '' ) );
-        $current_search_menu->child( loc('Advanced') => path => "/AssetTracker/Search/Edit.html$args" );
+        $current_search_menu->child( edit_search =>
+            title => loc('Edit Search'), path => "/AssetTracker/Search/Build.html" . ( ($has_query) ? $args : '' ) );
+        $current_search_menu->child( advanced =>
+            title => loc('Advanced'),    path => "/AssetTracker/Search/Edit.html$args" );
         if ($has_query) {
-            $current_search_menu->child( results => title => loc('Show Results') => path => "/AssetTracker/Search/Results.html$args" );
+            $current_search_menu->child( results => title => loc('Show Results'), path => "/AssetTracker/Search/Results.html$args" );
         }
 
         if ( $has_query ) {
@@ -159,15 +197,15 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
                 &&                        #XXX TODO better abstraction
                 $session{'CurrentUser'}->HasRight( Right => 'SuperUser', Object => RT->System )) {
                 my $shred_args = $query_string->(
-                    search          => 1,
-                    plugin          => 'Assets',
+                    Search         => 1,
+                    Plugin         => 'Assets',
                     'Assets:query' => $query_args{'Query'},
                     'Assets:limit' => $query_args{'Rows'},
                 );
 
-                $more->child( 'shredder' => title => loc('Shredder'),
-                                path => '/Admin/Tools/Shredder/?' . $shred_args);
+                $more->child( shredder => title => loc('Shredder'), path => '/Admin/Tools/Shredder/?' . $shred_args);
             }
+
         }
     }
 
@@ -178,7 +216,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
         my $section;
         if ( $request_path =~ m{^/AssetTracker/Admin/$type/?(?:index.html)?$}
              || (    $request_path =~ m{^/AssetTracker/Admin/$type/(?:Modify.html)$}
-                  && $m->request_args->{'Create'} )
+                  && $DECODED_ARGS->{'Create'} )
            )
 
         {
@@ -196,37 +234,40 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
     }
 
     if ( $request_path =~ m{^/AssetTracker/Admin/Types} ) {
-        if ( $m->request_args->{'id'} && $m->request_args->{'id'} =~ /^\d+$/
+        if ( $DECODED_ARGS->{'id'} && $DECODED_ARGS->{'id'} =~ /^\d+$/
                 ||
-              $m->request_args->{'Type'} && $m->request_args->{'Type'} =~ /^\d+$/
+              $DECODED_ARGS->{'Type'} && $DECODED_ARGS->{'Type'} =~ /^\d+$/
                 ||
-              $m->request_args->{'AssetType'} && $m->request_args->{'AssetType'} =~ /^\d+$/
+              $DECODED_ARGS->{'AssetType'} && $DECODED_ARGS->{'AssetType'} =~ /^\d+$/
                 ) {
-            my $id = $m->request_args->{'Type'} || $m->request_args->{'AssetType'} || $m->request_args->{'id'};
+            my $id = $DECODED_ARGS->{'Type'} || $DECODED_ARGS->{'AssetType'} || $DECODED_ARGS->{'id'};
             my $type_obj = RTx::AssetTracker::Type->new( $session{'CurrentUser'} );
             $type_obj->Load($id);
 
-            my $type = PageMenu();
-            $type->child( basics => title => loc('Basics'), path => "/AssetTracker/Admin/Types/Modify.html?id=" . $id );
-            $type->child( people => title => loc('Watchers'), path => "/AssetTracker/Admin/Types/People.html?id=" . $id );
-            my $templates = $type->child(templates => title => loc('Templates'),
-                              path => "/AssetTracker/Admin/Types/Templates.html?id=" . $id);
+            if ( $type_obj and $type_obj->id ) {
+                my $type = PageMenu();
+                $type->child( basics => title => loc('Basics'),   path => "/AssetTracker/Admin/Types/Modify.html?id=" . $id );
+                $type->child( people => title => loc('Watchers'), path => "/AssetTracker/Admin/Types/People.html?id=" . $id );
 
-            $templates->child(select => title => loc('Select'), path => "/AssetTracker/Admin/Types/Templates.html?id=".$id);
-            $templates->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Types/Template.html?Create=1;AssetType=".$id);
+                my $templates = $type->child(templates => title => loc('Templates'), path => "/AssetTracker/Admin/Types/Templates.html?id=" . $id);
+                $templates->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Types/Templates.html?id=".$id);
+                $templates->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Types/Template.html?Create=1;AssetType=".$id);
 
-            my $scrips = $type->child( scrips => title => loc('Scrips'), path => "/AssetTracker/Admin/Types/Scrips.html?id=" . $id);
+                my $scrips = $type->child( scrips => title => loc('Scrips'), path => "/AssetTracker/Admin/Types/Scrips.html?id=" . $id);
+                $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Types/Scrips.html?id=" . $id );
+                $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Types/Scrip.html?Create=1;AssetType=" . $id);
 
-            $scrips->child( select => title => loc('Select'), path => "/AssetTracker/Admin/Types/Scrips.html?id=" . $id );
-            $scrips->child( create => title => loc('Create'), path => "/AssetTracker/Admin/Types/Scrip.html?Create=1;AssetType=" . $id);
+                my $ticket_cfs = $type->child( 'asset-custom-fields' => title => loc('Asset Custom Fields'),
+                    path => '/AssetTracker/Admin/Types/CustomFields.html?SubType=RTx::AssetTracker::Asset&id=' . $id );
 
-            my $ticket_cfs = $type->child( 'ticket-custom-fields' => title => loc('Asset Custom Fields'),
-                  path => '/AssetTracker/Admin/Types/CustomFields.html?SubType=RTx::AssetTracker::Asset&id=' . $id );
+#                my $txn_cfs = $type->child( 'transaction-custom-fields' => title => loc('Transaction Custom Fields'),
+#                    path => '/AssetTracker/Admin/Types/CustomFields.html?SubType=RTx::AssetTracker::Asset-RT::Transaction&id='.$id );
 
-            $type->child( 'group-rights' => title => loc('Group Rights'), path => "/AssetTracker/Admin/Types/GroupRights.html?id=".$id );
-            $type->child( 'user-rights' => title => loc('User Rights'), path => "/AssetTracker/Admin/Types/UserRights.html?id=" . $id );
-            $type->child( 'history' => title => loc('History'), path => "/AssetTracker/Admin/Types/History.html?id=" . $id );
+                $type->child( 'group-rights' => title => loc('Group Rights'), path => "/AssetTracker/Admin/Types/GroupRights.html?id=".$id );
+                $type->child( 'user-rights' => title => loc('User Rights'), path => "/AssetTracker/Admin/Types/UserRights.html?id=" . $id );
+                $type->child( 'history' => title => loc('History'), path => "/AssetTracker/Admin/Types/History.html?id=" . $id );
 
+            }
         }
     }
 
@@ -284,9 +325,6 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
             path        => '/AssetTracker/Admin/Global/CustomFields/Type-Assets.html',
         );
     }
-
-    PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset'), sort_order => 99 );
-    PageWidgets()->child( AT_simple_search => raw_html => $m->scomp('/AssetTracker/Elements/SimpleSearch'), sort_order => 98 );
 
 </%INIT>
 <%ARGS>
