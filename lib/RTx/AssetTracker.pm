@@ -33,6 +33,8 @@ RT::System::AddRightCategories(
     AssetImport => 'Staff',
 );
 
+RT->AddJavaScript('assetautocomplete.js');
+
 
 # load overlays for RT classes
 my @Classes = qw(
