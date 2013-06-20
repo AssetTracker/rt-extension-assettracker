@@ -26,7 +26,7 @@ will cause a transaction to be recorded for every change in the asset.
 my $results = [];
 unless (RT->Config->Get("AssetImportRequiresRights") &&
         $session{CurrentUser}->HasRight( Object => $RT::System, Right => 'AssetImport')) {
-	$m->abort;
+    Abort(loc("No permission to perform asset import."));
 }
 
 if ($Import && $XML) {

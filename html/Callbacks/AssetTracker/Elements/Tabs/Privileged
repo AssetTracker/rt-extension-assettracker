@@ -41,7 +41,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
                 $tabs->child( history => title => loc('History') => path => "/AssetTracker/Asset/History.html?id=" . $id );
 
                 my %can = %{ $obj->CurrentUser->PrincipalObj->HasRights( Object => $obj ) };
-                $can{'_ModifyOwner'} = $can{'OwnAsset'} || $can{'TakeAsset'} || $can{'StealAsset'};
+                $can{'_ModifyOwner'} = $can{'OwnAsset'};
                 my $can = sub {
                     unless ($_[0] eq 'ExecuteCode') {
                         return $can{$_[0]} || $can{'SuperUser'};
@@ -285,11 +285,13 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
 
     my $tools = Menu->child("tools");
 
-    $tools->child( asset_import =>
-        title       => loc('Asset Import'),
-        description => loc('Import assets from an Excel 94 XML formatted file'),
-        path        => '/AssetTracker/Tools/Import.html',
-    );
+    if ( $session{'CurrentUser'}->HasRight( Right => 'AssetImport', Object => RT->System ) ) {
+        $tools->child( asset_import =>
+            title       => loc('Asset Import'),
+            description => loc('Import assets from an Excel 94 XML formatted file'),
+            path        => '/AssetTracker/Tools/Import.html',
+        );
+    }
 
     if ( my $admin = $tools->child("config") ) {
         my $types = $admin->child( 'asset-types' => title => loc('Asset Types'), path => '/AssetTracker/Admin/Types/', description => loc('Manage asset types and asset-specific properties') );
