@@ -6,31 +6,10 @@ use RTx::AssetTracker::Type;
              Description       => 'The default asset type',
           });
 
-@Final = ( \&SystemRights, \&AssetTypes, \&AssetScripConditions, \&AssetScripActions, \&AssetTemplates, );
+@Final = ( \&AssetTypes, \&AssetScripConditions, \&AssetScripActions, \&AssetTemplates, );
 
 my $CurrentUser = RT::CurrentUser->new();
 $CurrentUser->LoadByName('RT_System');
-
-sub SystemRights {
-    $| = 1;
-
-    print "Creating Superuser ACL...";
-
-    my $superuser_ace = RT::ACE->new($CurrentUser);
-    $superuser_ace->_BootstrapCreate(
-                         PrincipalId => ACLEquivGroupId( $CurrentUser->Id ),
-                         PrincipalType => 'Group',
-                         RightName     => 'SuperUser',
-                         ObjectType    => 'RTx::AssetTracker::System',
-                         ObjectId      => '1' );
-    
-    my $root_user = RT::User->new($CurrentUser);
-    $root_user->Load("root");
-    $root_user->PrincipalObj->GrantRight( Right => 'SuperUser',
-                                          Object => $RTx::AssetTracker::System );
-    
-    print "done.\n";
-}
 
 sub AssetTypes {
     print "Creating default asset types...";

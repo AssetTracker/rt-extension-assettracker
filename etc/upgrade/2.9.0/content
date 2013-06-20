@@ -2,6 +2,7 @@ use RTx::AssetTracker::Types;
 
 @Initial = (
     sub {
+        use strict;
         $RT::Logger->debug(
             'Going to update empty Type Lifecycle column to "at_default"');
 
@@ -27,6 +28,32 @@ use RTx::AssetTracker::Types;
 
         while ( my $q = $types->Next ) {
             $q->SetLifecycle('at_default');
+        }
+    },
+    sub {
+        use strict;
+        $RT::Logger->debug(
+            'Going to update global rights from RTx::AssetTracker::System to RT::System');
+
+        my $acl = RT::ACL->new( RT->SystemUser );
+        $acl->FindAllRows;
+        $acl->Limit(
+            FIELD    => 'ObjectType',
+            OPERATOR => '=',
+            VALUE    => 'RTx::AssetTracker::System',
+        );
+
+        while ( my $ace = $acl->Next ) {
+            my $new_ace = RT::ACE->new( RT->SystemUser );
+            my ( $ok, $msg ) = $new_ace->Create(
+                PrincipalId   => $ace->__Value('PrincipalId'),
+                PrincipalType => $ace->__Value('PrincipalType'),
+                RightName     => $ace->__Value('RightName'),
+                Object        => $RT::System,
+            );
+            if ( !$ok ) {
+                $RT::Logger->warn( "Unable to create updated ACE " . $ace->id . ": " . $msg);
+            }
         }
     },
 );
