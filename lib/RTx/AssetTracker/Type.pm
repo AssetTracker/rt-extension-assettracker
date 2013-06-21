@@ -102,8 +102,6 @@ our $RIGHT_CATEGORIES = {
     ModifyTypeWatchers => 'Staff',
     RetireAsset        => 'Staff',
     DeleteAsset        => 'Staff',
-    OwnAsset           => 'General',
-    WatchAsAdmin       => 'General',
 };
 
 # Tell RT::ACE that this sort of object can get acls granted
@@ -116,13 +114,42 @@ foreach my $right ( keys %{$RIGHTS} ) {
     $RT::ACE::LOWERCASERIGHTNAMES{ lc $right } = $right;
 }
 
+__PACKAGE__->AddRights(%$RIGHTS);
+__PACKAGE__->AddRightCategories(%$RIGHT_CATEGORIES);
 
-use RT::System;
 RT::System::AddRights(%$RIGHTS);
 RT::System::AddRightCategories(%$RIGHT_CATEGORIES);
 
-
 require RT::Lifecycle;
+
+=head2 AddRights C<RIGHT>, C<DESCRIPTION> [, ...]
+
+Adds the given rights to the list of possible rights.  This method
+should be called during server startup, not at runtime.
+
+=cut
+
+sub AddRights {
+    my $self = shift;
+    my %new = @_;
+    $RIGHTS = { %$RIGHTS, %new };
+    %RT::ACE::LOWERCASERIGHTNAMES = ( %RT::ACE::LOWERCASERIGHTNAMES,
+                                      map { lc($_) => $_ } keys %new);
+}
+
+=head2 AddRightCategories C<RIGHT>, C<CATEGORY> [, ...]
+
+Adds the given right and category pairs to the list of right categories.  This
+method should be called during server startup, not at runtime.
+
+=cut
+
+sub AddRightCategories {
+    my $self = shift if ref $_[0] or $_[0] eq __PACKAGE__;
+    my %new = @_;
+    $RIGHT_CATEGORIES = { %$RIGHT_CATEGORIES, %new };
+}
+
 
 # Custom field support
 RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type' => "Asset Types" );
@@ -186,17 +213,17 @@ sub RoleDescription {
 }
 
 sub ConfigureRoles {
-    my $class = shift;
+    my $self = shift;
 
     foreach my $role ( ActiveRoleArray() ) {
-        $class->ConfigureRole( $role );
+        $self->ConfigureRole( $role );
     }
 
 }
 
 sub ConfigureRole {
 
-    my $class = shift;
+    my $self = shift;
     my $role = shift;
 
     # if the system role group doesn't exist, create it
@@ -211,8 +238,14 @@ sub ConfigureRole {
         $group->id or $RT::Logger->error("Couldn't create group for system role '$role'");
     }
 
-    my $right = RoleRight(undef, $role);
-    $RIGHTS->{$right} = RoleDescription(undef, $role);
+    my $right = $self->RoleRight($role);
+    my $desc = $self->RoleDescription($role);
+
+    $self->AddRights( $right => $desc );
+    $self->AddRightCategories( $right => 'General' );
+    RT::System->AddRights( $right => $desc );
+    RT::System->AddRightCategories( $right => 'General' );
+
     $RT::ACE::LOWERCASERIGHTNAMES{ lc $right } = $right;
 
     my $group_role_method = $role . "RoleGroup";
