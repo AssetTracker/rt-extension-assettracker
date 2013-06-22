@@ -29,7 +29,7 @@ always examine all results.
 
 Set($AssetsItemMapSize, 1000);
 
-# $DefaultAssetSearchResultFormat is the default format for RT search results
+# $DefaultAssetSearchResultFormat is the default format for AT search results
 Set ($DefaultAssetSearchResultFormat, 
  qq{'<B><A HREF="$RT::WebPath/AssetTracker/Asset/Display.html?id=__id__">__Name__</a></B>/TITLE:Name',
    Description,
@@ -111,8 +111,6 @@ Set(%AdminSearchResultFormat,
 
 local $rt_comps = RT->Config->Get("HomepageComponents");
 RT->Config->Set("HomepageComponents", [@$rt_comps, qw(AssetQuickSearch)]);
-
-Set ($AssetImportRequiresRights, 1);
 
 
 =head1 Lifecycles
