@@ -52,10 +52,10 @@
 %     my $GroupMembersCount = $Asset->$group->MembersObj->Count();
 %     my $TypeMembersCount = $Asset->TypeObj->$group->MembersObj->Count();
 %     if ( $GroupMembersCount ) {
-        <& ShowGroupMembers, Group => $Asset->$group() &>
+        <& /Ticket/Elements/ShowGroupMembers, Group => $Asset->$group(), Recursively => RT->Config->Get('ShowGroupMembers') &>
 %     }
 %     if ( $ShowTypeWatchers and $TypeMembersCount ) {
-        <& ShowGroupMembers, Group => $Asset->TypeObj->$group() &>
+        <& /Ticket/Elements/ShowGroupMembers, Group => $Asset->TypeObj->$group(), Recursively => RT->Config->Get('ShowGroupMembers') &>
 %     }
     </td>
   </tr>

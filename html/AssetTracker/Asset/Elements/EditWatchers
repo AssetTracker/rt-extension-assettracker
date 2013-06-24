@@ -1,37 +1,105 @@
-<TABLE>
-<TR>
-<TD>Current Members:<BR>(check to delete)
+%# BEGIN BPS TAGGED BLOCK {{{
+%#
+%# COPYRIGHT:
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
+%# (Except where explicitly superseded by other copyright notices)
+%#
+%#
+%# LICENSE:
+%#
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%#
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%#
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
+%# CONTRIBUTION SUBMISSION POLICY:
+%#
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%#
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%#
+%# END BPS TAGGED BLOCK }}}
+<table>
+<tr>
+<td>Current Members:<BR>(check to delete)
 <ul>
 %# Print out a placeholder if there are none.
-%if ($Members->Count == 0 ) {
-<li><i><&|/l&>none</&></i>
+% unless ( $Members->Count ) {
+<li><i><&|/l&>none</&></i></li>
 % }
 
 
-%while (my $watcher=$Members->Next) {
+% while ( my $watcher = $Members->Next ) {
+% my $member = $watcher->MemberObj->Object;
 <li>
-<INPUT TYPE=CHECKBOX NAME="Asset-DeleteWatcher-Type-<%$Watchers->Type%>-Principal-<%$watcher->MemberId%>" UNCHECKED>
-%if ($watcher->MemberObj->IsUser) {
-<a href="<%$RT::WebPath%>/Admin/Users/Modify.html?id=<%$watcher->MemberObj->Object->id%>">
-<%$watcher->MemberObj->Object->Name%></a>
-%} else {
-<a href="<%$RT::WebPath%>/Admin/Groups/Modify.html?id=<%$watcher->MemberObj->Object->id%>">
-<%$watcher->MemberObj->Object->Name%></a>
-%}
+<input type="checkbox" class="checkbox" name="Asset-DeleteWatcher-Type-<%$Watchers->Type%>-Principal-<% $watcher->MemberId %>" value="1" unchecked />
+% if ( $member->isa( 'RT::User' ) ) { 
+% if ( $session{CurrentUser}->HasRight( Right => 'AdminUsers', Object => $RT::System ) &&
+%      $session{CurrentUser}->HasRight( Right => 'ShowConfigTab', Object =>$RT::System ) ) {
+<a href="<% RT->Config->Get('WebPath') %>/Admin/Users/Modify.html?id=<% $watcher->MemberId %>">
+<& /Elements/ShowUser, User => $member &></a>
+% } else {
+<& /Elements/ShowUser, User => $member &>
+% } }
+% else {
+% if ( $session{CurrentUser}->HasRight( Right => 'AdminGroup', Object => $RT::System ) &&
+%      $session{CurrentUser}->HasRight( Right => 'ShowConfigTab', Object =>$RT::System ) ) {
+<a href="<% RT->Config->Get('WebPath') %>/Admin/Groups/Modify.html?id=<% $watcher->MemberId %>">
+<% $member->Name %>
+</a>
+% } else {
+<% $member->Name %>
+% } }
+
+</li>
 % }
 </ul>
-</TD>
-<TD>&nbsp;</TD>
+</td>
+<td>&nbsp;</td>
 % if (ref $AssetObj) {
-<TD>Add Groups:<BR><&/AssetTracker/Elements/SelectGroupsWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", AssetObj => $AssetObj &><BR>
-Add Users:<BR><&/AssetTracker/Elements/SelectUsersWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", IncludeSuperusers=>1,Verbose => 1, SortFriendly => 1, AssetObj => $AssetObj &></TD>
+<td>
+Add Groups:<br />
+<&/AssetTracker/Elements/SelectGroupsWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", AssetObj => $AssetObj &><br />
+Add Users:<br/>
+<&/AssetTracker/Elements/SelectUsersWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", IncludeSuperusers=>1,Verbose => 1, SortFriendly => 1, AssetObj => $AssetObj &>
+</td>
 % }
 % elsif (ref $TypeObj) {
-<TD>Add Groups:<BR><&/AssetTracker/Elements/SelectGroupsWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", TypeObj => $TypeObj &><BR>
-Add Users:<BR><&/AssetTracker/Elements/SelectUsersWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", IncludeSuperusers=>1,Verbose => 1, SortFriendly => 1, TypeObj => $TypeObj &></TD>
+<td>
+Add Groups:<br />
+<&/AssetTracker/Elements/SelectGroupsWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", TypeObj => $TypeObj &><br />
+Add Users:<br />
+<&/AssetTracker/Elements/SelectUsersWithRight, Right => $Right, Name => "AddWatcher-Type-$Role", IncludeSuperusers=>1,Verbose => 1, SortFriendly => 1, TypeObj => $TypeObj &>
+</td>
 % }
-</TR>
-</TABLE>
+</tr>
+</table>
 <%INIT>
 my $Members;
 my $Watchers;
@@ -71,6 +139,3 @@ $Role
 $IncludeUsers => 1
 $IncludeGroups => 1
 </%ARGS>
-
-
-

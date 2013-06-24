@@ -93,3 +93,8 @@ div#body .ticketlinks .titlebox-title .left a:visited { color: #fff; }
 #display-options .submit {
  width: 100%;
 }
+
+.edit-role {
+ float: left;
+ padding-left: 2em;
+}

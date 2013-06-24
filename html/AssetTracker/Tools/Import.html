@@ -37,10 +37,10 @@ if ($Import && $XML) {
     while ( my $bytesread = read( $fh, $buffer, 4096 ) ) {
         $xml_data .= $buffer;
     }
-	my $assets = RTx::AssetTracker::Assets->new($session{CurrentUser});
+    my $assets = RTx::AssetTracker::Assets->new($session{CurrentUser});
     my $rv;
     eval {
-	    ($rv, $results) = $assets->ImportXML($xml_data, $RunScrips, $Detailed);
+        ($rv, $results) = $assets->ImportXML($xml_data, $RunScrips, $Detailed);
         unshift @$results, loc("Asset import errors. No changes were made.") unless $rv;
     };
     if ($@) {

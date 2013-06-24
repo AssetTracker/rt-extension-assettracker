@@ -1,9 +1,9 @@
-<SELECT NAME ="<%$Name%>">
+<select name="<%$Name%>">
 %if ($DefaultValue) {
-<OPTION <% !$Default && "SELECTED" %> VALUE=""><%$DefaultLabel%></OPTION>
+<option <% !$Default && 'selected="selected"' %> value=""><%$DefaultLabel%></option>
 %}
 %foreach my $protocol (qw (TCP UDP)) {
-<OPTION <% ($protocol eq $Default) && "SELECTED" %> VALUE="<%$protocol%>"><%loc($protocol)%></OPTION>
+<option <% ($protocol eq $Default) && selected="selected"' %> value="<%$protocol%>"><%loc($protocol)%></option>
 % }
 </SELECT>
 <%ARGS>

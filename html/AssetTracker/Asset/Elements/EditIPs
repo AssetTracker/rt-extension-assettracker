@@ -1,25 +1,25 @@
-<TABLE>
-<TR>
-<TD>
+<table>
+<tr>
+<td>
 <h3><&|/l&>Add IPs</&></h3>
 % my $i = 1;
-<TABLE>
-<TR><TD>Interface</TD><TD>IP Address</TD><TD>MAC Address</TD><TD>TCP Ports <i>(space separated)</i></TD><TD>UDP Ports</TD></TR>
+<table>
+<tr><th>Interface</td><th>IP Address</td><th>MAC Address</td><th>TCP Ports <i>(space separated)</i></td><th>UDP Ports</td></tr>
 % while ($i <= $blanks) {
-<TR>
-<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddInterface<%$i%>" MAXLENTH=25></TD>
-<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddIP<%$i%>" SIZE=15 MAXLENGTH=15></TD>
-<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddMAC<%$i%>" SIZE=12 MAXLENGTH=12></TD>
-<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddTCPPorts<%$i%>" SIZE=30 ></TD>
-<TD><INPUT NAME="Asset-<%$AssetObj->Id%>-AddUDPPorts<%$i%>" SIZE=30 ></TD>
+<tr>
+<td><input name="Asset-<%$AssetObj->Id%>-AddInterface<%$i%>" MAXLENTH="25" /></td>
+<td><input name="Asset-<%$AssetObj->Id%>-AddIP<%$i%>" size=15 maxlength="15" /></td>
+<td><input name="Asset-<%$AssetObj->Id%>-AddMAC<%$i%>" size=12 maxlength="12" /></td>
+<td><input name="Asset-<%$AssetObj->Id%>-AddTCPPorts<%$i%>" size="30" /></td>
+<td><input name="Asset-<%$AssetObj->Id%>-AddUDPPorts<%$i%>" size="30" /></td>
 % $i++;
-</TR>
+</tr>
 % }
-</TABLE>
-</TD>
-</TR>
-<TR>
-<TD VALIGN=TOP>
+</table>
+</td>
+</tr>
+<tr>
+<td valign="top">
 <h3><&|/l&>Current IPs</&></h3>
 <&|/l&>(Check box to delete)</&><br>
     <table>
@@ -27,26 +27,26 @@
     <tr>
     <td>
     <%$ip->Interface%>:
-    <INPUT TYPE=CHECKBOX NAME="Asset-<%$AssetObj->Id%>-DeleteIP-<%$ip->Id%>" UNCHECKED>
+    <input type="checkbox" name="Asset-<%$AssetObj->Id%>-DeleteIP-<%$ip->Id%>" unchecked />
     <%$ip->IP%> (<%$ip->MAC%>)
     </td>
     <td>
-    TCP: <INPUT NAME="Asset-<%$AssetObj->Id%>-IP-<%$ip->Id%>-TCPPorts" VALUE="<%join(' ', sort {$a<=>$b} $ip->TCPPorts)%>" SIZE=30>
+    TCP: <input name="Asset-<%$AssetObj->Id%>-IP-<%$ip->Id%>-TCPPorts" value="<%join(' ', sort {$a<=>$b} $ip->TCPPorts)%>" size="30" />
     <br>
-    UDP: <INPUT NAME="Asset-<%$AssetObj->Id%>-IP-<%$ip->Id%>-UDPPorts" VALUE="<%join(' ', sort {$a<=>$b} $ip->UDPPorts)%>" SIZE=30>
+    UDP: <input name="Asset-<%$AssetObj->Id%>-IP-<%$ip->Id%>-UDPPorts" value="<%join(' ', sort {$a<=>$b} $ip->UDPPorts)%>" size="30" />
     </td>
     </tr>
 % }
     </table>
-</TD>
-</TR>
-</TABLE>
+</td>
+</tr>
+</table>
 
-<%INIT>
+<%init>
 my $ips = $AssetObj->IPs;
-</%INIT>
+</%init>
 
-<%ARGS>
+<%args>
 $AssetObj => undef
 $blanks => 5
-</%ARGS>
+</%args>

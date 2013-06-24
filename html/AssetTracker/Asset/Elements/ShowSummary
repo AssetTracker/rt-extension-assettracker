@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2004 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,56 +43,59 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 <table width="100%" class="asset-summary">
-    <tr>
-      <td valign="top" width="40%" class="boxcontainer">
+<tr>
+  <td valign="top" class="boxcontainer">
 % $m->callback( %ARGS, CallbackName => 'LeftColumnTop' );
-			    <&| /Widgets/TitleBox, title => loc('The Basics'),
-                title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/Modify.html?id=".$Asset->Id,
-                class=> 'asset-info-basics' &>
-				<& /AssetTracker/Asset/Elements/ShowBasics, Asset => $Asset &>
-				</&>
-% if ($RT::EnableIP) {
-				<&| /Widgets/TitleBox, title => loc('IP Addresses'),
-                title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyIPs.html?id=".$Asset->Id,
-                class => 'asset-info-IPs' &>
-                <& /AssetTracker/Asset/Elements/ShowIP, Asset => $Asset &>
-				</&>
+    <&| /Widgets/TitleBox, title => loc('The Basics'),
+        ($can_modify ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/Modify.html?id=".$Asset->Id) : ()),
+        class=> 'asset-info-basics',
+    &>
+        <& /AssetTracker/Asset/Elements/ShowBasics, Asset => $Asset &>
+    </&>
+% if ( RT->Config->Get('EnableIP') ) {
+    <&| /Widgets/TitleBox, title => loc('IP Addresses'),
+        ($can_modify ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyIPs.html?id=".$Asset->Id) : ()),
+        class => 'asset-info-IPs',
+    &>
+        <& /AssetTracker/Asset/Elements/ShowIP, Asset => $Asset &>
+    </&>
 % }
-				<&| /Widgets/TitleBox, title => loc('People'),
-                title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id,
-                class=> 'asset-info-people' &>
-				<& /AssetTracker/Asset/Elements/ShowPeople, Asset => $Asset &>
-				</&>
+    <&| /Widgets/TitleBox, title => loc('People'),
+        (($can_modify || $can_modify_owner) ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyPeople.html?id=".$Asset->Id) : ()),
+        class=> 'asset-info-people',
+    &>
+        <& /AssetTracker/Asset/Elements/ShowPeople, Asset => $Asset &>
+    </&>
 % my (@extra);
 % push @extra, titleright_raw => '<a href="'. RT->Config->Get('WebPath'). '/AssetTracker/Asset/Graphs/index.html?id='.$Asset->id.'">'.loc('Graph').'</a>' unless RT->Config->Get('DisableGraphViz');
 % $m->callback( %ARGS, CallbackName => 'LinksExtra', extra => \@extra );
-				<&| /Widgets/TitleBox, title => loc('Links'),
-                title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id,
-                class => 'asset-info-links', @extra &>
-				<& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 0 &>
-				</&>
+    <&| /Widgets/TitleBox, title => loc('Links'),
+        ($can_modify ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyLinks.html?id=".$Asset->Id) : ()),
+        class => 'asset-info-links',
+        @extra
+    &><& /AssetTracker/Elements/ShowLinks, Asset => $Asset, TicketLinks => 0 &></&>
 % $m->callback( %ARGS, CallbackName => 'LeftColumn' );
       </td>
-      <td valign="top" width="60%" class="boxcontainer">
+      <td valign="top" class="boxcontainer">
 % $m->callback( %ARGS, CallbackName => 'RightColumnTop' );
-% if ($Asset->TypeObj->AssetCustomFields->First) {
-				<&| /Widgets/TitleBox, title => loc('Custom Fields'),
-                title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyFields.html?id=".$Asset->Id,
-                class => 'asset-info-cfs' &>
-				<& /Elements/ShowCustomFields, Object => $Asset &>
-				</&>
-% }  
+    <&| /Widgets/TitleBox, title => loc('Custom Fields'),
+        (($can_modify || $can_modify_cf) ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyFields.html?id=".$Asset->Id) : ()),
+        class => 'asset-info-cfs',
+        hide_empty => 1,
+    &><& /Elements/ShowCustomFields, Object => $Asset &></&>
+
 % $m->callback( %ARGS, CallbackName => 'RightColumn' );
-      </td>
-    </tr>
+  </td>
+</tr>
 </table>
 <%ARGS>
 $Asset => undef
 </%ARGS>
-
-
-
-
+<%INIT>
+my $can_modify = $Asset->CurrentUserHasRight('ModifyAsset');
+my $can_modify_cf = $Asset->CurrentUserHasRight('ModifyCustomField');
+my $can_modify_owner = $Asset->CurrentUserHasRight('OwnAsset');
+</%INIT>
