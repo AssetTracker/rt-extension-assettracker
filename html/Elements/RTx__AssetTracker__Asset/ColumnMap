@@ -64,10 +64,14 @@ my $LinkCallback = sub {
     my $local_type      = 'Local'.$mode;
 
     {
+        export_style => 's24',
         export_value => sub {
-            map {
-                $_->$mode_uri->Resolver->HREF;
+            my @values = map {
+                $_->$mode_uri->Resolver->URI,
+                "\n",
             } @{ $_[0]->Links($other_mode,$type)->ItemsArrayRef };
+            pop @values; # Remove that last \n
+            return @values;
         },
         value => sub {
             map {
@@ -92,13 +96,6 @@ $COLUMN_MAP = {
         attribute => 'Type',
         title     => 'Type',
         value     => sub { return $_[0]->TypeObj->Name }
-    },
-    id => {
-        attribute => 'id',
-        align     => 'right',
-        type      => 'Number',
-        export_style     => 's23',
-        value     => sub { return $_[0]->id }
     },
     Name => {
         attribute => 'Name',
@@ -137,25 +134,52 @@ $COLUMN_MAP = {
 
           }
     },
-    Created => {
-        attribute => 'Created',
-        type      => 'DateTime',
-        export_style   => 's21',
-        value     => sub { return $_[0]->CreatedObj->AsString },
-        export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
-    },
-    LastUpdated => {
-        attribute => 'LastUpdated',
-        title     => 'Last Updated',
-        type      => 'DateTime',
-        export_style   => 's21',
-        value     => sub { return $_[0]->LastUpdatedObj->AsString },
-        export_value     => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
-    },
     LastTransaction => {
         attribute => 'LastTransaction',
         title     => 'Last Transaction',
         value     => sub { return $_[0]->Transactions->Last->BriefDescription }
+    },
+
+    # Falls through to generic ColumnMap for other attributes
+    id => {
+        export_type  => 'Number',
+        export_style => 's23',
+    },
+    Created => {
+        export_type  => 'DateTime',
+        export_style => 's21',
+        export_value => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
+    },
+    LastUpdated => {
+        export_type  => 'DateTime',
+        export_style => 's21',
+        export_value => sub { my $date = $_[0]->Created . '.000'; $date =~ s/ /T/; $date }
+    },
+    CustomField => {
+        export_style => 's24',
+        export_value => sub {
+            # Cache the CF object on a per-request basis, to avoid
+            # having to load it for every row
+            my $key = join("-","CF",
+                           $_[0]->CustomFieldLookupType,
+                           $_[0]->CustomFieldLookupId,
+                           $_[-1]);
+
+            my $cf = $m->notes($key);
+            unless ($cf) {
+                $cf = $_[0]->LoadCustomFieldByIdentifier($_[-1]);
+                $m->notes($key, $cf);
+            }
+
+            # Display custom field contents, separated by newlines.
+            my $values = $cf->ValuesForObject( $_[0] );
+            my @values = map {
+                $_->Content,
+                "\n",
+            } @{ $values->ItemsArrayRef };
+            pop @values; # Remove that last \n
+            return @values;
+        },
     },
 
     # Everything from LINKTYPEMAP

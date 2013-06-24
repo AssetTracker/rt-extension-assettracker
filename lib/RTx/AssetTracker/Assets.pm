@@ -2842,11 +2842,11 @@ sub ExportExcel {
         for my $f (@$export_format) {
             my $attr = $f->{attribute};
             my $style = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "export_style") || 'Default';
-            my $type  = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "type") || 'String';
+            my $type  = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "export_type")  || 'String';
             my $value = run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "export_value")
                      || run_component("/Elements/ColumnMap", Class => $class, Name => $attr, Attr => "value");
             my $out = _xml_escape_value(
-                HTML::Mason::Commands::ProcessColumnMapValue( $value, Arguments => [ $asset ], Escape => 0 ) );
+                HTML::Mason::Commands::ProcessColumnMapValue( $value, Arguments => [ $asset ], Escape => 0 ) ) || '';
             $row .= qq{<Cell ss:StyleID="$style"><Data ss:Type="$type">$out</Data></Cell>\n};
         }
         
@@ -2882,6 +2882,14 @@ sub ExportExcel {
   </Style>
   <Style ss:ID="s23">
    <NumberFormat ss:Format="0"/>
+  </Style>
+  <Style ss:ID="s24">
+   <Alignment ss:Vertical="Bottom" ss:WrapText="1"/>
+   <Borders/>
+   <Font ss:FontName="Verdana"/>
+   <Interior/>
+   <NumberFormat/>
+   <Protection/>
   </Style>
  </Styles>
  <Worksheet ss:Name="Export">
@@ -3152,6 +3160,7 @@ sub _xml_escape_value {
     $str =~ s/</&lt;/g;
     $str =~ s/>/&gt;/g;
     $str =~ s/"/&quot;/g;
+    $str =~ s/\n/&#13;/g;
 
     return $str;
 }
