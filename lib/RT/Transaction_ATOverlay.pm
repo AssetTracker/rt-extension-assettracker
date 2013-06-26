@@ -239,16 +239,17 @@ be passed to RT::CustomField->Create() via the 'LookupType' hash key.
 
 =cut
 
+my $Orig_CustomFieldLookupType = __PACKAGE__->can('CustomFieldLookupType')
+    or die "API change? Can't find method 'CustomFieldLookupType'";
+*CustomFieldLookupType = sub {
+    my $self = shift;
 
-sub CustomFieldLookupType {
-    my $self=shift;
-    
     if ( ref $self && $self->{values}->{objecttype} eq 'RTx::AssetTracker::Asset' ) {
-        "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
+        return "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction";
     } else {
-        "RT::Queue-RT::Ticket-RT::Transaction";
+        return $Orig_CustomFieldLookupType->($self);
     }
-}
+};
 
 
 1;
