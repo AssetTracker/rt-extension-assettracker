@@ -48,7 +48,7 @@
 
 =head1 NAME
 
-  RTx::AssetTracker::Record - Base class for RT record objects
+  RTx::AssetTracker::Record - Base class for AT record objects
 
 =head1 SYNOPSIS
 
@@ -68,9 +68,6 @@ package RTx::AssetTracker::Record;
 use base 'RT::Record';
 
 
-
-# {{{ sub URI 
-
 =head2 URI
 
 Returns this record's URI
@@ -84,9 +81,22 @@ sub URI {
     return($uri->URIForObject($self));
 }
 
-# }}}
 
-# Need to review this override -Todd
+=head2 Update  ARGSHASH
+
+Updates fields on an object for you using the proper Set methods,
+skipping unchanged values.
+
+ ARGSRef => a hashref of attributes => value for the update
+ AttributesRef => an arrayref of keys in ARGSRef that should be updated
+ AttributePrefix => a prefix that should be added to the attributes in AttributesRef
+                    when looking up values in ARGSRef
+                    Bare attributes are tried before prefixed attributes
+
+Returns a list of localized results of the update
+
+=cut
+
 sub Update {
     my $self = shift;
 
@@ -99,8 +109,9 @@ sub Update {
 
     my $attributes = $args{'AttributesRef'};
     my $ARGSRef    = $args{'ARGSRef'};
-    my @results;
+    my %new_values;
 
+    # gather all new values
     foreach my $attribute (@$attributes) {
         my $value;
         if ( defined $ARGSRef->{$attribute} ) {
@@ -121,6 +132,7 @@ sub Update {
 
         $value =~ s/\r\n/\n/gs;
 
+        my $truncated_value = $self->TruncateValue($attribute, $value);
 
         # If Queue is 'General', we want to resolve the queue name for
         # the object.
@@ -128,38 +140,76 @@ sub Update {
         # This is in an eval block because $object might not exist.
         # and might not have a Name method. But "can" won't find autoloaded
         # items. If it fails, we don't care
-        eval {
-            my $object = $attribute . "Obj";
-            next if ($self->$object->Name eq $value);
+        do {
+            no warnings "uninitialized";
+            local $@;
+            eval {
+                my $object = $attribute . "Obj";
+                my $name = $self->$object->Name;
+                next if $name eq $value || $name eq ($value || 0);
+            };
+
+            my $current = $self->$attribute();
+            # RT::Queue->Lifecycle returns a Lifecycle object instead of name
+            $current = eval { $current->Name } if ref $current;
+            next if $truncated_value eq $current;
+            next if ( $truncated_value || 0 ) eq $current;
         };
-        next if ( $value eq $self->$attribute() );
+
+        $new_values{$attribute} = $value;
+    }
+
+    return $self->_UpdateAttributes(
+        Attributes => $attributes,
+        NewValues  => \%new_values,
+        TransactionData => $ARGSRef->{BasicComment} || $ARGSRef->{GlobalComment},
+    );
+}
+
+sub _UpdateAttributes {
+    my $self = shift;
+    my %args = (
+        Attributes => [],
+        NewValues  => {},
+        TransactionData => undef,
+        @_,
+    );
+
+    my @results;
+
+    foreach my $attribute (@{ $args{Attributes} }) {
+        next if !exists($args{NewValues}{$attribute});
+
+        my $value = $args{NewValues}{$attribute};
         my $method = "Set$attribute";
         my ( $code, $msg );
         if (ref $self eq 'RTx::AssetTracker::Asset') {
-            ( $code, $msg ) = $self->$method(Value => $value, TransactionData => $ARGSRef->{BasicComment} || $ARGSRef->{GlobalComment});
+            ( $code, $msg ) = $self->$method(Value => $value, TransactionData => $args{'TransactionData'});
         }
         else {
             ( $code, $msg ) = $self->$method($value);
         }
+        my ($prefix) = ref($self) =~ /RT(?:.*)::(\w+)/;
 
-        my ($prefix) = ref($self) =~ /RTx::AssetTracker::(\w+)/;
-        if ($prefix eq 'Asset') {
-            push @results,
-              $self->loc( "$prefix [_1] " . $self->Name, $self->id ) . ': '
-              . $self->loc($attribute) . ': '
-              . $self->CurrentUser->loc_fuzzy($msg);
-        }
-        else {
-            push @results,
-              $self->loc( "$prefix [_1]", $self->id ) . ': '
-              . $self->loc($attribute) . ': '
-              . $self->CurrentUser->loc_fuzzy($msg);
-        }
+        # Default to $id, but use name if we can get it.
+        my $label = $self->id;
+        $label = $self->Name if (UNIVERSAL::can($self,'Name'));
+        # this requires model names to be loc'ed.
 
 =for loc
+
+    "Asset" # loc
+    "Asset type" # loc
+
+=cut
+
+        push @results, $self->loc( $prefix ) . " $label: ". $msg;
+
+=for loc
+
                                    "[_1] could not be set to [_2].",       # loc
                                    "That is already the current value",    # loc
-                                   "No value sent to _Set!\n",             # loc
+                                   "No value sent to _Set!",               # loc
                                    "Illegal value for [_1]",               # loc
                                    "The new value has been set.",          # loc
                                    "No column specified",                  # loc
@@ -169,6 +219,7 @@ sub Update {
                                    "Couldn't find row",                    # loc
                                    "Missing a primary key?: [_1]",         # loc
                                    "Found Object",                         # loc
+
 =cut
 
     }
@@ -176,152 +227,34 @@ sub Update {
     return @results;
 }
 
-# {{{ Routines dealing with transactions
 
-# {{{ sub _NewTransaction
+# TODO: This _only_ works for RT::Foo classes. it doesn't work, for
+# example, for RT::IR::Foo classes.
 
-=head2 _NewTransaction  PARAMHASH
-
-Private function to create a new RT::Transaction object for this asset update
-
-=cut
-
-sub _NewTransaction {
+sub CustomFieldLookupId {
     my $self = shift;
-    my %args = (
-        TimeTaken => undef,
-        Type      => undef,
-        OldValue  => undef,
-        NewValue  => undef,
-        OldReference  => undef,
-        NewReference  => undef,
-        ReferenceType => undef,
-        Data      => undef,
-        Field     => undef,
-        MIMEObj   => undef,
-        ActivateScrips => 1,
-        CommitScrips => 1,
-        @_
-    );
-
-    my $old_ref = $args{'OldReference'};
-    my $new_ref = $args{'NewReference'};
-    my $ref_type = $args{'ReferenceType'};
-    if ($old_ref or $new_ref) {
-	$ref_type ||= ref($old_ref) || ref($new_ref);
-	if (!$ref_type) {
-	    $RT::Logger->error("Reference type not specified for transaction");
-	    return;
-	}
-	$old_ref = $old_ref->Id if ref($old_ref);
-	$new_ref = $new_ref->Id if ref($new_ref);
-    }
-
-    require RT::Transaction;
-    my $trans = new RT::Transaction( $self->CurrentUser );
-    my ( $transaction, $msg ) = $trans->Create(
-	ObjectId  => $self->Id,
-	ObjectType => ref($self),
-        TimeTaken => $args{'TimeTaken'},
-        Type      => $args{'Type'},
-        Data      => $args{'Data'},
-        Field     => $args{'Field'},
-        NewValue  => $args{'NewValue'},
-        OldValue  => $args{'OldValue'},
-        NewReference  => $new_ref,
-        OldReference  => $old_ref,
-        ReferenceType => $ref_type,
-        MIMEObj   => $args{'MIMEObj'},
-        ActivateScrips => $args{'ActivateScrips'},
-        CommitScrips => $args{'CommitScrips'},
-    );
-
-    # Rationalize the object since we may have done things to it during the caching.
-    $self->Load($self->Id);
-
-    $RT::Logger->warning($msg) unless $transaction;
-
-    $self->_SetLastUpdated;
-
-    if ( defined $args{'TimeTaken'} and $self->can('_UpdateTimeTaken') ) {
-        $self->_UpdateTimeTaken( $args{'TimeTaken'} );
-    }
-    if ( $RT::UseTransactionBatch and $transaction ) {
-	    push @{$self->{_TransactionBatch}}, $trans;
-    }
-    return ( $transaction, $msg, $trans );
-}
-
-# }}}
-
-# {{{ sub Transactions 
-
-=head2 Transactions
-
-  Returns an RT::Transactions object of all transactions on this record object
-
-=cut
-
-sub Transactions {
-    my $self = shift;
-
-    use RT::Transactions;
-    my $transactions = RT::Transactions->new( $self->CurrentUser );
-
-    #If the user has no rights, return an empty object
-    $transactions->Limit(
-        FIELD => 'ObjectId',
-        VALUE => $self->id,
-    );
-    $transactions->Limit(
-        FIELD => 'ObjectType',
-        VALUE => ref($self),
-    );
-
-    return ($transactions);
-}
-
-# }}}
-# }}}
-#
-# {{{ Routines dealing with custom fields
-
-sub CustomFields {
-    my $self = shift;
-    my $cfs = RT::CustomFields->new( $self->CurrentUser );
-    $cfs->UnLimit;
-
-    # XXX handle multiple types properly
-  if ($RT::VERSION gt '3.4.1' or $RT::VERSION eq '0.0.0' ) {
-    $cfs->LimitToLookupType($self->CustomFieldLookupType);
-    $cfs->LimitToGlobalOrObjectId($self->_LookupId($self->CustomFieldLookupType));
-  } else {
-    foreach my $lookup ($self->_LookupTypes) {
-       $cfs->LimitToLookupType($lookup);
-       $cfs->LimitToGlobalOrObjectId($self->_LookupId($lookup));
-    }
-  }
-
-
-    return $cfs;
-}
-
-# TODO: This _only_ works for RT::Class classes. it doesn't work, for example, for RT::FM classes.
-
-sub _LookupId {
-    my $self = shift;
-    my $lookup = shift;
+    my $lookup = shift || $self->CustomFieldLookupType;
     my @classes = ($lookup =~ /RTx::AssetTracker::(\w+)-/g);
 
+    # Work on "RT::Queue", for instance
+    return $self->Id unless @classes;
+
+    my $object = $self;
+    # Save a ->Load call by not calling ->FooObj->Id, just ->Foo
+    my $final = shift @classes;
     foreach my $class (reverse @classes) {
 	my $method = "${class}Obj";
-	$self = $self->$method;
+	$object = $object->$method;
     }
 
-    return $self->Id;
+    my $id = $object->$final;
+    unless (defined $id) {
+        my $method = "${final}Obj";
+        $id = $object->$method->Id;
+    }
+    return $id;
 }
 
-# {{{ AddCustomFieldValue
 
 =item AddCustomFieldValue { Field => FIELD, Value => VALUE }
 
@@ -331,7 +264,7 @@ FIELD can be a CustomField object OR a CustomField ID.
 
 Adds VALUE as a value of CustomField FIELD.  If this is a single-value custom field,
 deletes the old value. 
-If VALUE isn't a valid value for the custom field, returns 
+If VALUE is not a valid value for the custom field, returns 
 (0, 'Error message' ) otherwise, returns (1, 'Success Message')
 
 =cut
@@ -383,7 +316,7 @@ sub _AddCustomFieldValue {
             0,
             $self->loc(
                 "Custom field [_1] does not apply to this object",
-                $args{'Field'}
+                ref $args{'Field'} ? $args{'Field'}->id : $args{'Field'}
             )
         );
     }
@@ -491,6 +424,26 @@ sub _AddCustomFieldValue {
         }
 
         my $new_content = $new_value->Content;
+
+        # For datetime, we need to display them in "human" format in result message
+        #XXX TODO how about date without time?
+        if ($cf->Type eq 'DateTime') {
+            my $DateObj = RT::Date->new( $self->CurrentUser );
+            $DateObj->Set(
+                Format => 'ISO',
+                Value  => $new_content,
+            );
+            $new_content = $DateObj->AsString;
+
+            if ( defined $old_content && length $old_content ) {
+                $DateObj->Set(
+                    Format => 'ISO',
+                    Value  => $old_content,
+                );
+                $old_content = $DateObj->AsString;
+            }
+        }
+
         unless ( defined $old_content && length $old_content ) {
             return ( $new_value_id, $self->loc( "[_1] [_2] added", $cf->Name, $new_content ));
         }
@@ -532,17 +485,15 @@ sub _AddCustomFieldValue {
     }
 }
 
-# }}}
 
-# {{{ DeleteCustomFieldValue
 
-=item DeleteCustomFieldValue { Field => FIELD, Value => VALUE }
+=head2 DeleteCustomFieldValue { Field => FIELD, Value => VALUE }
 
 Deletes VALUE as a value of CustomField FIELD.
 
 VALUE can be a string, a CustomFieldValue or a ObjectCustomFieldValue.
 
-If VALUE isn't a valid value for the custom field, returns
+If VALUE is not a valid value for the custom field, returns
 (0, 'Error message' ) otherwise, returns (1, 'Success Message')
 
 =cut
@@ -558,16 +509,9 @@ sub DeleteCustomFieldValue {
         @_
     );
 
-    my $cf = RT::CustomField->new( $self->CurrentUser );
-    if ( UNIVERSAL::isa( $args{'Field'}, "RT::CustomField" ) ) {
-        $cf->LoadById( $args{'Field'}->id );
-    }
-    else {
-        $cf->LoadById( $args{'Field'} );
-    }
-
+    my $cf = $self->LoadCustomFieldByIdentifier($args{'Field'});
     unless ( $cf->Id ) {
-        return ( 0, $self->loc("Custom field not found") );
+        return ( 0, $self->loc( "Custom field [_1] not found", $args{'Field'} ) );
     }
 
     my ( $val, $msg ) = $cf->DeleteValueForObject(
@@ -578,6 +522,7 @@ sub DeleteCustomFieldValue {
     unless ($val) {
         return ( 0, $msg );
     }
+
     my ( $TransactionId, $Msg, $TransactionObj ) = $self->_NewTransaction(
         Type          => 'CustomField',
         Field         => $cf->Id,
@@ -589,90 +534,25 @@ sub DeleteCustomFieldValue {
         return ( 0, $self->loc( "Couldn't create a transaction: [_1]", $Msg ) );
     }
 
+    my $old_value = $TransactionObj->OldValue;
+    # For datetime, we need to display them in "human" format in result message
+    if ( $cf->Type eq 'DateTime' ) {
+        my $DateObj = RT::Date->new( $self->CurrentUser );
+        $DateObj->Set(
+            Format => 'ISO',
+            Value  => $old_value,
+        );
+        $old_value = $DateObj->AsString;
+    }
     return (
         $TransactionId,
         $self->loc(
             "[_1] is no longer a value for custom field [_2]",
-            $TransactionObj->OldValue, $cf->Name
+            $old_value, $cf->Name
         )
     );
 }
 
-# }}}
-
-
-
-# {{{ CustomFieldValues
-
-=item CustomFieldValues FIELD
-
-Return a ObjectCustomFieldValues object of all values of the CustomField whose id is FIELD for this asset.  
-
-Returns an RT::ObjectCustomFieldValues object
-
-=cut
-
-sub CustomFieldValues {
-    my $self  = shift;
-    my $field = shift;
-
-    my $cf_values = RT::ObjectCustomFieldValues->new( $self->CurrentUser );
-
-    # If we've been handed a value that contains at least one non-digit,
-    # it's a name.  Resolve it into an id.
-    #
-    if ( defined $field && $field =~ /\D+/ ) {
-
-        # Look up the field ID.
-        my $cfs = RT::CustomFields->new( $self->CurrentUser );
-        $cfs->LimitToGlobalOrObjectId( $self->Id() );
-        $cfs->LimitToLookupType($self->CustomFieldLookupType);
-        $cfs->Limit( FIELD => 'Name', OPERATOR => '=', VALUE => $field );
-
-        if ( $cfs->First ) {
-            $field = $cfs->First->id;
-        }
-        else {
-
-            #We didn't find a custom field, but they wanted one. let's
-            # return an empty
-            return ($cf_values);
-        }
-    }
-
-    # If we now have a custom field id, let's limit things down
-    # If we don't have a custom field ID, the $cf_values object will return
-    #  all values
-    $cf_values->LimitToCustomField($field) if ($field);
-    $cf_values->LimitToObject($self);
-    $cf_values->OrderBy( FIELD => 'id', ORDER => 'ASC' );
-
-
-    return ($cf_values);
-}
-
-# }}}
-
-# }}}
-
-# }}}
-
-# Do I need this? -Todd
-sub BasicColumns {
-    (
-        [ Name => 'Name' ],
-        [ Description => 'Description' ],
-        [ Type => 'Type' ],
-        [ Status => 'Status' ],
-    );
-}
-
-# {{{ Routines dealing with Links
-
-# {{{ Link Collections
-
-
-# {{{ UnresolvedDependencies
 
 =head2 UnresolvedDependencies
 
@@ -698,12 +578,6 @@ sub UnresolvedDependencies {
 
 }
 
-# }}}
-
-# }}}
-
-
-# }}}
 
 RT::Base->_ImportOverlays();
 
