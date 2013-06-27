@@ -78,31 +78,22 @@ use RTx::AssetTracker::Ports;
 use RT::URI;
 use RT::CustomField;
 
-if ($RT::VERSION gt '3.4.1' or $RT::VERSION eq '0.0.0' ) {
-    RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' => "Assets" );
-} else {
-    $RT::CustomField::FRIENDLY_OBJECT_TYPES{'RTx::AssetTracker::Type-RTx::AssetTracker::Asset'} = "Assets";
-}
+RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' => "Assets" );
 
-# {{{ LINKTYPEMAP
+
 # A helper table for links mapping to make it easier
 # to build and parse links between assets
 
-use vars '%LINKMAP';
-use vars '%LINKTYPEMAP';
-use vars '%LINKDIRMAP';
-use vars '@LINKORDER';
-
-%LINKMAP = (
+our %LINKMAP = (
     RunsOn      => 'IsRunning',
     RefersTo    => 'ReferredToBy',
     DependsOn   => 'DependedOnBy',
     ComponentOf => 'HasComponent',
 );
 
-@LINKORDER   = ();
-%LINKTYPEMAP = ();
-%LINKDIRMAP  = ();
+our @LINKORDER   = ();
+our %LINKTYPEMAP = ();
+our %LINKDIRMAP  = ();
 
 while ( my ($base, $target) = each %LINKMAP ) {
     RTx::AssetTracker::Asset->RegisterLinkType( $base, $target );
@@ -183,8 +174,6 @@ sub RegisterLinkType {
 
 }
 
-# }}}
-
 
 sub LINKMAP       { return \%LINKMAP   }
 sub LINKTYPEMAP   { return \%LINKTYPEMAP   }
@@ -205,9 +194,6 @@ sub ConfigureLinks {
 
 }
 
-
-
-# {{{ sub Load
 
 =head2 Load
 
@@ -249,8 +235,6 @@ sub Load {
     return ( $self->Id );
 
 }
-
-# }}}
 
 
 
@@ -555,7 +539,6 @@ sub _AddLinksOnCreateOrUpdate {
     return (@errors ? 0 : 1), \@errors;
 }
 
-# }}}
 
 
 sub UpdateAsset {
@@ -812,9 +795,6 @@ sub UpdateAsset {
 
 
 
-# {{{ Routines dealing with watchers.
-
-# {{{ _CreateAssetGroups
 
 =head2 _CreateAssetGroups
 
@@ -850,9 +830,6 @@ sub _CreateAssetGroups {
 }
 
 
-# }}}
-
-# {{{ sub OwnerGroup
 
 =head2 OwnerGroup
 
@@ -868,9 +845,8 @@ sub OwnerGroup {
     return $self->OwnerRoleGroup(@_);
 }
 
-# }}}
 
-# {{{ sub AddWatcher
+
 
 =head2 AddWatcher
 
@@ -1008,9 +984,8 @@ sub _AddWatcher {
         return ( 1, $self->loc('Added principal as a [_1] for this asset', $self->loc($args{'Type'})) );
 }
 
-# }}}
 
-# {{{ sub DeleteWatcher
+
 
 =head2 DeleteWatcher { Type => TYPE, PrincipalId => PRINCIPAL_ID, Email => EMAIL_ADDRESS }
 
@@ -1183,11 +1158,7 @@ sub DeleteAllWatchers {
 
 
 
-# }}}
 
-# {{{ Routines dealing with ACCESS CONTROL
-
-# {{{ sub CurrentUserHasRight
 
 =head2 CurrentUserHasRight
 
@@ -1212,7 +1183,6 @@ sub CurrentUserHasRight {
     }
 }
 
-# }}}
 
 =head2 CurrentUserCanSee
 
@@ -1224,8 +1194,6 @@ sub CurrentUserCanSee {
     my $self = shift;
     return $self->CurrentUserHasRight('ShowTicket');
 }
-
-# {{{ sub HasRight
 
 =head2 HasRight
 
@@ -1261,11 +1229,7 @@ sub HasRight {
     );
 }
 
-# }}}
 
-# }}}
-
-# {{{ sub TypeObj
 
 =head2 TypeObj
 
@@ -1285,10 +1249,7 @@ sub TypeObj {
 
 sub AssetTypeObj { $_[0]->TypeObj() }
 
-# }}}
 
-
-# {{{ sub AdminGroup
 
 =head2 AdminGroup
 
@@ -1306,11 +1267,9 @@ sub AdminGroup {
     return $self->AdminRoleGroup(@_);
 }
 
-# }}}
 
-# {{{ IsWatcher,IsOwner,IsAdmin
 
-# {{{ sub IsWatcher
+
 # a generic routine to be called by IsOwner and IsAdmin
 
 =head2 IsWatcher { Type => TYPE, PrincipalId => PRINCIPAL_ID, Email => EMAIL }
@@ -1360,9 +1319,7 @@ sub IsWatcher {
     return ($group->HasMember($principal));
 }
 
-# }}}
 
-# {{{ sub IsOwner
 
 =head2 IsOwner PRINCIPAL_ID
 
@@ -1373,9 +1330,6 @@ sub IsWatcher {
 
 =cut
 
-# }}}
-
-# {{{ sub IsAdmin
 
 =head2 IsAdmin PRINCIPAL_ID
 
@@ -1386,21 +1340,21 @@ sub IsWatcher {
 
 =cut
 
-# }}}
 
-# }}}
+
+=head2 CustomFieldLookupType
+
+Returns the RT::Ticket lookup type, which can be passed to 
+RT::CustomField->Create() via the 'LookupType' hash key.
+
+=cut
 
 
 sub CustomFieldLookupType {
     "RTx::AssetTracker::Type-RTx::AssetTracker::Asset";
 }
 
-# for pre RT 3.4.2 compatability
-sub _LookupTypes {
-    "RTx::AssetTracker::Type-RTx::AssetTracker::Asset";
-}
 
-# {{{ sub _Set
 
 sub _Set {
     my $self = shift;
@@ -1462,9 +1416,7 @@ sub _Set {
     }
 }
 
-# }}}
 
-# {{{ sub _Value
 
 =head2 _Value
 
@@ -1495,9 +1447,7 @@ sub _Value {
 
 }
 
-# }}}
 
-# {{{ sub CustomFieldValues
 
 =head2 CustomFieldValues
 
@@ -1524,7 +1474,7 @@ sub CustomFieldValues {
     return $self->SUPER::CustomFieldValues($field);
 }
 
-# }}}
+
 
 sub IPs {
     my $self = shift;
@@ -1576,8 +1526,8 @@ sub DeleteIP {
 
 }
 
-sub AddIP {
 
+sub AddIP {
     my $self = shift;
     my %args = ( IP        => undef,
                  Interface => undef,
@@ -1722,7 +1672,6 @@ sub SetStatus {
 }
 
 
-# {{{ sub _Links
 
 sub _Links {
     my $self = shift;
@@ -1746,9 +1695,7 @@ sub _Links {
     return ( $self->{"$field$type"} );
 }
 
-# }}}
 
-# {{{ sub DeleteLink
 
 =head2 DeleteLink
 
@@ -1820,9 +1767,7 @@ sub DeleteLink {
     }
 }
 
-# }}}
 
-# {{{ sub AddLink
 
 =head2 AddLink
 
@@ -1954,7 +1899,6 @@ sub __GetAssetFromURI {
 }
 
 
-# }}}
 
 sub SetName {
 
@@ -1978,7 +1922,6 @@ sub SetName {
 
 
 sub SatisfiesUniqueness {
-
     my $self = shift;
     my $name = shift;
     my $type = shift;
@@ -2008,7 +1951,7 @@ sub SatisfiesUniqueness {
 
 }
 
-# {{{ sub LoadAssetRoleGroup
+
 
 =head2 LoadAssetRoleGroup  { Type => TYPE }
 
@@ -2049,11 +1992,7 @@ sub LoadAssetRoleGroup {
     return $group;
 }
 
-# }}}
 
-# {{{ Link Collections
-
-# {{{ sub Members
 
 =head2 Members
 
@@ -2107,19 +2046,19 @@ sub Components {
     return ( $self->_Links( 'Target', 'ComponentOf' ) );
 }
 
-# }}}
+
 
 sub _UpdateTimeTaken {
-
     return 1;
-
 }
+
 
 sub SetDescription {
     my $self = shift;
            
     $self->_SetBasic(@_, Field => 'Description');
 }
+
 
 sub SetType {
     my $self = shift;
