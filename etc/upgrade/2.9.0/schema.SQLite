@@ -1,1 +1,40 @@
 ALTER TABLE AT_Types ADD COLUMN Lifecycle VARCHAR(32) NULL;
+
+BEGIN TRANSACTION;
+CREATE TEMPORARY TABLE AT_Assets_backup (
+  id INTEGER PRIMARY KEY ,
+  Type integer NOT NULL DEFAULT 0  ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Status varchar(64) NULL ,
+  URI varchar(255),
+
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  
+);
+
+INSERT INTO AT_Assets_backup SELECT * FROM AT_Assets;
+DROP TABLE AT_Assets;
+
+CREATE TABLE AT_Assets (
+  id INTEGER PRIMARY KEY ,
+  Type integer NOT NULL DEFAULT 0  ,
+  Name varchar(200) NOT NULL  ,
+  Description varchar(255) NULL  ,
+  Status varchar(64) NULL ,
+  URI varchar(255),
+
+  LastUpdatedBy integer NOT NULL DEFAULT 0  ,
+  LastUpdated DATETIME NULL  ,
+  Creator integer NOT NULL DEFAULT 0  ,
+  Created DATETIME NULL  
+);
+
+CREATE INDEX AT_Assets1 ON AT_Assets (Type, Status) ;
+CREATE INDEX AT_Assets2 ON AT_Assets (Name, Type, Status) ;
+
+INSERT INTO AT_Assets SELECT * FROM AT_Assets_backup;
+DROP TABLE AT_Assets_backup;
+COMMIT;

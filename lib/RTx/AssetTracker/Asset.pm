@@ -2346,7 +2346,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 =head2 Status
 
 Returns the current value of Status. 
-(In the database, Status is stored as varchar(20).)
+(In the database, Status is stored as varchar(64).)
 
 
 
@@ -2355,7 +2355,7 @@ Returns the current value of Status.
 
 Set Status to VALUE. 
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
-(In the database, Status will be stored as a varchar(20).)
+(In the database, Status will be stored as a varchar(64).)
 
 
 =cut
@@ -2428,7 +2428,7 @@ sub _CoreAccessible {
         Description => 
 		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
         Status => 
-		{read => 1, write => 1, sql_type => 12, length => 20,  is_blob => 0,  is_numeric => 0,  type => 'varchar(20)', default => ''},
+		{read => 1, write => 1, sql_type => 12, length => 64,  is_blob => 0,  is_numeric => 0,  type => 'varchar(64)', default => ''},
         LastUpdatedBy => 
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
         LastUpdated => 

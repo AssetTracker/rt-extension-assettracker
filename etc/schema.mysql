@@ -24,7 +24,7 @@ CREATE TABLE AT_Assets (
   Type integer NOT NULL DEFAULT 0  ,
   Name varchar(200) NOT NULL  ,
   Description varchar(255) NULL  ,
-  Status varchar(20) NULL ,
+  Status varchar(64) NULL ,
   URI varchar(255),
 
   LastUpdatedBy integer NOT NULL DEFAULT 0  ,
