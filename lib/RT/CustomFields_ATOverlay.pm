@@ -29,23 +29,6 @@ sub LimitToType {
 }
 
 
-=item LimitToGlobalOrType TYPEID
-
-This is a copy of LimitToGlobalOrQueue which is
-DEPRECATED since CFs are applicable not only to tickets these days.
-
-Limits the set of custom fields found to global custom fields or those tied to the type with ID TYPEID
-
-=cut
-
-sub LimitToGlobalOrType {
-    my $self = shift;
-    my $type = shift;
-    $self->LimitToGlobalOrObjectId( $type );
-    $self->LimitToLookupType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' );
-}
-
-
 =head2 LimitToGlobalAsset
 
 This is a copy of LimitToGlobal which is
