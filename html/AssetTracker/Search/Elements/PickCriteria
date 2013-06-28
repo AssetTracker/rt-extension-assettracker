@@ -52,7 +52,7 @@
 
 % $m->callback( %ARGS, CallbackName => "BeforeBasics" );
 <& PickBasics, types => \%types &>
-<& PickCFs, types => \%types &>
+<& PickAssetCFs, types => \%types &>
 % $m->callback( %ARGS, CallbackName => "AfterCFs" );
 
 <tr class="separator"><td colspan="3"><hr /></td></tr>

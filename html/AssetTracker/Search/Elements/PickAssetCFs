@@ -45,10 +45,11 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-% foreach( @lines ) {
-<& /Search/Elements/ConditionRow, Condition => $_ &>
-% }
-<%INIT>
+<%ARGS>
+%types => ()
+</%ARGS>
+
+<%init>
 my $CustomFields = RT::CustomFields->new( $session{'CurrentUser'});
 foreach my $id (keys %types) {
     # Gotta load up the $type object, since types get stored by name now.
@@ -56,70 +57,7 @@ foreach my $id (keys %types) {
     $type->Load($id);
     $CustomFields->LimitToAssetType($type->Id) if $type->Id;
 }
-$CustomFields->LimitToGlobalAsset();
+$CustomFields->LimitToGlobalAsset;
 $CustomFields->OrderBy( FIELD => 'Name', ORDER => 'ASC' );
-
-$m->callback(
-    CallbackName => 'MassageCustomFields',
-    CustomFields => $CustomFields,
-);
-
-
-my @lines;
-while ( my $CustomField = $CustomFields->Next ) {
-    my %line;
-    $line{'Name'} = "CF.{" . $CustomField->Name . "}";
-    $line{'Field'} = $CustomField->Name;
-
-    # Op
-    if ($CustomField->Type =~ /^Date(Time)?$/ ) {
-        $line{'Op'} = {
-            Type => 'component',
-            Path => '/Elements/SelectDateRelation',
-            Arguments => {},
-        };
-    }
-    elsif ($CustomField->Type =~ /^IPAddress(Range)?$/ ) {
-        $line{'Op'} = {
-            Type => 'component',
-            Path => '/Elements/SelectIPRelation',
-            Arguments => {},
-        };
-    } else {
-        $line{'Op'} = {
-            Type => 'component',
-            Path => '/Elements/SelectCustomFieldOperator',
-            Arguments => { True => loc("is"),
-                           False => loc("isn't"),
-                           TrueVal=> '=',
-                           FalseVal => '!=',
-                         },
-        };
-    }
-
-    # Value
-    if ($CustomField->Type =~ /^Date(Time)?$/) {
-        my $is_datetime = $1 ? 1 : 0;
-        $line{'Value'} = {
-            Type => 'component',
-            Path => '/Elements/SelectDate',
-            Arguments => { $is_datetime ? (ShowTime => 1) : (ShowTime => 0), },
-        };
-    } else {
-        $line{'Value'} = {
-            Type => 'component',
-            Path => '/Elements/SelectCustomFieldValue',
-            Arguments => { CustomField => $CustomField },
-        };
-    }
-
-    push @lines, \%line;
-}
-
-$m->callback( Conditions => \@lines, Types => \%types );
-
-</%INIT>
-
-<%ARGS>
-%types => ()
-</%ARGS>
+</%init>
+<& /Search/Elements/PickCFs, %ARGS, TicketSQLField => 'CF', CustomFields => $CustomFields &>
