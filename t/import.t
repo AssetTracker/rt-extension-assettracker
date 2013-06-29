@@ -6,7 +6,7 @@ use warnings;
 
 
 BEGIN {
-    use RTx::AssetTracker::Test tests => 53;
+    use RTx::AssetTracker::Test tests => 57;
     RT::LoadConfig();
     RT::Init();
 }
@@ -296,15 +296,17 @@ sub test_update_transactions :Tests(6) {
 }
 
 
-sub test_multicf_import :Tests(4) {
+sub test_multicf_import :Tests(8) {
     my ($self) = @_;
 
     my $before_count = $self->asset_count;
+    my @vals = ( 'one', 'two', 'three' );
+
     my $good_asset = { id => 'new', 
                      Name => "MultiCF Asset $$",
                      Type => 'Servers',
                    Status => 'production',
-                      Bar => qq{one\ntwo\nthree}, };
+                      Bar => join( "\n", @vals ) };
 
     my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'multi-value cf import');
@@ -314,7 +316,52 @@ sub test_multicf_import :Tests(4) {
     is(ref($rv), 'ARRAY', "list of asset IDs returned");
     $a->Load($rv->[0]);
 
-    is($a->FirstCustomFieldValue('Bar'), 'one');
+    my @new_vals = map { $_->Content } @{ $a->CustomFieldValues('Bar')->ItemsArrayRef };
+
+    is_deeply(
+        \@vals,
+        \@new_vals,
+        join(' ', @vals)
+        );
+
+    push @vals, 'four';
+
+    $good_asset = { id => $a->Id,
+                     Name => "MultiCF Asset $$",
+                     Type => 'Servers',
+                   Status => 'production',
+                      Bar => join( "\n", @vals ) };
+
+    ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    ok($rv, 'add cf value');
+
+    @new_vals = map { $_->Content } @{ $a->CustomFieldValues('Bar')->ItemsArrayRef };
+
+    is_deeply(
+        \@vals,
+        \@new_vals,
+        join(' ', @vals)
+        );
+
+    pop @vals;
+    shift @vals;
+
+    $good_asset = { id => $a->Id,
+                     Name => "MultiCF Asset $$",
+                     Type => 'Servers',
+                   Status => 'production',
+                      Bar => join( "\n", @vals ) };
+
+    ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    ok($rv, 'delete cf values');
+
+    @new_vals = map { $_->Content } @{ $a->CustomFieldValues('Bar')->ItemsArrayRef };
+
+    is_deeply(
+        \@vals,
+        \@new_vals,
+        join(' ', @vals)
+        );
 }
 
 
