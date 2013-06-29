@@ -3065,10 +3065,20 @@ sub _fixup_import {
     #custom fields are last
     for my $possible_cf (keys %asset) {
         my $cf = RT::CustomField->new($self->CurrentUser);
-        $cf->LoadByNameAndType( Name => $possible_cf, Type => $fixed{'Type'} || '0' );
+        $cf->LoadByNameAndType( Name => $possible_cf, Type => $fixed{'Type'} );
+        unless ( $cf->id ) {
+            $cf->LoadByNameAndType( Name => $possible_cf, Type => '0' );
+        }
         if ($cf->id) {
             my $type = $cf->Type;
-            if ($cf->MaxValues && $type =~ /^(Wikitext|Text|Freeform)$/) {
+            if ($cf->MaxValues && $type =~ /^(Wikitext|Text|Freeform|Autocomplete)$/) {
+                $asset{$possible_cf} =~ s/\r\n?/\n/g;
+                $fixed{"CustomField-".$cf->id} = delete $asset{$possible_cf};
+            }
+            elsif ( !$cf->MaxValues && $type =~ /^(Freeform|Autocomplete)$/) {
+                $asset{$possible_cf} =~ s/\r\n?/\n/g;
+                my @values = split('\n', $asset{$possible_cf});
+                $asset{$possible_cf} = \@values;
                 $fixed{"CustomField-".$cf->id} = delete $asset{$possible_cf};
             }
             elsif ( $cf->MaxValues && $type eq 'Select') {

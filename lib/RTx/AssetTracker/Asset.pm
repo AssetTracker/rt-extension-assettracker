@@ -701,7 +701,7 @@ sub UpdateAsset {
         my $cfid = $1;
 
         my $values_new =  ref( $args{$arg} ) eq 'ARRAY' ? $args{$arg} : [ $args{$arg} ];
-        my $values_current = [  map { $_->Content } @{ $self->CustomFieldValues->ItemsArrayRef }];
+        my $values_current = [  map { $_->Content } @{ $self->CustomFieldValues($cfid)->ItemsArrayRef }];
 
         use Data::Dumper;
         RT::Logger->info(Dumper($values_current, $values_new));

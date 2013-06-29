@@ -6,7 +6,7 @@ use warnings;
 
 
 BEGIN {
-    use RTx::AssetTracker::Test tests => 49;
+    use RTx::AssetTracker::Test tests => 51;
     RT::LoadConfig();
     RT::Init();
 }
@@ -53,6 +53,15 @@ sub startup :Test(startup=>3) {
         LookupType => 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset',
     );
     $cf->AddToObject( $type );
+
+    my $cf2 = RT::CustomField->new( $RT::SystemUser );
+    $cf2->LoadByName( Type => 0, Name => 'Bar' );
+    $cf2->Id || $cf2->Create(
+        Name => 'Bar',
+        Type => 'FreeformMultiple',
+        LookupType => 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset',
+    );
+    $cf2->AddToObject( $type );
 
     $type = RTx::AssetTracker::Type->new($cu);
     $type->Load("Virtual");
@@ -284,6 +293,28 @@ sub test_update_transactions :Tests(6) {
     $asset->Load($aid);
     is($asset->Transactions->Count, 7, 'watcher, update and type transactions');
 
+}
+
+
+sub test_multicf_import :Tests(4) {
+    my ($self) = @_;
+
+    my $before_count = $self->asset_count;
+    my $good_asset = { id => 'new', 
+                     Name => "MultiCF Asset $$",
+                     Type => 'Servers',
+                   Status => 'production',
+                      Bar => qq{one\ntwo\nthree}, };
+
+    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    ok($rv, 'multi-value cf import');
+    is($self->asset_count(), $before_count+1);
+
+    my $a = RTx::AssetTracker::Asset->new($self->{cu});
+    is(ref($rv), 'ARRAY', "list of asset IDs returned");
+    $a->Load($rv->[0]);
+
+    is($a->FirstCustomFieldValue('Bar'), 'one');
 }
 
 
