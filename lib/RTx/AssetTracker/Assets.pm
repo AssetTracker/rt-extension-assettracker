@@ -3058,6 +3058,7 @@ sub _fixup_import {
 
     unless ( $fixed{'Type'} ) {
         my $a = RTx::AssetTracker::Asset->new($self->CurrentUser);
+        $a->Load($fixed{'id'});
         $fixed{'Type'} = $a->Type
             if defined($a->Type);
     }
