@@ -671,7 +671,7 @@ sub UpdateAsset {
         my $cfid = $1;
 
         my $values_new =  ref( $args{$arg} ) eq 'ARRAY' ? $args{$arg} : [ $args{$arg} ];
-        my $values_current = [  map { $_->Content } @{ $self->CustomFieldValues->ItemsArrayRef }];
+        my $values_current = [  map { $_->Content } @{ $self->CustomFieldValues($cfid)->ItemsArrayRef }];
 
         my ($add_values, $delete_values) = $self->_set_compare($values_current, $values_new);
         $asset_updated++ if @$add_values || @$delete_values;
