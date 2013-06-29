@@ -15,9 +15,9 @@ Loads the Custom field named NAME.
 Will load a Disabled Custom Field even if there is a non-disabled Custom Field
 with the same Name.
 
-If a Type parameter is specified, only look for ticket custom fields tied to that Type.
+If a Type parameter is specified, only look for asset custom fields tied to that Type.
 
-If the Type parameter is '0', look for global ticket custom fields.
+If the Type parameter is '0', look for global asset custom fields.
 
 If no type parameter is specified, look for any and all custom fields with this name.
 
@@ -51,7 +51,7 @@ sub LoadByNameAndType {
     $CFs->SetContextObject( $self->ContextObject );
     my $field = $args{'Name'} =~ /\D/? 'Name' : 'id';
     $CFs->Limit( FIELD => $field, VALUE => $args{'Name'}, CASESENSITIVE => 0);
-    # Don't limit to queue if queue is 0.  Trying to do so breaks
+    # Don't limit to type if type is 0.  Trying to do so breaks
     # RT::Group type CFs.
     if (defined $args{'Type'}) {
         $CFs->LimitToType( $args{'Type'} );
