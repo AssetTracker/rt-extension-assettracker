@@ -666,7 +666,7 @@ sub UpdateAsset {
                 Silent => !$args{_Detailed},
             );
 
-            return $wval, $wmsg unless ($wval);
+            return $wval, 0, $wmsg unless ($wval);
         }
 
         foreach my $watcher ( @$add_role ) {
@@ -691,7 +691,7 @@ sub UpdateAsset {
                 Silent => !$args{_Detailed},
             );
 
-            return $wval, $wmsg unless ($wval);
+            return $wval, 0, $wmsg unless ($wval);
         }
     }
 
@@ -703,6 +703,8 @@ sub UpdateAsset {
         my $values_new =  ref( $args{$arg} ) eq 'ARRAY' ? $args{$arg} : [ $args{$arg} ];
         my $values_current = [  map { $_->Content } @{ $self->CustomFieldValues->ItemsArrayRef }];
 
+        use Data::Dumper;
+        RT::Logger->info(Dumper($values_current, $values_new));
         my ($add_values, $delete_values) = $self->_set_compare($values_current, $values_new);
         $asset_updated++ if @$add_values || @$delete_values;
 
@@ -716,7 +718,7 @@ sub UpdateAsset {
                 Object  => $self,
                 Content => $val,
             );
-            return 0, $msg unless $rv;
+            return $rv, 0, $msg unless $rv;
 
             if ( $args{_Detailed} ) {
                 my ( $TransactionId, $Msg, $TransactionObj ) = $self->_NewTransaction(
@@ -753,7 +755,7 @@ sub UpdateAsset {
     $_->Delete for @{ $target_links->ItemsArrayRef };
 
     my ($addlink_rv, $addlink_errors) = $self->_AddLinksOnCreateOrUpdate(%args);
-    return 0, join("\n", @$addlink_errors) unless $addlink_rv;
+    return $addlink_rv, 0, join("\n", @$addlink_errors) unless $addlink_rv;
 
     #TODO support IP transactions
     #Delete existing IPs
