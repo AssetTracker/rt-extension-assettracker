@@ -85,48 +85,38 @@ use XML::Parser;
 # metadata.
 
 our %FIELD_METADATA = (
-    Name            => ['STRING',],
-    Status          => ['ENUM'],
-    Type            => ['ENUM' => 'Type',],
-    Creator         => ['ENUM' => 'RT::User',],
-    LastUpdatedBy   => ['ENUM' => 'RT::User',],
-    id              => ['INT',],
-    URI             => ['STRING',],
-#    ComponentOf     => [ 'LINK' => To => 'ComponentOf', ],
-#    RunsOn          => [ 'LINK' => To => 'RunsOn', ],
-#    DependsOn       => [ 'LINK' => To => 'DependsOn', ],
-#    RefersTo        => [ 'LINK' => To => 'RefersTo', ],
-#    IsRunning       => [ 'LINK' => From => 'RunsOn', ],
-#    HasComponent    => [ 'LINK' => From => 'ComponentOf', ],
-#    HasComponents   => [ 'LINK' => From => 'ComponentOf', ],
-#    DependentOn     => [ 'LINK' => From => 'DependsOn', ],
-#    DependedOnBy    => [ 'LINK' => From => 'DependsOn', ],
-#    ReferredToBy    => [ 'LINK' => From => 'RefersTo', ],
-    LastUpdated     => ['DATE' => 'LastUpdated',],
-    Created         => ['DATE' => 'Created',],
-    Description     => ['STRING',],
-    Content         => ['TRANSFIELD',],
-    ContentType     => ['TRANSFIELD',],
-    Filename        => ['TRANSFIELD',],
-    IP              => ['IPFIELD',],
-    MAC             => ['IPFIELD',],
-    Interface       => ['IPFIELD',],
-    Port            => ['PORTFIELD',],
-    Transport       => ['PORTFIELD',],
-    TransactionDate => ['TRANSDATE',],
-    Updated         => ['TRANSDATE',],
-    Owner           => ['WATCHERFIELD' => 'Owner',],
-    Admin           => ['WATCHERFIELD' => 'Admin',],
-    Watcher         => ['WATCHERFIELD'],
-    TypeOwner       => [ 'WATCHERFIELD'    => 'Owner' => 'Type', ],
-    TypeAdmin       => [ 'WATCHERFIELD'    => 'Admin' => 'Type', ],
-    TypeWatcher     => [ 'WATCHERFIELD'    => undef   => 'Type', ],
-    LinkedTo        => ['LINKFIELD',],
-    CustomFieldValue =>['CUSTOMFIELD',],
+    Name             => [ 'STRING', ],
+    Status           => [ 'ENUM' ],
+    Type             => [ 'ENUM' => 'Type', ],
+    Creator          => [ 'ENUM' => 'RT::User', ],
+    LastUpdatedBy    => [ 'ENUM' => 'RT::User', ],
+    id               => [ 'INT', ],
+    URI              => [ 'STRING', ],
+    LastUpdated      => [ 'DATE' => 'LastUpdated', ],
+    Created          => [ 'DATE' => 'Created', ],
+    Description      => [ 'STRING', ],
+    Content          => [ 'TRANSFIELD', ],
+    ContentType      => [ 'TRANSFIELD', ],
+    Filename         => [ 'TRANSFIELD', ],
+    IP               => [ 'IPFIELD', ],
+    MAC              => [ 'IPFIELD', ],
+    Interface        => [ 'IPFIELD', ],
+    Port             => [ 'PORTFIELD', ],
+    Transport        => [ 'PORTFIELD', ],
+    TransactionDate  => [ 'TRANSDATE', ],
+    Updated          => [ 'TRANSDATE', ],
+    Owner            => [ 'WATCHERFIELD'    => 'Owner', ],
+    Admin            => [ 'WATCHERFIELD'    => 'Admin', ],
+    Watcher          => [ 'WATCHERFIELD' ],
+    TypeOwner        => [ 'WATCHERFIELD'    => 'Owner' => 'Type', ],
+    TypeAdmin        => [ 'WATCHERFIELD'    => 'Admin' => 'Type', ],
+    TypeWatcher      => [ 'WATCHERFIELD'    => undef   => 'Type', ],
+    LinkedTo         => [ 'LINKFIELD', ],
+    CustomFieldValue => [ 'CUSTOMFIELD', ],
     CustomField      => [ 'CUSTOMFIELD', ],
-    CF              => ['CUSTOMFIELD',],
-    OwnerGroup      => [ 'MEMBERSHIPFIELD' => 'Owner', ],
-    AdminGroup      => [ 'MEMBERSHIPFIELD' => 'Admin', ],
+    CF               => [ 'CUSTOMFIELD', ],
+    OwnerGroup       => [ 'MEMBERSHIPFIELD' => 'Owner', ],
+    AdminGroup       => [ 'MEMBERSHIPFIELD' => 'Admin', ],
     WatcherGroup     => [ 'MEMBERSHIPFIELD', ],
   );
 
@@ -265,9 +255,12 @@ sub CleanSlate {
         _sql_group_members_aliases
         _sql_object_cfv_alias
         _sql_role_group_aliases
-        _sql_transalias
         _sql_trattachalias
         _sql_u_watchers_alias_for_sort
+        _sql_u_watchers_aliases
+        _sql_current_user_can_see_applied
+        _sql_ipalias
+        _sql_portalias
     );
 }
 
@@ -309,14 +302,17 @@ sub _EnumLimit {
     $op = "!=" if $op eq "<>";
 
     die "Invalid Operation: $op for $field"
-      unless $op eq "=" or $op eq "!=";
+        unless $op eq "="
+        or $op     eq "!=";
 
     my $meta = $FIELD_METADATA{$field};
-    if ( defined $meta->[1] ) {
+    if ( defined $meta->[1] && defined $value && $value !~ /^\d+$/ ) {
         my $class = ( $meta->[1] =~ /::/ ? '' : "RTx::AssetTracker::" ) . $meta->[1];
         my $o     = $class->new( $sb->CurrentUser );
         $o->Load($value);
-        $value = $o->Id;
+        $value = $o->Id || 0;
+    } elsif ($field eq "Status") {
+        $value = lc $value;
     }
     $sb->_SQLLimit(
         FIELD    => $field,
@@ -340,11 +336,11 @@ sub _IntLimit {
     my ( $sb, $field, $op, $value, @rest ) = @_;
 
     die "Invalid Operator $op for $field"
-      unless $op =~ /^(=|!=|>|<|>=|<=)$/;
+        unless $op =~ /^(=|!=|>|<|>=|<=)$/;
 
     $sb->_SQLLimit(
-        FIELD => $field,
-        VALUE => $value,
+        FIELD    => $field,
+        VALUE    => $value,
         OPERATOR => $op,
         @rest,
     );
@@ -352,11 +348,11 @@ sub _IntLimit {
 
 =head2 _LinkLimit
 
-Handle fields which deal with links between tickets.  (MemberOf, DependsOn)
+Handle fields which deal with links between assets.
 
 Meta Data:
-  1: Direction (From,To)
-  2: Link Type (MemberOf, DependsOn,RefersTo)
+  1: Direction (From, To)
+  2: Link Type (one of 'AssetLinkTypes')
 
 =cut
 
@@ -364,108 +360,106 @@ sub _LinkLimit {
     my ( $sb, $field, $op, $value, @rest ) = @_;
 
     my $meta = $FIELD_METADATA{$field};
-    die "Invalid Operator $op for $field" unless $op =~ /^(=|!=|IS)/io;
+    die "Invalid Operator $op for $field" unless $op =~ /^(=|!=|IS|IS NOT)$/io;
 
-    die "Incorrect Metadata for $field"
-      unless ( defined $meta->[1] and defined $meta->[2] );
+    my $is_negative = 0;
+    if ( $op eq '!=' || $op =~ /\bNOT\b/i ) {
+        $is_negative = 1;
+    }
+    my $is_null = 0;
+    $is_null = 1 if !$value || $value =~ /^null$/io;
 
-    my $direction = $meta->[1];
+    unless ($is_null) {
+        $value = RT::URI->new( $sb->CurrentUser )->CanonicalizeURI( $value );
+    }
 
-    my $matchfield;
-    my $linkfield;
-    my $is_local = 1;
-    my $is_null  = 0;
+    my $direction = $meta->[1] || '';
+    my ($matchfield, $linkfield) = ('', '');
     if ( $direction eq 'To' ) {
-        $matchfield = "Target";
-        $linkfield  = "Base";
-
+        ($matchfield, $linkfield) = ("Target", "Base");
     }
     elsif ( $direction eq 'From' ) {
-        $linkfield  = "Target";
-        $matchfield = "Base";
-
+        ($matchfield, $linkfield) = ("Base", "Target");
     }
-    else {
-        die "Invalid link direction '$meta->[1]' for $field\n";
-    }
-
-    if ( $op eq '=' || $op =~ /^is/oi ) {
-        if ( $value eq '' || $value =~ /^null$/io ) {
-            $is_null = 1;
-        }
-        elsif ( $value =~ /^\d+$/o ) {
-            $is_local = 1;
-        }
-        else {
-            $is_local = 0;
-        }
+    elsif ( $direction ) {
+        die "Invalid link direction '$direction' for $field\n";
+    } else {
+        $sb->_OpenParen;
+        $sb->_LinkLimit( 'LinkedTo', $op, $value, @rest );
+        $sb->_LinkLimit(
+            'LinkedFrom', $op, $value, @rest,
+            ENTRYAGGREGATOR => (($is_negative && $is_null) || (!$is_null && !$is_negative))? 'OR': 'AND',
+        );
+        $sb->_CloseParen;
+        return;
     }
 
-#For doing a left join to find "unlinked tickets" we want to generate a query that looks like this
-#    SELECT main.* FROM Tickets main
+    my $is_local = 1;
+    if ( $is_null ) {
+        $op = ($op =~ /^(=|IS)$/i)? 'IS': 'IS NOT';
+    }
+    elsif ( $value =~ /\D/ ) {
+        $is_local = 0;
+    }
+    $matchfield = "Local$matchfield" if $is_local;
+
+#For doing a left join to find "unlinked assets" we want to generate a query that looks like this
+#    SELECT main.* FROM AT_Assets main
 #        LEFT JOIN Links Links_1 ON (     (Links_1.Type = 'MemberOf')
-#                                      AND(main.id = Links_1.LocalTarget))
-#        WHERE (Links_1.Base IS NULL);
+#                                      AND(main.URI = Links_1.Target))
+#        WHERE Links_1.Base IS NULL;
 
-    if ($is_null) {
+    if ( $is_null ) {
         my $linkalias = $sb->Join(
-            TYPE   => 'left',
+            TYPE   => 'LEFT',
             ALIAS1 => 'main',
             FIELD1 => 'URI',
             TABLE2 => 'Links',
             FIELD2 => $linkfield
         );
-
         $sb->SUPER::Limit(
             LEFTJOIN => $linkalias,
             FIELD    => 'Type',
             OPERATOR => '=',
             VALUE    => $meta->[2],
-            @rest,
-        );
-
+        ) if $meta->[2];
         $sb->_SQLLimit(
-            ALIAS           => $linkalias,
-            ENTRYAGGREGATOR => 'AND',
-            FIELD           => ( $is_local ? "Local$matchfield" : $matchfield ),
-            OPERATOR        => 'IS',
-            VALUE           => 'NULL',
-            QUOTEVALUE      => '0',
+            @rest,
+            ALIAS      => $linkalias,
+            FIELD      => $matchfield,
+            OPERATOR   => $op,
+            VALUE      => 'NULL',
+            QUOTEVALUE => 0,
         );
-
     }
     else {
-
-        $sb->{_sql_linkalias} = $sb->NewAlias('Links')
-          unless defined $sb->{_sql_linkalias};
-
-        $sb->_OpenParen();
-
-        $sb->_SQLLimit(
-            ALIAS    => $sb->{_sql_linkalias},
+        my $linkalias = $sb->Join(
+            TYPE   => 'LEFT',
+            ALIAS1 => 'main',
+            FIELD1 => 'URI',
+            TABLE2 => 'Links',
+            FIELD2 => $linkfield
+        );
+        $sb->SUPER::Limit(
+            LEFTJOIN => $linkalias,
             FIELD    => 'Type',
             OPERATOR => '=',
             VALUE    => $meta->[2],
-            @rest,
+        ) if $meta->[2];
+        $sb->SUPER::Limit(
+            LEFTJOIN => $linkalias,
+            FIELD    => $matchfield,
+            OPERATOR => '=',
+            VALUE    => $value,
         );
-
         $sb->_SQLLimit(
-            ALIAS           => $sb->{_sql_linkalias},
-            ENTRYAGGREGATOR => 'AND',
-            FIELD           => ( $is_local ? "Local$matchfield" : $matchfield ),
-            OPERATOR        => '=',
-            VALUE           => $value,
+            @rest,
+            ALIAS      => $linkalias,
+            FIELD      => $matchfield,
+            OPERATOR   => $is_negative? 'IS': 'IS NOT',
+            VALUE      => 'NULL',
+            QUOTEVALUE => 0,
         );
-
-        #If we're searching on target, join the base to ticket.id
-        $sb->_SQLJoin(
-            ALIAS1 => 'main',
-            FIELD1 => 'URI',
-            ALIAS2 => $sb->{_sql_linkalias},
-            FIELD2 => ( $is_local ? "Local$linkfield" : $linkfield ),
-        );
-
-        $sb->_CloseParen();
     }
 }
 
@@ -488,11 +482,8 @@ sub _DateLimit {
     die "Incorrect Meta Data for $field"
         unless ( defined $meta->[1] );
 
-    use POSIX 'strftime';
-
     my $date = RT::Date->new( $sb->CurrentUser );
     $date->Set( Format => 'unknown', Value => $value );
-    my $time = $date->Unix;
 
     if ( $op eq "=" ) {
 
@@ -500,10 +491,10 @@ sub _DateLimit {
         # particular single day.  in the database, we need to check for >
         # and < the edges of that day.
 
-        my $daystart = strftime( "%Y-%m-%d %H:%M",
-            gmtime( $time - ( $time % 86400 ) ) );
-        my $dayend = strftime( "%Y-%m-%d %H:%M",
-            gmtime( $time + ( 86399 - $time % 86400 ) ) );
+        $date->SetToMidnight( Timezone => 'server' );
+        my $daystart = $date->ISO;
+        $date->AddDay;
+        my $dayend = $date->ISO;
 
         $sb->_OpenParen;
 
@@ -516,7 +507,7 @@ sub _DateLimit {
 
         $sb->_SQLLimit(
             FIELD    => $meta->[1],
-            OPERATOR => "<=",
+            OPERATOR => "<",
             VALUE    => $dayend,
             @rest,
             ENTRYAGGREGATOR => 'AND',
@@ -526,11 +517,10 @@ sub _DateLimit {
 
     }
     else {
-        $value = strftime( "%Y-%m-%d %H:%M", gmtime($time) );
         $sb->_SQLLimit(
             FIELD    => $meta->[1],
             OPERATOR => $op,
-            VALUE    => $value,
+            VALUE    => $date->ISO,
             @rest,
         );
     }
@@ -551,6 +541,17 @@ sub _StringLimit {
     # FIXME:
     # Valid Operators:
     #  =, !=, LIKE, NOT LIKE
+    if ( RT->Config->Get('DatabaseType') eq 'Oracle'
+        && (!defined $value || !length $value)
+        && lc($op) ne 'is' && lc($op) ne 'is not'
+    ) {
+        if ($op eq '!=' || $op =~ /^NOT\s/i) {
+            $op = 'IS NOT';
+        } else {
+            $op = 'IS';
+        }
+        $value = 'NULL';
+    }
 
     $sb->_SQLLimit(
         FIELD         => $field,
@@ -571,23 +572,32 @@ Meta Data:
 =cut
 
 sub _IPLimit {
+    my ( $sb, $field, $op, $value, @rest ) = @_;
 
-  my ($sb,$field,$op,$value,@rest) = @_;
+    # See the comments for TransLimit, they apply here too
 
-  # See the comments for TransLimit, they apply here too
+    $sb->{_sql_ipalias} = $sb->NewAlias('AT_IPs')
+        unless defined $sb->{_sql_ipalias};
 
-  $sb->{_sql_ipalias} = $sb->NewAlias ('AT_IPs')
-    unless defined $sb->{_sql_ipalias};
+    #$sb->_OpenParen;
 
-  #$sb->_OpenParen;
+    $sb->_SQLLimit(
+        ALIAS    => $sb->{_sql_ipalias},
+        FIELD    => $field,
+        OPERATOR => $op,
+        VALUE    => $value,
+        @rest
+    );
 
-  $sb->_SQLLimit( ALIAS => $sb->{_sql_ipalias}, FIELD => $field, OPERATOR => $op, VALUE => $value, @rest);
+    # Join IPs to Assets
+    $sb->_SQLJoin(
+        ALIAS1 => 'main',
+        FIELD1 => $sb->{'primary_key'}, # UGH!
+        ALIAS2 => $sb->{_sql_ipalias},
+        FIELD2 => 'Asset'
+    );
 
-  # Join IPs to Assets
-  $sb->_SQLJoin( ALIAS1 => 'main', FIELD1 => $sb->{'primary_key'}, # UGH!
-             ALIAS2 => $sb->{_sql_ipalias}, FIELD2 => 'Asset');
-
-  #$sb->_CloseParen;
+    #$sb->_CloseParen;
 }
 
 =head2 _PortLimit
@@ -605,10 +615,10 @@ sub _PortLimit {
 
     # See the comments for TransLimit, they apply here too
 
-    $self->{_sql_ipalias} = $self->NewAlias ('AT_IPs')
+    $self->{_sql_ipalias} = $self->NewAlias('AT_IPs')
       unless defined $self->{_sql_ipalias};
 
-    $self->{_sql_portalias} = $self->NewAlias ('AT_Ports')
+    $self->{_sql_portalias} = $self->NewAlias('AT_Ports')
       unless defined $self->{_sql_portalias};
 
     $self->_OpenParen;
@@ -654,18 +664,17 @@ Meta Data:
   None
 
 =cut
+
 # This routine should really be factored into translimit.
 sub _TransDateLimit {
     my ( $sb, $field, $op, $value, @rest ) = @_;
 
     # See the comments for TransLimit, they apply here too
 
-    $sb->{_sql_transalias} = $sb->NewAlias('Transactions')
-        unless defined $sb->{_sql_transalias};
+    my $txn_alias = $sb->JoinTransactions;
 
     my $date = RT::Date->new( $sb->CurrentUser );
     $date->Set( Format => 'unknown', Value => $value );
-    my $time = $date->Unix;
 
     $sb->_OpenParen;
     if ( $op eq "=" ) {
@@ -674,25 +683,23 @@ sub _TransDateLimit {
         # particular single day.  in the database, we need to check for >
         # and < the edges of that day.
 
-        my $daystart = strftime( "%Y-%m-%d %H:%M",
-            gmtime( $time - ( $time % 86400 ) ) );
-        my $dayend = strftime( "%Y-%m-%d %H:%M",
-            gmtime( $time + ( 86399 - $time % 86400 ) ) );
+        $date->SetToMidnight( Timezone => 'server' );
+        my $daystart = $date->ISO;
+        $date->AddDay;
+        my $dayend = $date->ISO;
 
         $sb->_SQLLimit(
-            ALIAS         => $sb->{_sql_transalias},
+            ALIAS         => $txn_alias,
             FIELD         => 'Created',
             OPERATOR      => ">=",
             VALUE         => $daystart,
-            CASESENSITIVE => 0,
             @rest
         );
         $sb->_SQLLimit(
-            ALIAS         => $sb->{_sql_transalias},
+            ALIAS         => $txn_alias,
             FIELD         => 'Created',
             OPERATOR      => "<=",
             VALUE         => $dayend,
-            CASESENSITIVE => 0,
             @rest,
             ENTRYAGGREGATOR => 'AND',
         );
@@ -704,27 +711,13 @@ sub _TransDateLimit {
 
         #Search for the right field
         $sb->_SQLLimit(
-            ALIAS         => $sb->{_sql_transalias},
+            ALIAS         => $txn_alias,
             FIELD         => 'Created',
             OPERATOR      => $op,
-            VALUE         => $value,
-            CASESENSITIVE => 0,
+            VALUE         => $date->ISO,
             @rest
         );
     }
-
-    $sb->_SQLJoin(
-        ALIAS1 => 'main',
-        FIELD1 => $sb->{'primary_key'},     # UGH!
-        ALIAS2 => $sb->{_sql_transalias},
-        FIELD2 => 'ObjectId'
-    );
-
-    $sb->SUPER::Limit(
-        ALIAS => $sb->{_sql_transalias},
-        FIELD => 'ObjectType',
-        VALUE => 'RTx::AssetTracker::Asset'
-    );
 
     $sb->_CloseParen;
 }
