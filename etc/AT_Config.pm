@@ -57,11 +57,18 @@ Set ($ModifyBothAssetsForLink, 0);
 # (set to 0 to turn  off)
 Set ($ShowAssetHistory, 10);
 
-# You can define new Link types by defining a list with an even
-# number of elements. The first element in each pair is the
-# forward link and the second element is the reverse link.
+# You can define new Link types by adding new key => value pairs.
+# The key in each pair is the forward link and the value element is
+# the reverse link.
 
-# @AssetLinkTypes = qw( LocatedAt AtThisLocation );
+# Set(%AssetLinkTypes, LocatedAt => 'AtThisLocation' );
+
+Set(%AssetLinkTypes,
+    RunsOn      => 'IsRunning',
+    RefersTo    => 'ReferredToBy',
+    DependsOn   => 'DependedOnBy',
+    ComponentOf => 'HasComponent',
+);
 
 # List of role names. Need more/less/different roles? Change it!
 # @AssetRoles = qw( Admin Owner ); #default

@@ -84,20 +84,10 @@ RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Ass
 # A helper table for links mapping to make it easier
 # to build and parse links between assets
 
-our %LINKMAP = (
-    RunsOn      => 'IsRunning',
-    RefersTo    => 'ReferredToBy',
-    DependsOn   => 'DependedOnBy',
-    ComponentOf => 'HasComponent',
-);
-
+our %LINKMAP     = ();
 our @LINKORDER   = ();
 our %LINKTYPEMAP = ();
 our %LINKDIRMAP  = ();
-
-while ( my ($base, $target) = each %LINKMAP ) {
-    RTx::AssetTracker::Asset->RegisterLinkType( $base, $target );
-}
 
 
 sub RegisterLinkType {
@@ -133,12 +123,12 @@ sub RegisterLinkType {
     *$base   = sub {
         my $self = shift;
         return ( $self->_Links( $LINKTYPEMAP{$target}{Mode}, $base ) );
-    };
+    } unless $class->can($base);
 
     *$target = sub {
         my $self = shift;
         return ( $self->_Links( $LINKTYPEMAP{$base}{Mode},   $base ) );
-    };
+    } unless $class->can($target);
 
     }
 
@@ -159,15 +149,14 @@ sub RegisterLinkType {
             my $asset_uri = shift;
             $self->LimitLinkedTo ( TARGET => $asset_uri,
                                    TYPE => $base,          );
+        } unless $class->can($limit_base);
 
-        };
         *$limit_target = sub {
             my $self = shift;
             my $asset_uri = shift;
             $self->LimitLinkedFrom ( BASE => $asset_uri,
                                      TYPE => $target,        );
-
-        };
+        } unless $class->can($limit_target);
 
     }
 
@@ -183,15 +172,11 @@ sub LINKORDER     { return  @LINKORDER   }
 sub ConfigureLinks {
     my $class = shift;
 
-    if (@RT::AssetLinkTypes and ! (@RT::AssetLinkTypes % 2)) {
-        my @local_links = @RT::AssetLinkTypes;
-        while ( @local_links ) {
-            my $forward = shift @local_links;
-            my $reverse = shift @local_links;
-            $class->RegisterLinkType( $forward, $reverse );
-        }
-    }
+    my $map = RT->Config->Get('AssetLinkTypes') or return;
 
+    while ( my ($forward, $reverse) = each %$map ) {
+        $class->RegisterLinkType( $forward, $reverse );
+    }
 }
 
 

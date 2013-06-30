@@ -128,7 +128,6 @@ our %FIELD_METADATA = (
     OwnerGroup      => [ 'MEMBERSHIPFIELD' => 'Owner', ],
     AdminGroup      => [ 'MEMBERSHIPFIELD' => 'Admin', ],
     WatcherGroup     => [ 'MEMBERSHIPFIELD', ],
-    %FIELD_METADATA
   );
 
 
