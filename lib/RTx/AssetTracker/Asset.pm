@@ -2014,65 +2014,6 @@ sub LoadAssetRoleGroup {
 
 
 
-=head2 Members
-
-  This returns an RT::Links object which references all the assets
-which are 'MembersOf' this asset
-
-=cut
-
-#sub RefersTo {
-#    my $self = shift;
-#    return ( $self->_Links( 'Base', 'RefersTo' ) );
-#}
-
-#sub ReferredToBy {
-#    my $self = shift;
-#    return ( $self->_Links( 'Target', 'RefersTo' ) );
-#}
-
-#sub RunsOn {
-#    my $self = shift;
-#    return ( $self->_Links( 'Base', 'RunsOn' ) );
-#}
-
-#sub IsRunning {
-#    my $self = shift;
-#    return ( $self->_Links( 'Target', 'RunsOn' ) );
-#}
-
-#sub DependsOn {
-#    my $self = shift;
-#    return ( $self->_Links( 'Base', 'DependsOn' ) );
-#}
-
-#sub DependedOnBy {
-#    my $self = shift;
-#    return ( $self->_Links( 'Target', 'DependsOn' ) );
-#}
-
-#sub ComponentOf {
-#    my $self = shift;
-#    return ( $self->_Links( 'Base', 'ComponentOf' ) );
-#}
-
-sub HasComponents {
-    my $self = shift;
-    return ( $self->_Links( 'Target', 'ComponentOf' ) );
-}
-
-sub Components {
-    my $self = shift;
-    return ( $self->_Links( 'Target', 'ComponentOf' ) );
-}
-
-
-
-sub _UpdateTimeTaken {
-    return 1;
-}
-
-
 sub _SetBasic {
     my $self = shift;
 
