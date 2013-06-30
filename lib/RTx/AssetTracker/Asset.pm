@@ -144,8 +144,8 @@ sub RegisterLinkType {
 
     # sets up the Limit methods for links
     #RTx::AssetTracker::Assets::RegisterLinkField($base, $target);
-    $RTx::AssetTracker::Assets::FIELDS{$base}   = [ 'LINK' => To   => $base ];
-    $RTx::AssetTracker::Assets::FIELDS{$target} = [ 'LINK' => From => $base ];
+    $RTx::AssetTracker::Assets::FIELD_METADATA{$base}   = [ 'LINK' => To   => $base ];
+    $RTx::AssetTracker::Assets::FIELD_METADATA{$target} = [ 'LINK' => From => $base ];
 
     {
         no strict 'refs';

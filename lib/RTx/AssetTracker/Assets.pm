@@ -79,11 +79,13 @@ use File::Temp 'tempdir';
 use HTML::Mason;
 use XML::Parser;
 
-# FIELDS is a mapping of searchable Field name, to Type, and other
+# Configuration Tables:
+
+# FIELD_METADATA is a mapping of searchable Field name, to Type, and other
 # metadata.
 
-%FIELDS =
-  ( Name            => ['STRING',],
+our %FIELD_METADATA = (
+    Name            => ['STRING',],
     Status          => ['ENUM'],
     Type            => ['ENUM' => 'Type',],
     Creator         => ['ENUM' => 'RT::User',],
@@ -126,7 +128,7 @@ use XML::Parser;
     OwnerGroup      => [ 'MEMBERSHIPFIELD' => 'Owner', ],
     AdminGroup      => [ 'MEMBERSHIPFIELD' => 'Admin', ],
     WatcherGroup     => [ 'MEMBERSHIPFIELD', ],
-    %FIELDS,
+    %FIELD_METADATA
   );
 
 
@@ -135,8 +137,8 @@ use XML::Parser;
 #    my $base   = shift;
 #    my $target = shift;
 #
-#    $FIELDS{$base}   = [ 'LINK' => To   => $base ];
-#    $FIELDS{$target} = [ 'LINK' => From => $base ];
+#    $FIELD_METADATA{$base}   = [ 'LINK' => To   => $base ];
+#    $FIELD_METADATA{$target} = [ 'LINK' => From => $base ];
 #
 #    {
 #        no strict 'refs';
@@ -172,7 +174,7 @@ our %SEARCHABLE_SUBFIELDS = (
 );
 
 # Mapping of Field Type to Function
-my %dispatch = (
+our %dispatch = (
     ENUM            => \&_EnumLimit,
     INT             => \&_IntLimit,
     LINK            => \&_LinkLimit,
@@ -184,12 +186,10 @@ my %dispatch = (
     MEMBERSHIPFIELD => \&_WatcherMembershipLimit,
     LINKFIELD       => \&_LinkFieldLimit,
     CUSTOMFIELD     => \&_CustomFieldLimit,
+    IPFIELD         => \&_IPLimit,
+    PORTFIELD       => \&_PortLimit,
 );
-my %can_bundle = (); # WATCHERFIELD => "yes", );
-
-$dispatch{IPFIELD} = \&_IPLimit;
-$dispatch{PORTFIELD} = \&_PortLimit;
-
+our %can_bundle = ();# WATCHERFIELD => "yes", );
 
 # Default EntryAggregator per type
 # if you specify OP, you must specify all valid OPs
@@ -226,22 +226,22 @@ my %DefaultEA = (
     },
 
     CUSTOMFIELD => 'OR',
+    IPFIELD     => 'OR',
 );
-
-$DefaultEA{IPFIELD} = 'OR';
 
 # Helper functions for passing the above lexically scoped tables above
 # into Assets_SQL.
-sub FIELDS   { return \%FIELDS }
-sub dispatch { return \%dispatch }
+sub FIELDS     { return \%FIELD_METADATA }
+sub dispatch   { return \%dispatch }
 sub can_bundle { return \%can_bundle }
 
 # Bring in the clowns.
 require RTx::AssetTracker::Assets_SQL;
 
-# {{{ sub SortFields
 
-our @SORTFIELDS = qw(id Status Type Description Created LastUpdated);
+our @SORTFIELDS = qw(id Status
+    Type Name Description
+    Created LastUpdated);
 
 =head2 SortFields
 
@@ -250,12 +250,9 @@ Returns the list of fields that lists of assets can easily be sorted by
 =cut
 
 sub SortFields {
-        my $self = shift;
-        return(@SORTFIELDS);
+    my $self = shift;
+    return (@SORTFIELDS);
 }
-
-
-# }}}
 
 
 # BEGIN SQL STUFF *********************************
@@ -315,7 +312,7 @@ sub _EnumLimit {
     die "Invalid Operation: $op for $field"
       unless $op eq "=" or $op eq "!=";
 
-    my $meta = $FIELDS{$field};
+    my $meta = $FIELD_METADATA{$field};
     if ( defined $meta->[1] ) {
         my $class = ( $meta->[1] =~ /::/ ? '' : "RTx::AssetTracker::" ) . $meta->[1];
         my $o     = $class->new( $sb->CurrentUser );
@@ -367,7 +364,7 @@ Meta Data:
 sub _LinkLimit {
     my ( $sb, $field, $op, $value, @rest ) = @_;
 
-    my $meta = $FIELDS{$field};
+    my $meta = $FIELD_METADATA{$field};
     die "Invalid Operator $op for $field" unless $op =~ /^(=|!=|IS)/io;
 
     die "Incorrect Metadata for $field"
@@ -488,7 +485,7 @@ sub _DateLimit {
     die "Invalid Date Op: $op"
         unless $op =~ /^(=|>|<|>=|<=)$/;
 
-    my $meta = $FIELDS{$field};
+    my $meta = $FIELD_METADATA{$field};
     die "Incorrect Meta Data for $field"
         unless ( defined $meta->[1] );
 
@@ -839,7 +836,7 @@ sub _WatcherLimit {
     my $value = shift;
     my %rest  = (@_);
 
-    my $meta = $FIELDS{ $field };
+    my $meta = $FIELD_METADATA{ $field };
     my $type = $meta->[1] || '';
     my $class = $meta->[2] || 'Asset';
 
@@ -1157,7 +1154,7 @@ sub _WatcherMembershipLimit {
     # }}}
 
     # If we care about which sort of watcher
-    my $meta = $FIELDS{$field};
+    my $meta = $FIELD_METADATA{$field};
     my $type = ( defined $meta->[1] ? $meta->[1] : undef );
 
     if ($type) {
@@ -2633,9 +2630,9 @@ sub _RestrictionsToClauses {
         }
 
         die "I don't know about $field yet"
-          unless ( exists $FIELDS{$realfield} or $restriction->{CUSTOMFIELD} );
+          unless ( exists $FIELD_METADATA{$realfield} or $restriction->{CUSTOMFIELD} );
 
-        my $type = $FIELDS{$realfield}->[0];
+        my $type = $FIELD_METADATA{$realfield}->[0];
         my $op   = $restriction->{'OPERATOR'};
 
         my $value = (
