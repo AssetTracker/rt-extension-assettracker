@@ -3022,7 +3022,7 @@ sub _fixup_import {
     my ($self, %asset) = @_;
 
     my %fixed;
-    $fixed{$_} = delete $asset{$_} for qw(id Name Type Status Description);
+    map { $fixed{$_} = delete $asset{$_} if defined $asset{$_} } qw(id Name Type Status Description);
 
     #roles
     foreach my $type ( RTx::AssetTracker::Type->RoleGroupTypes() ) {
