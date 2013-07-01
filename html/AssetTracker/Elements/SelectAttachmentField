@@ -48,6 +48,7 @@
 <select name="<%$Name%>">
 <option value="Name"><&|/l&>Name</&></option>
 <option value="Description"><&|/l&>Description</&></option>
+<option value="TransactionData"><&|/l&>Change Comment</&></option>
 </select>
 <%ARGS>
 $Name => 'AttachmentField'

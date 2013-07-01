@@ -95,9 +95,7 @@ our %FIELD_METADATA = (
     LastUpdated      => [ 'DATE' => 'LastUpdated', ],
     Created          => [ 'DATE' => 'Created', ],
     Description      => [ 'STRING', ],
-    Content          => [ 'TRANSFIELD', ],
-    ContentType      => [ 'TRANSFIELD', ],
-    Filename         => [ 'TRANSFIELD', ],
+    TransactionData  => [ 'TRANSFIELD' => 'Data', ],
     IP               => [ 'IPFIELD', ],
     MAC              => [ 'IPFIELD', ],
     Interface        => [ 'IPFIELD', ],
@@ -255,7 +253,6 @@ sub CleanSlate {
         _sql_group_members_aliases
         _sql_object_cfv_alias
         _sql_role_group_aliases
-        _sql_trattachalias
         _sql_u_watchers_alias_for_sort
         _sql_u_watchers_aliases
         _sql_current_user_can_see_applied
@@ -724,90 +721,30 @@ sub _TransDateLimit {
 
 =head2 _TransLimit
 
-Limit based on the Content of a transaction or the ContentType.
+Limit based on transaction. (Data, i.e. change comments)
 
 Meta Data:
-  none
+  1: Field to query on
 
 =cut
 
 sub _TransLimit {
+    my ( $self, $field, $op, $value, %rest ) = @_;
 
-    # Content, ContentType, Filename
+    my $meta = $FIELD_METADATA{$field};
+    die "Incorrect Meta Data for $field"
+        unless ( defined $meta->[1] );
 
-    # If only this was this simple.  We've got to do something
-    # complicated here:
+    my $txn_alias = $self->JoinTransactions;
 
-    #Basically, we want to make sure that the limits apply to
-    #the same attachment, rather than just another attachment
-    #for the same ticket, no matter how many clauses we lump
-    #on. We put them in TicketAliases so that they get nuked
-    #when we redo the join.
-
-    # In the SQL, we might have
-    #       (( Content = foo ) or ( Content = bar AND Content = baz ))
-    # The AND group should share the same Alias.
-
-    # Actually, maybe it doesn't matter.  We use the same alias and it
-    # works itself out? (er.. different.)
-
-    # Steal more from _ProcessRestrictions
-
-    # FIXME: Maybe look at the previous FooLimit call, and if it was a
-    # TransLimit and EntryAggregator == AND, reuse the Aliases?
-
-    # Or better - store the aliases on a per subclause basis - since
-    # those are going to be the things we want to relate to each other,
-    # anyway.
-
-    # maybe we should not allow certain kinds of aggregation of these
-    # clauses and do a psuedo regex instead? - the problem is getting
-    # them all into the same subclause when you have (A op B op C) - the
-    # way they get parsed in the tree they're in different subclauses.
-
-    my ( $self, $field, $op, $value, @rest ) = @_;
-
-    $self->{_sql_transalias} = $self->NewAlias('Transactions')
-        unless defined $self->{_sql_transalias};
-    $self->{_sql_trattachalias} = $self->NewAlias('Attachments')
-        unless defined $self->{_sql_trattachalias};
-
-    $self->_OpenParen;
-
-    #Search for the right field
     $self->_SQLLimit(
-        ALIAS         => $self->{_sql_trattachalias},
-        FIELD         => $field,
+        %rest,
+        ALIAS         => $txn_alias,
+        FIELD         => $meta->[1],
         OPERATOR      => $op,
         VALUE         => $value,
         CASESENSITIVE => 0,
-        @rest
     );
-
-    $self->_SQLJoin(
-        ALIAS1 => $self->{_sql_trattachalias},
-        FIELD1 => 'TransactionId',
-        ALIAS2 => $self->{_sql_transalias},
-        FIELD2 => 'id'
-    );
-
-    # Join Transactions to Tickets
-    $self->_SQLJoin(
-        ALIAS1 => 'main',
-        FIELD1 => $self->{'primary_key'},     # Why not use "id" here?
-        ALIAS2 => $self->{_sql_transalias},
-        FIELD2 => 'ObjectId'
-    );
-
-    $self->SUPER::Limit(
-        ALIAS           => $self->{_sql_transalias},
-        FIELD           => 'ObjectType',
-        VALUE           => 'RTx::AssetTracker::Asset',
-        ENTRYAGGREGATOR => 'AND'
-    );
-
-    $self->_CloseParen;
-
 }
 
 =head2 _WatcherLimit
