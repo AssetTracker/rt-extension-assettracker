@@ -1319,136 +1319,388 @@ Meta Data:
 
 =cut
 
+use Regexp::Common qw(RE_net_IPv4);
+use Regexp::Common::net::CIDR;
+
+
 sub _CustomFieldLimit {
-    my ( $self, $_field, $op, $value, @rest ) = @_;
+    my ( $self, $_field, $op, $value, %rest ) = @_;
 
-    my %rest  = @rest;
-    my $field = $rest{SUBKEY} || die "No field specified";
+    my $field = $rest{'SUBKEY'} || die "No field specified";
 
-    # For our sanity, we can only limit on one type at a time
-    my $type = 0;
+    # For our sanity, we can only limit on one asset type at a time
 
-    if ( $field =~ /^(.+?)\.{(.+)}$/ ) {
-        $type = $1;
-        $field = $2;
-    }
-    $field = $1 if $field =~ /^{(.+)}$/;    # trim { }
+    my ($type, $cfid, $cf, $column);
+    ($type, $field, $cf, $column) = $self->_CustomFieldDecipher( $field );
+    $cfid = $cf ? $cf->id  : 0 ;
 
+# If we're trying to find custom fields that don't match something, we
+# want assets where the custom field has no value at all.  Note that
+# we explicitly don't include the "IS NULL" case, since we would
+# otherwise end up with a redundant clause.
 
-    # If we're trying to find custom fields that don't match something, we
-    # want tickets where the custom field has no value at all.  Note that
-    # we explicitly don't include the "IS NULL" case, since we would
-    # otherwise end up with a redundant clause.
+    my ($negative_op, $null_op, $inv_op, $range_op)
+        = $self->ClassifySQLOperation( $op );
 
-    my $null_columns_ok;
-    if ( ( $op =~ /^NOT LIKE$/i ) or ( $op eq '!=' ) ) {
-        $null_columns_ok = 1;
-    }
+    my $fix_op = sub {
+        return @_ unless RT->Config->Get('DatabaseType') eq 'Oracle';
 
-    my $cfid = 0;
-    if ($type) {
+        my %args = @_;
+        return %args unless $args{'FIELD'} eq 'LargeContent';
+        
+        my $op = $args{'OPERATOR'};
+        if ( $op eq '=' ) {
+            $args{'OPERATOR'} = 'MATCHES';
+        }
+        elsif ( $op eq '!=' ) {
+            $args{'OPERATOR'} = 'NOT MATCHES';
+        }
+        elsif ( $op =~ /^[<>]=?$/ ) {
+            $args{'FUNCTION'} = "TO_CHAR( $args{'ALIAS'}.LargeContent )";
+        }
+        return %args;
+    };
 
-        my $q = RTx::AssetTracker::Type->new( $self->CurrentUser );
-        $q->Load($type) if ($type);
-
-        my $cf;
-        if ( $q->id ) {
-            $cf = $q->CustomField($field);
+    if ( $cf && $cf->Type eq 'IPAddress' ) {
+        my $parsed = RT::ObjectCustomFieldValue->ParseIP($value);
+        if ($parsed) {
+            $value = $parsed;
         }
         else {
-            $cf = RT::CustomField->new( $self->CurrentUser );
-            $cf->LoadByNameAndType( Type => '0', Name => $field );
+            $RT::Logger->warn("$value is not a valid IPAddress");
         }
-
-        $cfid = $cf->id;
-
     }
 
-    my $AssetCFs;
+    if ( $cf && $cf->Type eq 'IPAddressRange' ) {
+
+        if ( $value =~ /^\s*$RE{net}{CIDR}{IPv4}{-keep}\s*$/o ) {
+
+            # convert incomplete 192.168/24 to 192.168.0.0/24 format
+            $value =
+              join( '.', map $_ || 0, ( split /\./, $1 )[ 0 .. 3 ] ) . "/$2"
+              || $value;
+        }
+
+        my ( $start_ip, $end_ip ) =
+          RT::ObjectCustomFieldValue->ParseIPRange($value);
+        if ( $start_ip && $end_ip ) {
+            if ( $op =~ /^([<>])=?$/ ) {
+                my $is_less = $1 eq '<' ? 1 : 0;
+                if ( $is_less ) {
+                    $value = $start_ip;
+                }
+                else {
+                    $value = $end_ip;
+                }
+            }
+            else {
+                $value = join '-', $start_ip, $end_ip;
+            }
+        }
+        else {
+            $RT::Logger->warn("$value is not a valid IPAddressRange");
+        }
+    }
+
+    if ( $cf && $cf->Type =~ /^Date(?:Time)?$/ ) {
+        my $date = RT::Date->new( $self->CurrentUser );
+        $date->Set( Format => 'unknown', Value => $value );
+        if ( $date->Unix ) {
+
+            if (
+                   $cf->Type eq 'Date'
+                || $value =~ /^\s*(?:today|tomorrow|yesterday)\s*$/i
+                || (   $value !~ /midnight|\d+:\d+:\d+/i
+                    && $date->Time( Timezone => 'user' ) eq '00:00:00' )
+              )
+            {
+                $value = $date->Date( Timezone => 'user' );
+            }
+            else {
+                $value = $date->DateTime;
+            }
+        }
+        else {
+            $RT::Logger->warn("$value is not a valid date string");
+        }
+    }
+
+    my $single_value = !$cf || !$cfid || $cf->SingleValue;
+
     my $cfkey = $cfid ? $cfid : "$type.$field";
 
-    # Perform one Join per CustomField
-    if ( $self->{_sql_object_cf_alias}{$cfid} ) {
-        $AssetCFs  = $self->{_sql_object_cf_alias}{$cfid};
+    if ( $null_op && !$column ) {
+        # IS[ NOT] NULL without column is the same as has[ no] any CF value,
+        # we can reuse our default joins for this operation
+        # with column specified we have different situation
+        my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
+        $self->_OpenParen;
+        $self->_SQLLimit(
+            ALIAS    => $AssetCFs,
+            FIELD    => 'id',
+            OPERATOR => $op,
+            VALUE    => $value,
+            %rest
+        );
+        $self->_SQLLimit(
+            ALIAS      => $CFs,
+            FIELD      => 'Name',
+            OPERATOR   => 'IS NOT',
+            VALUE      => 'NULL',
+            QUOTEVALUE => 0,
+            ENTRYAGGREGATOR => 'AND',
+        ) if $CFs;
+        $self->_CloseParen;
     }
-    else {
-        if ($cfid) {
-            $AssetCFs  = $self->{_sql_object_cf_alias}{$cfkey} = $self->Join(
-                TYPE   => 'left',
-                ALIAS1 => 'main',
-                FIELD1 => 'id',
-                TABLE2 => 'ObjectCustomFieldValues',
-                FIELD2 => 'ObjectId',
+    elsif ( $op !~ /^[<>]=?$/ && (  $cf && $cf->Type eq 'IPAddressRange')) {
+    
+        my ($start_ip, $end_ip) = split /-/, $value;
+        
+        $self->_OpenParen;
+        if ( $op !~ /NOT|!=|<>/i ) { # positive equation
+            $self->_CustomFieldLimit(
+                'CF', '<=', $end_ip, %rest,
+                SUBKEY => $rest{'SUBKEY'}. '.Content',
             );
-            $self->SUPER::Limit(
-                LEFTJOIN        => $AssetCFs,
-                FIELD           => 'CustomField',
-                VALUE           => $cfid,
-                ENTRYAGGREGATOR => 'AND'
-            );
+            $self->_CustomFieldLimit(
+                'CF', '>=', $start_ip, %rest,
+                SUBKEY          => $rest{'SUBKEY'}. '.LargeContent',
+                ENTRYAGGREGATOR => 'AND',
+            ); 
+            # as well limit borders so DB optimizers can use better
+            # estimations and scan less rows
+# have to disable this tweak because of ipv6
+#            $self->_CustomFieldLimit(
+#                $field, '>=', '000.000.000.000', %rest,
+#                SUBKEY          => $rest{'SUBKEY'}. '.Content',
+#                ENTRYAGGREGATOR => 'AND',
+#            );
+#            $self->_CustomFieldLimit(
+#                $field, '<=', '255.255.255.255', %rest,
+#                SUBKEY          => $rest{'SUBKEY'}. '.LargeContent',
+#                ENTRYAGGREGATOR => 'AND',
+#            );  
+        }       
+        else { # negative equation
+            $self->_CustomFieldLimit($field, '>', $end_ip, %rest);
+            $self->_CustomFieldLimit(
+                $field, '<', $start_ip, %rest,
+                SUBKEY          => $rest{'SUBKEY'}. '.LargeContent',
+                ENTRYAGGREGATOR => 'OR',
+            );  
+            # TODO: as well limit borders so DB optimizers can use better
+            # estimations and scan less rows, but it's harder to do
+            # as we have OR aggregator
+        }
+        $self->_CloseParen;
+    } 
+    elsif ( !$negative_op || $single_value ) {
+        $cfkey .= '.'. $self->{'_sql_multiple_cfs_index'}++ if !$single_value && !$range_op;
+        my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
+
+        $self->_OpenParen;
+
+        $self->_OpenParen;
+
+        $self->_OpenParen;
+        # if column is defined then deal only with it
+        # otherwise search in Content and in LargeContent
+        if ( $column ) {
+            $self->_SQLLimit( $fix_op->(
+                ALIAS      => $AssetCFs,
+                FIELD      => $column,
+                OPERATOR   => $op,
+                VALUE      => $value,
+                CASESENSITIVE => 0,
+                %rest
+            ) );
+            $self->_CloseParen;
+            $self->_CloseParen;
+            $self->_CloseParen;
         }
         else {
-            my $cfalias = $self->Join(
-                TYPE       => 'left',
-                EXPRESSION => "'$field'",
-                TABLE2     => 'CustomFields',
-                FIELD2     => 'Name',
-            );
+            # need special treatment for Date
+            if ( $cf and $cf->Type eq 'DateTime' and $op eq '=' && $value !~ /:/ ) {
+                # no time specified, that means we want everything on a
+                # particular day.  in the database, we need to check for >
+                # and < the edges of that day.
+                    my $date = RT::Date->new( $self->CurrentUser );
+                    $date->Set( Format => 'unknown', Value => $value );
+                    my $daystart = $date->ISO;
+                    $date->AddDay;
+                    my $dayend = $date->ISO;
 
-            $AssetCFs = $self->{_sql_object_cf_alias}{$cfkey} = $self->Join(
-                TYPE   => 'left',
-                ALIAS1 => $cfalias,
-                FIELD1 => 'id',
-                TABLE2 => 'ObjectCustomFieldValues',
-                FIELD2 => 'CustomField',
-            );
-            $self->SUPER::Limit(
-                LEFTJOIN        => $AssetCFs,
-                FIELD           => 'ObjectId',
-                VALUE           => 'main.id',
+                    $self->_OpenParen;
+
+                    $self->_SQLLimit(
+                        ALIAS    => $AssetCFs,
+                        FIELD    => 'Content',
+                        OPERATOR => ">=",
+                        VALUE    => $daystart,
+                        %rest,
+                    );
+
+                    $self->_SQLLimit(
+                        ALIAS    => $AssetCFs,
+                        FIELD    => 'Content',
+                        OPERATOR => "<",
+                        VALUE    => $dayend,
+                        %rest,
+                        ENTRYAGGREGATOR => 'AND',
+                    );
+
+                    $self->_CloseParen;
+            }
+            elsif ( $op eq '=' || $op eq '!=' || $op eq '<>' ) {
+                if ( length( Encode::encode_utf8($value) ) < 256 ) {
+                    $self->_SQLLimit(
+                        ALIAS    => $AssetCFs,
+                        FIELD    => 'Content',
+                        OPERATOR => $op,
+                        VALUE    => $value,
+                        CASESENSITIVE => 0,
+                        %rest
+                    );
+                }
+                else {
+                    $self->_OpenParen;
+                    $self->_SQLLimit(
+                        ALIAS           => $AssetCFs,
+                        FIELD           => 'Content',
+                        OPERATOR        => '=',
+                        VALUE           => '',
+                        ENTRYAGGREGATOR => 'OR'
+                    );
+                    $self->_SQLLimit(
+                        ALIAS           => $AssetCFs,
+                        FIELD           => 'Content',
+                        OPERATOR        => 'IS',
+                        VALUE           => 'NULL',
+                        ENTRYAGGREGATOR => 'OR'
+                    );
+                    $self->_CloseParen;
+                    $self->_SQLLimit( $fix_op->(
+                        ALIAS           => $AssetCFs,
+                        FIELD           => 'LargeContent',
+                        OPERATOR        => $op,
+                        VALUE           => $value,
+                        ENTRYAGGREGATOR => 'AND',
+                        CASESENSITIVE => 0,
+                    ) );
+                }
+            }
+            else {
+                $self->_SQLLimit(
+                    ALIAS    => $AssetCFs,
+                    FIELD    => 'Content',
+                    OPERATOR => $op,
+                    VALUE    => $value,
+                    CASESENSITIVE => 0,
+                    %rest
+                );
+
+                $self->_OpenParen;
+                $self->_OpenParen;
+                $self->_SQLLimit(
+                    ALIAS           => $AssetCFs,
+                    FIELD           => 'Content',
+                    OPERATOR        => '=',
+                    VALUE           => '',
+                    ENTRYAGGREGATOR => 'OR'
+                );
+                $self->_SQLLimit(
+                    ALIAS           => $AssetCFs,
+                    FIELD           => 'Content',
+                    OPERATOR        => 'IS',
+                    VALUE           => 'NULL',
+                    ENTRYAGGREGATOR => 'OR'
+                );
+                $self->_CloseParen;
+                $self->_SQLLimit( $fix_op->(
+                    ALIAS           => $AssetCFs,
+                    FIELD           => 'LargeContent',
+                    OPERATOR        => $op,
+                    VALUE           => $value,
+                    ENTRYAGGREGATOR => 'AND',
+                    CASESENSITIVE => 0,
+                ) );
+                $self->_CloseParen;
+            }
+            $self->_CloseParen;
+
+            # XXX: if we join via CustomFields table then
+            # because of order of left joins we get NULLs in
+            # CF table and then get nulls for those records
+            # in OCFVs table what result in wrong results
+            # as decifer method now tries to load a CF then
+            # we fall into this situation only when there
+            # are more than one CF with the name in the DB.
+            # the same thing applies to order by call.
+            # TODO: reorder joins T <- OCFVs <- CFs <- OCFs if
+            # we want treat IS NULL as (not applies or has
+            # no value)
+            $self->_SQLLimit(
+                ALIAS           => $CFs,
+                FIELD           => 'Name',
+                OPERATOR        => 'IS NOT',
+                VALUE           => 'NULL',
                 QUOTEVALUE      => 0,
                 ENTRYAGGREGATOR => 'AND',
+            ) if $CFs;
+            $self->_CloseParen;
+
+            if ($negative_op) {
+                $self->_SQLLimit(
+                    ALIAS           => $AssetCFs,
+                    FIELD           => $column || 'Content',
+                    OPERATOR        => 'IS',
+                    VALUE           => 'NULL',
+                    QUOTEVALUE      => 0,
+                    ENTRYAGGREGATOR => 'OR',
+                );
+            }
+
+            $self->_CloseParen;
+        }
+    }
+    else {
+        $cfkey .= '.'. $self->{'_sql_multiple_cfs_index'}++;
+        my ($AssetCFs, $CFs) = $self->_CustomFieldJoin( $cfkey, $cfid, $field );
+
+        # reverse operation
+        $op =~ s/!|NOT\s+//i;
+
+        # if column is defined then deal only with it
+        # otherwise search in Content and in LargeContent
+        if ( $column ) {
+            $self->SUPER::Limit( $fix_op->(
+                LEFTJOIN   => $AssetCFs,
+                ALIAS      => $AssetCFs,
+                FIELD      => $column,
+                OPERATOR   => $op,
+                VALUE      => $value,
+                CASESENSITIVE => 0,
+            ) );
+        }
+        else {
+            $self->SUPER::Limit(
+                LEFTJOIN   => $AssetCFs,
+                ALIAS      => $AssetCFs,
+                FIELD      => 'Content',
+                OPERATOR   => $op,
+                VALUE      => $value,
+                CASESENSITIVE => 0,
             );
         }
-        $self->SUPER::Limit(
-            LEFTJOIN => $AssetCFs,
-            FIELD    => 'ObjectType',
-            VALUE    => ref( $self->NewItem )
-            ,    # we want a single item, not a collection
-            ENTRYAGGREGATOR => 'AND'
-        );
-        $self->SUPER::Limit(
-            LEFTJOIN        => $AssetCFs,
-            FIELD           => 'Disabled',
-            OPERATOR        => '=',
-            VALUE           => '0',
-            ENTRYAGGREGATOR => 'AND'
-        );
-    }
-
-    $self->_OpenParen if ($null_columns_ok);
-
-    $self->_SQLLimit(
-        ALIAS      => $AssetCFs,
-        FIELD      => 'Content',
-        OPERATOR   => $op,
-        VALUE      => $value,
-        QUOTEVALUE => 1,
-        @rest
-    );
-
-    if ($null_columns_ok) {
         $self->_SQLLimit(
-            ALIAS           => $AssetCFs,
-            FIELD           => 'Content',
-            OPERATOR        => 'IS',
-            VALUE           => 'NULL',
-            QUOTEVALUE      => 0,
-            ENTRYAGGREGATOR => 'OR',
+            %rest,
+            ALIAS      => $AssetCFs,
+            FIELD      => 'id',
+            OPERATOR   => 'IS',
+            VALUE      => 'NULL',
+            QUOTEVALUE => 0,
         );
     }
-    $self->_CloseParen if ($null_columns_ok);
-
 }
 
 # End Helper Functions
