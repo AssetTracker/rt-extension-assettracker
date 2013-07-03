@@ -776,15 +776,33 @@ sub _WatcherLimit {
         die "Invalid watcher subfield: '$rest{SUBKEY}'";
     }
 
+    # if it's equality op and search by Email or Name then we can preload user
+    # we do it to help some DBs better estimate number of rows and get better plans
+    if ( $op =~ /^!?=$/ && (!$rest{'SUBKEY'} || $rest{'SUBKEY'} eq 'Name' || $rest{'SUBKEY'} eq 'EmailAddress') ) {
+        my $o = RT::User->new( $self->CurrentUser );
+        my $method =
+            !$rest{'SUBKEY'}
+            ? $field eq 'Owner'? 'Load' : 'LoadByEmail'
+            : $rest{'SUBKEY'} eq 'EmailAddress' ? 'LoadByEmail': 'Load';
+        $o->$method( $value );
+        $rest{'SUBKEY'} = 'id';
+        $value = $o->id || 0;
+    }
+
     $rest{SUBKEY} ||= 'EmailAddress';
 
-    my $groups = $self->_RoleGroupsJoin( Type => $type, Class => $class, New => !$type );
+    my ($groups, $group_members, $users);
+    if ( $rest{'BUNDLE'} ) {
+        ($groups, $group_members, $users) = @{ $rest{'BUNDLE'} };
+    } else {
+        $groups = $self->_RoleGroupsJoin( Type => $type, Class => $class, New => !$type );
+    }
 
     $self->_OpenParen;
-    if ( $op =~ /^IS(?: NOT)?$/ ) {
+    if ( $op =~ /^IS(?: NOT)?$/i ) {
         # is [not] empty case
 
-        my $group_members = $self->_GroupMembersJoin( GroupsAlias => $groups );
+        $group_members ||= $self->_GroupMembersJoin( GroupsAlias => $groups );
         # to avoid joining the table Users into the query, we just join GM
         # and make sure we don't match records where group is member of itself
         $self->SUPER::Limit(
@@ -822,7 +840,7 @@ sub _WatcherLimit {
         $users_obj->RowsPerPage(2);
         my @users = @{ $users_obj->ItemsArrayRef };
 
-        my $group_members = $self->_GroupMembersJoin( GroupsAlias => $groups );
+        $group_members ||= $self->_GroupMembersJoin( GroupsAlias => $groups );
         if ( @users <= 1 ) {
             my $uid = 0;
             $uid = $users[0]->id if @users;
@@ -847,7 +865,7 @@ sub _WatcherLimit {
                 VALUE      => "$group_members.MemberId",
                 QUOTEVALUE => 0,
             );
-            my $users = $self->Join(
+            $users ||= $self->Join(
                 TYPE            => 'LEFT',
                 ALIAS1          => $group_members,
                 FIELD1          => 'MemberId',
@@ -873,10 +891,10 @@ sub _WatcherLimit {
     } else {
         # positive condition case
 
-        my $group_members = $self->_GroupMembersJoin(
+        $group_members ||= $self->_GroupMembersJoin(
             GroupsAlias => $groups, New => 1, Left => 0
         );
-        my $users = $self->Join(
+        $users ||= $self->Join(
             TYPE            => 'LEFT',
             ALIAS1          => $group_members,
             FIELD1          => 'MemberId',
@@ -893,6 +911,7 @@ sub _WatcherLimit {
         );
     }
     $self->_CloseParen;
+    return ($groups, $group_members, $users);
 }
 
 sub _RoleGroupsJoin {
@@ -944,6 +963,12 @@ sub _GroupMembersJoin {
         TABLE2          => 'CachedGroupMembers',
         FIELD2          => 'GroupId',
         ENTRYAGGREGATOR => 'AND',
+    );
+    $self->SUPER::Limit(
+        $args{'Left'} ? (LEFTJOIN => $alias) : (),
+        ALIAS => $alias,
+        FIELD => 'Disabled',
+        VALUE => 0,
     );
 
     $self->{'_sql_group_members_aliases'}{ $args{'GroupsAlias'} } = $alias
@@ -1065,7 +1090,7 @@ sub _WatcherMembershipLimit {
         );
     }
 
-    # {{{ Tie to groups for tickets we care about
+    # Tie to groups for tickets we care about
     $self->_SQLLimit(
         ALIAS           => $groups,
         FIELD           => 'Domain',
@@ -1109,12 +1134,25 @@ sub _WatcherMembershipLimit {
         FIELD2 => 'id'
     );
 
+    $self->Limit(
+        ALIAS => $groupmembers,
+        FIELD => 'Disabled',
+        VALUE => 0,
+    );
+
     $self->Join(
         ALIAS1 => $memberships,
         FIELD1 => 'MemberId',
         ALIAS2 => $users,
         FIELD2 => 'id'
     );
+
+    $self->Limit(
+        ALIAS => $memberships,
+        FIELD => 'Disabled',
+        VALUE => 0,
+    );
+
 
     $self->_CloseParen;
 
