@@ -136,6 +136,8 @@ sub RegisterLinkType {
     #RTx::AssetTracker::Assets::RegisterLinkField($base, $target);
     $RTx::AssetTracker::Assets::FIELD_METADATA{$base}   = [ 'LINK' => To   => $base ];
     $RTx::AssetTracker::Assets::FIELD_METADATA{$target} = [ 'LINK' => From => $base ];
+    $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $base}   = $base;
+    $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $target} = $target;
 
     {
         no strict 'refs';
