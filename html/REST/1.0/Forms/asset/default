@@ -130,9 +130,9 @@ else {
                 my $key = $1 || $2;
 
                 my $cf = RT::CustomField->new( $session{CurrentUser} );
-                $cf->LoadByNameAndType( Name => $key, Type => $data{Type} || $v{Type} );
+                $cf->LoadByNameAndAssetType( Name => $key, Type => $data{Type} || $v{Type} );
                 unless ( $cf->id ) {
-                    $cf->LoadByNameAndType( Name => $key, Type => 0 );
+                    $cf->LoadByNameAndAssetType( Name => $key, Type => 0 );
                 }
 
                 if (not $cf->id) {
@@ -317,9 +317,9 @@ else {
             $key = $1 || $2;
 
             my $cf = RT::CustomField->new( $session{CurrentUser} );
-            $cf->LoadByNameAndType( Name => $key, Type => $asset->Type );
+            $cf->LoadByNameAndAssetType( Name => $key, Type => $asset->Type );
             unless ( $cf->id ) {
-                $cf->LoadByNameAndType( Name => $key, Type => 0 );
+                $cf->LoadByNameAndAssetType( Name => $key, Type => 0 );
             }
 
             if (not $cf->id) {

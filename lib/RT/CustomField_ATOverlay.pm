@@ -8,7 +8,7 @@ use RT::CustomField;
 use RT::CurrentUser;
 
 
-=head2 LoadByNameAndType (Type => TYPEID, Name => NAME)
+=head2 LoadByNameAndAssetType (Type => TYPEID, Name => NAME)
 
 Loads the Custom field named NAME.
 
@@ -23,7 +23,7 @@ If no type parameter is specified, look for any and all custom fields with this 
 
 =cut
 
-sub LoadByNameAndType {
+sub LoadByNameAndAssetType {
     my $self = shift;
     my %args = (
         Type => undef,

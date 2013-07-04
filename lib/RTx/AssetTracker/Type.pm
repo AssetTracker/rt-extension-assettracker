@@ -587,7 +587,7 @@ sub CustomField {
     my $self = shift;
     my $name = shift;
     my $cf = RT::CustomField->new($self->CurrentUser);
-    $cf->LoadByNameAndType(Name => $name, Type => $self->Id);
+    $cf->LoadByNameAndAssetType(Name => $name, Type => $self->Id);
     return ($cf);
 }
 

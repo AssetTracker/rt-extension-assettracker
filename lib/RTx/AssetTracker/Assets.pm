@@ -2233,7 +2233,7 @@ Takes a paramhash of key/value pairs with the following keys:
 
 =over 4
 
-=item CUSTOMFIELD - CustomField name or id.  If a name is passed, an additional parameter TYPE may also be passed to distinguish the custom field.
+=item CUSTOMFIELD - CustomField name or id.  If a name is passed, an additional parameter ASSETTYPE may also be passed to distinguish the custom field.
 
 =item OPERATOR - The usual Limit operators
 
@@ -2260,9 +2260,9 @@ sub LimitCustomField {
         $CF->Load( $args{CUSTOMFIELD} );
     }
     else {
-        $CF->LoadByNameAndType(
+        $CF->LoadByNameAndAssetType(
             Name      => $args{CUSTOMFIELD},
-            AssetType => $args{TYPE}
+            AssetType => $args{ASSETTYPE}
         );
         $args{CUSTOMFIELD} = $CF->Id;
     }
@@ -2283,12 +2283,12 @@ sub LimitCustomField {
             $CF->Name, $args{OPERATOR}, $args{VALUE} );
     }
 
-    if ( defined $args{'TYPE'} && $args{'TYPE'} =~ /\D/ ) {
+    if ( defined $args{'ASSETTYPE'} && $args{'ASSETTYPE'} =~ /\D/ ) {
         my $TypeObj = RTx::AssetTracker::Type->new( $self->CurrentUser );
-        $TypeObj->Load( $args{'TYPE'} );
-        $args{'TYPE'} = $TypeObj->Id;
+        $TypeObj->Load( $args{'ASSETTYPE'} );
+        $args{'ASSETTYPE'} = $TypeObj->Id;
     }
-    delete $args{'TYPE'} unless defined $args{'TYPE'} && length $args{'TYPE'};
+    delete $args{'ASSETTYPE'} unless defined $args{'ASSETTYPE'} && length $args{'ASSETTYPE'};
 
     my @rest;
     @rest = ( ENTRYAGGREGATOR => 'AND' )
@@ -2297,7 +2297,7 @@ sub LimitCustomField {
     $self->Limit(
         VALUE => $args{VALUE},
         FIELD => "CF"
-            .(defined $args{'TYPE'}? ".{$args{'TYPE'}}" : '' )
+            .(defined $args{'ASSETTYPE'}? ".{$args{'ASSETTYPE'}}" : '' )
             .".{" . $CF->Name . "}",
         OPERATOR    => $args{OPERATOR},
         CUSTOMFIELD => 1,
@@ -3234,9 +3234,9 @@ sub _fixup_import {
     #custom fields are last
     for my $possible_cf (keys %asset) {
         my $cf = RT::CustomField->new($self->CurrentUser);
-        $cf->LoadByNameAndType( Name => $possible_cf, Type => $fixed{'Type'} );
+        $cf->LoadByNameAndAssetType( Name => $possible_cf, Type => $fixed{'Type'} );
         unless ( $cf->id ) {
-            $cf->LoadByNameAndType( Name => $possible_cf, Type => '0' );
+            $cf->LoadByNameAndAssetType( Name => $possible_cf, Type => '0' );
         }
         if ($cf->id) {
             my $type = $cf->Type;
