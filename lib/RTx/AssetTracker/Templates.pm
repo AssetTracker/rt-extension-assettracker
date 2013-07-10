@@ -131,7 +131,7 @@ sub LimitToGlobal {
 
 =head2 LimitToAssetType
 
-Takes a asset type id # and limits the returned set of templates to that asset type's
+Takes an asset type id # and limits the returned set of templates to that asset type's
 templates
 
 =cut

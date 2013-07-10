@@ -8,11 +8,11 @@ package HTML::Mason::Commands;
 use vars qw/$r $m %session/;
 
 
-# {{{ sub LoadAsset - loads a asset
+# {{{ sub LoadAsset - loads an asset
 
 =head2  LoadAsset id
 
-Takes a asset id as its only variable. if it's handed an array, it takes
+Takes an asset id as its only variable. if it's handed an array, it takes
 the first value.
 
 Returns an RTx::AssetTracker::Asset object as the current user.

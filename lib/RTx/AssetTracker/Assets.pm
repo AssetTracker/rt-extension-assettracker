@@ -1979,7 +1979,7 @@ sub LimitDescription {
 
 Takes a paramhash with the fields OPERATOR and VALUE.
 OPERATOR is one of =, >, < or !=.
-VALUE is a asset Id to search for
+VALUE is an asset Id to search for
 
 =cut
 
@@ -2005,7 +2005,7 @@ sub LimitId {
 
 Takes a paramhash with the fields OPERATOR and VALUE.
 OPERATOR is one of =, >, < or !=.
-VALUE is a asset URI to search for
+VALUE is an asset URI to search for
 
 =cut
 

@@ -263,7 +263,7 @@ sub Prepared {
 
 =head2  _SetupSourceObjects { AssetObj , Asset, Transaction, TransactionObj }
 
-Setup a asset and transaction for this Scrip collection to work with as it runs through the 
+Setup an asset and transaction for this Scrip collection to work with as it runs through the 
 relevant scrips.  (Also to figure out which scrips apply)
 
 Returns: nothing

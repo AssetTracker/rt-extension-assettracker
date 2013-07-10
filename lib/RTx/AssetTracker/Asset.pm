@@ -184,7 +184,7 @@ sub ConfigureLinks {
 
 =head2 Load
 
-Takes a single argument. This can be a asset id or
+Takes a single argument. This can be an asset id or
 asset name.  If the asset can't be loaded, returns undef.
 Otherwise, returns the asset id.
 
@@ -278,7 +278,7 @@ sub Create {
         $RT::Logger->debug("'". ( $args{'Type'} ||'') . "' not a recognized type object." );
     }
 
-    #Can't create a asset without a type.
+    #Can't create an asset without a type.
     unless ( $TypeObj->Id ) {
         $RT::Logger->debug("$self No type given for asset creation.");
         return ( 0, 0, $self->loc('Could not create asset. Type not set') );
@@ -574,7 +574,7 @@ sub UpdateAsset {
         $changing_type = 1;
         $TypeObj->Load( $args{Type} );
 
-        #Can't create a asset without a type.
+        #Can't create an asset without a type.
         unless ( $TypeObj->Id ) {
             return ( 0, 0, $self->loc("Could not load asset type '[_1]'", $args{Type}) );
         }
@@ -1737,7 +1737,7 @@ sub _Value {
 
 =head2 CurrentUserHasRight
 
-  Takes the textual name of a Asset scoped right (from RT::ACE) and returns
+  Takes the textual name of an Asset scoped right (from RT::ACE) and returns
 1 if the user has that right. It returns 0 if the user doesn't have that right.
 
 =cut
@@ -1767,7 +1767,7 @@ sub CurrentUserCanSee {
 =head2 HasRight
 
  Takes a paramhash with the attributes 'Right' and 'Principal'
-  'Right' is a asset-scoped textual right from RT::ACE
+  'Right' is an asset-scoped textual right from RT::ACE
   'Principal' is an RT::User object
 
   Returns 1 if the principal has the right. Returns undef if not.
@@ -1977,7 +1977,7 @@ sub IPsAsString {
 
 =head2 LoadAssetRoleGroup  { Type => TYPE }
 
-Loads a asset group from the database.
+Loads an asset group from the database.
 
 Takes a param hash with 1 parameters:
 
