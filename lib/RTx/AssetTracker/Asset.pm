@@ -1640,6 +1640,21 @@ sub SetStatus {
 
 
 
+=head2 Delete
+
+Takes no arguments. Marks this ticket for garbage collection
+
+=cut
+
+sub Delete {
+    my $self = shift;
+    unless ( $self->TypeObj->Lifecycle->IsValid('deleted') ) {
+        return (0, $self->loc('Delete operation is disabled by lifecycle configuration') ); #loc
+    }
+    return ( $self->SetStatus('deleted') );
+}
+
+
 sub _Set {
     my $self = shift;
 
@@ -1811,6 +1826,22 @@ sub CustomFieldLookupType {
     "RTx::AssetTracker::Type-RTx::AssetTracker::Asset";
 }
 
+
+=head2 ACLEquivalenceObjects
+
+This method returns a list of objects for which a user's rights also apply
+to this ticket. Generally, this is only the ticket's queue, but some RT 
+extensions may make other objects available too.
+
+This method is called from L<RT::Principal/HasRight>.
+
+=cut
+
+sub ACLEquivalenceObjects {
+    my $self = shift;
+    return $self->TypeObj;
+
+}
 
 
 =head2 CustomFieldValues
