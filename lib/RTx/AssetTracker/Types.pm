@@ -72,11 +72,11 @@ use RTx::AssetTracker::Type;
 sub Table {'AT_Types'};
 
 
-# {{{ sub _Init
 sub _Init {
   my $self = shift;
   $self->{'table'} = "AT_Types";
   $self->{'primary_key'} = "id";
+  $self->{'with_disabled_column'} = 1;
 
   # By default, order by name
   $self->OrderBy( ALIAS => 'main',
@@ -85,72 +85,32 @@ sub _Init {
 
   return ($self->SUPER::_Init(@_));
 }
-# }}}
 
-# {{{ sub _DoSearch
-
-=head2 _DoSearch
-
-  A subclass of DBIx::SearchBuilder::_DoSearch that makes sure that _Disabled rows never get seen unless
-we're explicitly trying to see them.
-
-=cut
-
-sub _DoSearch {
-    my $self = shift;
-
-    #unless we really want to find disabled rows, make sure we\'re only finding enabled ones.
-    unless($self->{'find_disabled_rows'}) {
-        $self->LimitToEnabled();
-    }
-
-    return($self->SUPER::_DoSearch(@_));
-
-}
-
-# }}}
-
-
-# {{{ sub Limit
 sub Limit  {
   my $self = shift;
   my %args = ( ENTRYAGGREGATOR => 'AND',
                @_);
   $self->SUPER::Limit(%args);
 }
-# }}}
 
-# {{{ sub Next
 
-=head2 Next
+=head2 AddRecord
 
-Returns the next type that this user can see.
+Adds a record object to this collection if this user can see.
+This is used for filtering objects for both Next and ItemsArrayRef.
 
 =cut
 
-sub Next {
+sub AddRecord {
     my $self = shift;
+    my $Type = shift;
+    return unless $Type->CurrentUserHasRight('SeeType');
 
-
-    my $Type = $self->SUPER::Next();
-    if ((defined($Type)) and (ref($Type))) {
-
-        if ($Type->CurrentUserHasRight('SeeType')) {
-            return($Type);
-        }
-
-        #If the user doesn't have the right to show this type
-        else {
-            return($self->Next());
-        }
-    }
-    #if there never was any type
-    else {
-        return(undef);
-    }
-
+    push @{$self->{'items'}}, $Type;
+    $self->{'rows'}++;
 }
-# }}}
+
+
 
 
 =head2 NewItem
