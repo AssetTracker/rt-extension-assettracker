@@ -1941,11 +1941,11 @@ sub AddIP {
         return ( 0, $self->loc("Permission Denied") );
     }
 
-    if ( $self->Status eq 'retired') {
+    if ( lc $self->Status eq 'retired') {
         return ( 0, $self->loc("Retired assets cannot have IP addresses") );
     }
 
-    if ( $self->Status eq 'deleted') {
+    if ( lc $self->Status eq 'deleted') {
         return ( 0, $self->loc("Deleted assets cannot have IP addresses") );
     }
 
