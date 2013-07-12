@@ -73,7 +73,6 @@ use RTx::AssetTracker::Template;
 sub Table {'AT_Templates'};
 
 
-# {{{ sub _Init
 
 =head2 _Init
 
@@ -88,9 +87,7 @@ sub _Init {
     $self->{'primary_key'} = "id";
     return ($self->SUPER::_Init(@_));
 }
-# }}}
 
-# {{{ LimitToNotInAssetType
 
 =head2 LimitToNotInAssetType
 
@@ -101,15 +98,13 @@ aren't thatn asset type's templates.
 
 sub LimitToNotInAssetType {
     my $self = shift;
-    my $type_id = shift;
+    my $assettype_id = shift;
     $self->Limit(FIELD => 'AssetType',
-                 VALUE => "$type_id",
+                 VALUE => "$assettype_id",
                  OPERATOR => '!='
                 );
 }
-# }}}
 
-# {{{ LimitToGlobal
 
 =head2 LimitToGlobal
 
@@ -125,9 +120,7 @@ sub LimitToGlobal {
                  OPERATOR => '='
                 );
 }
-# }}}
 
-# {{{ LimitToAssetType
 
 =head2 LimitToAssetType
 
@@ -138,15 +131,13 @@ templates
 
 sub LimitToAssetType {
     my $self = shift;
-    my $type_id = shift;
+    my $assettype_id = shift;
     $self->Limit(FIELD => 'AssetType',
-                 VALUE => "$type_id",
+                 VALUE => "$assettype_id",
                  OPERATOR => '='
                 );
 }
-# }}}
 
-# {{{ sub Next 
 
 =head2 Next
 
@@ -162,9 +153,10 @@ sub Next {
     if ((defined($templ)) and (ref($templ))) {
         
         # If it's part of an asset type, and the user can read templates in
-        # thatn asset type, or the user can globally read templates, show it
+        # that asset type, or the user can globally read templates, show it
         if ($templ->AssetType && $templ->CurrentUserHasAssetTypeRight('ShowTemplate') or
-            $templ->CurrentUser->HasRight(Object => $RT::System, Right => 'ShowTemplate')) {
+            $templ->CurrentUser->HasRight(Object => $RT::System, Right => 'ShowTemplate') or
+            $templ->CurrentUser->HasRight(Object => $RT::System, Right => 'ShowGlobalTemplates')) {
 	    return($templ);
 	}
 	
@@ -179,10 +171,6 @@ sub Next {
     }	
     
 }
-# }}}
-
-1;
-
 
 
 =head2 NewItem

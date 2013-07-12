@@ -80,7 +80,6 @@ sub _Init {
   return ( $self->SUPER::_Init(@_));
 }
 
-
 sub LimitToType  {
   my $self = shift;
   my $type = shift;

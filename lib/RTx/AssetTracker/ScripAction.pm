@@ -76,7 +76,7 @@ sub Table {'AT_ScripActions'};
 
 use RTx::AssetTracker::Template;
 
-# {{{ sub _Accessible 
+
 sub _Accessible  {
     my $self = shift;
     my %Cols = ( Name  => 'read',
@@ -90,9 +90,7 @@ sub _Accessible  {
        );
     return($self->SUPER::_Accessible(@_, %Cols));
 }
-# }}}
 
-# {{{ sub Create 
 
 =head2 Create
 
@@ -106,17 +104,13 @@ sub Create  {
     #TODO check these args and do smart things.
     return($self->SUPER::Create(@_));
 }
-# }}}
 
-# {{{ sub Delete 
 sub Delete  {
     my $self = shift;
     
     return (0, "ScripAction->Delete not implemented");
 }
-# }}}
 
-# {{{ sub Load 
 
 =head2 Load IDENTIFIER
 
@@ -134,11 +128,12 @@ sub Load  {
 	return (0, $self->loc('Input error'));
     }	    
     
+    my ($ok, $msg);
     if ($identifier !~ /\D/) {
-	$self->SUPER::Load($identifier);
+	($ok, $msg) = $self->SUPER::Load($identifier);
     }
     else {
-	$self->LoadByCol('Name', $identifier);
+	($ok, $msg) = $self->LoadByCol('Name', $identifier);
 	
     }
 
@@ -148,11 +143,10 @@ sub Load  {
 	
 	$self->{'Template'} = $template;
     }
-    return ($self->Id, ($self->loc('[_1] ScripAction loaded', $self->Id)));
-}
-# }}}
 
-# {{{ sub LoadAction 
+    return ($ok, $msg);
+}
+
 
 =head2 LoadAction HASH
 
@@ -184,9 +178,7 @@ sub LoadAction  {
                                       TransactionObj => $args{'TransactionObj'},
 				    );
 }
-# }}}
 
-# {{{ sub TemplateObj
 
 =head2 TemplateObj
 
@@ -221,11 +213,9 @@ sub TemplateObj {
 
     return ( $self->{'TemplateObj'} );
 }
-# }}}
 
 # The following methods call the action object
 
-# {{{ sub Prepare 
 
 sub Prepare  {
     my $self = shift;
@@ -233,24 +223,19 @@ sub Prepare  {
     return ($self->Action->Prepare());
   
 }
-# }}}
 
-# {{{ sub Commit 
 sub Commit  {
     my $self = shift;
     return($self->Action->Commit());
     
     
 }
-# }}}
 
-# {{{ sub Describe 
 sub Describe  {
     my $self = shift;
     return ($self->Action->Describe());
     
 }
-# }}}
 
 =head2 Action
 
@@ -263,14 +248,12 @@ sub Action {
     return ($self->{'Action'});
 }
 
-# {{{ sub DESTROY
 sub DESTROY {
     my $self=shift;
     $self->{'_AssetObj'} = undef;
     $self->{'Action'} = undef;
     $self->{'TemplateObj'} = undef;
 }
-# }}}
 
 =head2 TODO
 
@@ -288,7 +271,7 @@ package RTx::AssetTracker::ScripAction;
 
 =head2 id
 
-Returns the current value of id. 
+Returns the current value of id.
 (In the database, id is stored as int(11).)
 
 
@@ -297,7 +280,7 @@ Returns the current value of id.
 
 =head2 Name
 
-Returns the current value of Name. 
+Returns the current value of Name.
 (In the database, Name is stored as varchar(200).)
 
 
@@ -305,7 +288,7 @@ Returns the current value of Name.
 =head2 SetName VALUE
 
 
-Set Name to VALUE. 
+Set Name to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Name will be stored as a varchar(200).)
 
@@ -315,7 +298,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Description
 
-Returns the current value of Description. 
+Returns the current value of Description.
 (In the database, Description is stored as varchar(255).)
 
 
@@ -323,7 +306,7 @@ Returns the current value of Description.
 =head2 SetDescription VALUE
 
 
-Set Description to VALUE. 
+Set Description to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Description will be stored as a varchar(255).)
 
@@ -333,7 +316,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 ExecModule
 
-Returns the current value of ExecModule. 
+Returns the current value of ExecModule.
 (In the database, ExecModule is stored as varchar(60).)
 
 
@@ -341,7 +324,7 @@ Returns the current value of ExecModule.
 =head2 SetExecModule VALUE
 
 
-Set ExecModule to VALUE. 
+Set ExecModule to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ExecModule will be stored as a varchar(60).)
 
@@ -351,17 +334,17 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Argument
 
-Returns the current value of Argument. 
-(In the database, Argument is stored as varchar(255).)
+Returns the current value of Argument.
+(In the database, Argument is stored as varbinary(255).)
 
 
 
 =head2 SetArgument VALUE
 
 
-Set Argument to VALUE. 
+Set Argument to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
-(In the database, Argument will be stored as a varchar(255).)
+(In the database, Argument will be stored as a varbinary(255).)
 
 
 =cut
@@ -369,7 +352,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Creator
 
-Returns the current value of Creator. 
+Returns the current value of Creator.
 (In the database, Creator is stored as int(11).)
 
 
@@ -378,7 +361,7 @@ Returns the current value of Creator.
 
 =head2 Created
 
-Returns the current value of Created. 
+Returns the current value of Created.
 (In the database, Created is stored as datetime.)
 
 
@@ -387,7 +370,7 @@ Returns the current value of Created.
 
 =head2 LastUpdatedBy
 
-Returns the current value of LastUpdatedBy. 
+Returns the current value of LastUpdatedBy.
 (In the database, LastUpdatedBy is stored as int(11).)
 
 
@@ -396,7 +379,7 @@ Returns the current value of LastUpdatedBy.
 
 =head2 LastUpdated
 
-Returns the current value of LastUpdated. 
+Returns the current value of LastUpdated.
 (In the database, LastUpdated is stored as datetime.)
 
 
@@ -406,24 +389,24 @@ Returns the current value of LastUpdated.
 
 sub _CoreAccessible {
     {
-     
+
         id =>
 		{read => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => ''},
-        Name => 
+        Name =>
 		{read => 1, write => 1, sql_type => 12, length => 200,  is_blob => 0,  is_numeric => 0,  type => 'varchar(200)', default => ''},
-        Description => 
+        Description =>
 		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
-        ExecModule => 
+        ExecModule =>
 		{read => 1, write => 1, sql_type => 12, length => 60,  is_blob => 0,  is_numeric => 0,  type => 'varchar(60)', default => ''},
-        Argument => 
-		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
-        Creator => 
+        Argument =>
+		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varbinary(255)', default => ''},
+        Creator =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Created => 
+        Created =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
-        LastUpdatedBy => 
+        LastUpdatedBy =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        LastUpdated => 
+        LastUpdated =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
 
  }

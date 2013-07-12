@@ -72,33 +72,30 @@ use RTx::AssetTracker::Scrip;
 sub Table {'AT_Scrips'};
 
 
-# {{{ sub LimitToAssetType 
-
 =head2 LimitToAssetType
 
-Takes a type id (numerical) as its only argument. Makes sure that 
-Scopes it pulls out apply to this type (or another that you've selected with
+Takes an asset type id (numerical) as its only argument. Makes sure that 
+Scopes it pulls out apply to this asset type (or another that you've selected with
 another call to this method
 
 =cut
 
 sub LimitToAssetType  {
    my $self = shift;
-  my $type = shift;
+  my $assettype = shift;
  
   $self->Limit(ENTRYAGGREGATOR => 'OR',
-		                 FIELD => 'AssetType',
-		                 VALUE => "$type") if defined $type;
+               FIELD => 'AssetType',
+               VALUE => "$assettype")
+      if defined $assettype;
   
 }
-# }}}
 
-# {{{ sub LimitToGlobal
 
 =head2 LimitToGlobal
 
 Makes sure that 
-Scopes it pulls out apply to all types (or another that you've selected with
+Scopes it pulls out apply to all asset types (or another that you've selected with
 another call to this method or LimitToAssetType
 
 =cut
@@ -112,7 +109,6 @@ sub LimitToGlobal  {
 		VALUE => 0);
   
 }
-# }}}
 
 # {{{ sub Next 
 
@@ -144,7 +140,6 @@ sub Next {
     }	
     
 }
-# }}}
 
 =head2 Apply
 
@@ -157,8 +152,8 @@ forcing the scrips to run in ascending alphanumerical order.)
 sub Apply {
     my $self = shift;
 
-    my %args = ( AssetObj      => undef,
-                 Asset         => undef,
+    my %args = ( AssetObj       => undef,
+                 Asset          => undef,
                  Transaction    => undef,
                  TransactionObj => undef,
                  Stage          => undef,
@@ -179,7 +174,6 @@ Commit all of this object's prepared scrips
 sub Commit {
     my $self = shift;
 
-    
     foreach my $scrip (@{$self->Prepared}) {
         $RT::Logger->debug(
             "Committing scrip #". $scrip->id
@@ -187,9 +181,10 @@ sub Commit {
             ." of asset #". $self->{'AssetObj'}->id
         );
 
-        $scrip->Commit( AssetObj      => $self->{'AssetObj'},
+        $scrip->Commit( AssetObj       => $self->{'AssetObj'},
                         TransactionObj => $self->{'TransactionObj'} );
     }
+
 }
 
 
@@ -202,8 +197,8 @@ in order of preparation, not execution
 
 sub Prepare { 
     my $self = shift;
-    my %args = ( AssetObj      => undef,
-                 Asset         => undef,
+    my %args = ( AssetObj       => undef,
+                 Asset          => undef,
                  Transaction    => undef,
                  TransactionObj => undef,
                  Stage          => undef,
@@ -211,8 +206,8 @@ sub Prepare {
                  @_ );
 
     #We're really going to need a non-acled asset for the scrips to work
-    $self->_SetupSourceObjects( AssetObj      => $args{'AssetObj'},
-                                Asset         => $args{'Asset'},
+    $self->_SetupSourceObjects( AssetObj       => $args{'AssetObj'},
+                                Asset          => $args{'Asset'},
                                 TransactionObj => $args{'TransactionObj'},
                                 Transaction    => $args{'Transaction'} );
 
@@ -224,7 +219,7 @@ sub Prepare {
     while ( my $scrip = $self->Next() ) {
 
           unless ( $scrip->IsApplicable(
-                                     AssetObj      => $self->{'AssetObj'},
+                                     AssetObj       => $self->{'AssetObj'},
                                      TransactionObj => $self->{'TransactionObj'}
                    ) ) {
                    $RT::Logger->debug("Skipping Scrip #".$scrip->Id." because it isn't applicable");
@@ -232,7 +227,7 @@ sub Prepare {
                }
 
         #If it's applicable, prepare and commit it
-          unless ( $scrip->Prepare( AssetObj      => $self->{'AssetObj'},
+          unless ( $scrip->Prepare( AssetObj       => $self->{'AssetObj'},
                                     TransactionObj => $self->{'TransactionObj'}
                    ) ) {
                    $RT::Logger->debug("Skipping Scrip #".$scrip->Id." because it didn't Prepare");
@@ -258,9 +253,6 @@ sub Prepared {
     return ($self->{'prepared_scrips'} || []);
 }
 
-
-# {{{ sup _SetupSourceObjects
-
 =head2  _SetupSourceObjects { AssetObj , Asset, Transaction, TransactionObj }
 
 Setup an asset and transaction for this Scrip collection to work with as it runs through the 
@@ -282,11 +274,22 @@ sub _SetupSourceObjects {
             @_ );
 
 
-
     if ( $args{'AssetObj'} ) {
-        # clone the asset here as we need to change CurrentUser
-        $self->{'AssetObj'} = bless { %{$args{'AssetObj'} } }, 'RTx::AssetTracker::Asset';
-        $self->{'AssetObj'}->CurrentUser( $self->CurrentUser );
+        # This loads a clean copy of the Asset object to ensure that we
+        # don't accidentally escalate the privileges of the passed in
+        # asset (this function can be invoked from the UI).
+        # We copy the TransactionBatch transactions so that Scrips
+        # running against the new Asset will have access to them. We
+        # use RanTransactionBatch to guard against running
+        # TransactionBatch Scrips more than once.
+        $self->{'AssetObj'} = RTx::AssetTracker::Asset->new( $self->CurrentUser );
+        $self->{'AssetObj'}->Load( $args{'AssetObj'}->Id );
+        if ( $args{'AssetObj'}->TransactionBatch ) {
+            # try to ensure that we won't infinite loop if something dies, triggering DESTROY while 
+            # we have the _TransactionBatch objects;
+            $self->{'AssetObj'}->RanTransactionBatch(1);
+            $self->{'AssetObj'}->{'_TransactionBatch'} = $args{'AssetObj'}->{'_TransactionBatch'};
+        }
     }
     else {
         $self->{'AssetObj'} = RTx::AssetTracker::Asset->new( $self->CurrentUser );
@@ -304,9 +307,7 @@ sub _SetupSourceObjects {
     }
 } 
 
-# }}}
 
-# {{{ sub _FindScrips;
 
 =head2 _FindScrips
 
@@ -377,7 +378,6 @@ sub _FindScrips {
     );
 }
 
-# }}}
 
 
 

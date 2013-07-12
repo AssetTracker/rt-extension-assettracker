@@ -46,7 +46,7 @@
 #
 # END BPS TAGGED BLOCK }}}
 
-# Portions Copyright 2000 Tobias Brox <tobix@cpan.org> 
+# Portions Copyright 2000 Tobias Brox <tobix@cpan.org>
 
 =head1 NAME
 
@@ -84,9 +84,9 @@ sub _Accessible {
         id            => 'read',
         Name          => 'read/write',
         Description   => 'read/write',
-        Type          => 'read/write',    #Type is one of Action or Message
+        Type          => 'read/write',    #Type is one of Perl or Simple
         Content       => 'read/write',
-        AssetType         => 'read/write',
+        AssetType     => 'read/write',
         Creator       => 'read/auto',
         Created       => 'read/auto',
         LastUpdatedBy => 'read/auto',
@@ -97,10 +97,34 @@ sub _Accessible {
 
 sub _Set {
     my $self = shift;
-    
+    my %args = (
+        Field => undef,
+        Value => undef,
+        @_,
+    );
+
     unless ( $self->CurrentUserHasAssetTypeRight('ModifyTemplate') ) {
         return ( 0, $self->loc('Permission Denied') );
     }
+
+    if (exists $args{Value}) {
+        if ($args{Field} eq 'AssetType') {
+            if ($args{Value}) {
+                # moving to another asset type
+                my $assettype = RTx::AssetTracker::Type->new( $self->CurrentUser );
+                $assettype->Load($args{Value});
+                unless ($assettype->Id and $assettype->CurrentUserHasRight('ModifyTemplate')) {
+                    return ( 0, $self->loc('Permission Denied') );
+                }
+            } else {
+                # moving to global
+                unless ($self->CurrentUser->HasRight( Object => RT->System, Right => 'ModifyTemplate' )) {
+                    return ( 0, $self->loc('Permission Denied') );
+                }
+            }
+        }
+    }
+
     return $self->SUPER::_Set( @_ );
 }
 
@@ -114,19 +138,19 @@ if the user passes an ACL check, otherwise returns undef.
 sub _Value {
     my $self  = shift;
 
-    unless ( $self->CurrentUserHasAssetTypeRight('ShowTemplate') ) {
+    unless ( $self->CurrentUserCanRead() ) {
         return undef;
     }
     return $self->__Value( @_ );
 
 }
 
-=head2 Load <identifer>
+=head2 Load <identifier>
 
 Load a template, either by number or by name.
 
 Note that loading templates by name using this method B<is
-ambiguous>. Several queues may have template with the same name
+ambiguous>. Several asset types may have template with the same name
 and as well global template with the same name may exist.
 Use L</LoadGlobalTemplate> and/or L<LoadAssetTypeTemplate> to get
 precise result.
@@ -162,7 +186,7 @@ sub LoadGlobalTemplate {
 Loads the AssetType template named NAME for Asset Type TYPE.
 
 Note that this method doesn't load a global template with the same name
-if template in the queue doesn't exist. The following code can be used:
+if template in the asset type doesn't exist. The following code can be used:
 
     $template->LoadAssetTypeTemplate( AssetType => $type_id, Name => $template_name );
     unless ( $template->id ) {
@@ -172,7 +196,7 @@ if template in the queue doesn't exist. The following code can be used:
             ...
         }
     }
-    # ok, template either type's or global
+    # ok, template either asset type's or global
     ...
 
 =cut
@@ -194,7 +218,7 @@ sub LoadAssetTypeTemplate {
 Takes a paramhash of Content, AssetType, Name and Description.
 Name should be a unique string identifying this Template.
 Description and Content should be the template's title and content.
-AssetType should be 0 for a global template and the queue # for a queue-specific 
+AssetType should be 0 for a global template and the asset type # for an asset types-specific
 template.
 
 Returns the Template's id # if the create was successful. Returns undef for
@@ -206,12 +230,16 @@ sub Create {
     my $self = shift;
     my %args = (
         Content     => undef,
-        AssetType       => 0,
+        AssetType   => 0,
         Description => '[no description]',
-        Type        => 'Action', #By default, template are 'Action' templates
+        Type        => 'Perl',
         Name        => undef,
         @_
     );
+
+    if ( $args{Type} eq 'Perl' && !$self->CurrentUser->HasRight(Right => 'ExecuteCode', Object => $RT::System) ) {
+        return ( undef, $self->loc('Permission Denied') );
+    }
 
     unless ( $args{'AssetType'} ) {
         unless ( $self->CurrentUser->HasRight(Right =>'ModifyTemplate', Object => $RT::System) ) {
@@ -220,20 +248,21 @@ sub Create {
         $args{'AssetType'} = 0;
     }
     else {
-        my $TypeObj = new RTx::AssetTracker::Type( $self->CurrentUser );
-        $TypeObj->Load( $args{'AssetType'} ) || return ( undef, $self->loc('Invalid asset type') );
-    
-        unless ( $TypeObj->CurrentUserHasRight('ModifyTemplate') ) {
+        my $AssetTypeObj = RTx::AssetTracker::Type->new( $self->CurrentUser );
+        $AssetTypeObj->Load( $args{'AssetType'} ) || return ( undef, $self->loc('Invalid asset type') );
+
+        unless ( $AssetTypeObj->CurrentUserHasRight('ModifyTemplate') ) {
             return ( undef, $self->loc('Permission Denied') );
         }
-        $args{'AssetType'} = $TypeObj->Id;
+        $args{'AssetType'} = $AssetTypeObj->Id;
     }
 
     my $result = $self->SUPER::Create(
         Content     => $args{'Content'},
-        AssetType       => $args{'AssetType'},
+        AssetType   => $args{'AssetType'},
         Description => $args{'Description'},
         Name        => $args{'Name'},
+        Type        => $args{'Type'},
     );
 
     return ($result);
@@ -307,7 +336,7 @@ sub Parse {
     my ($rv, $msg);
 
 
-    if ($self->Content =~ m{^Content-Type:\s+text/html\b}im) {
+    if (not $self->IsEmpty and $self->Content =~ m{^Content-Type:\s+text/html\b}im) {
         local $RT::Transaction::PreferredContentType = 'text/html';
         ($rv, $msg) = $self->_Parse(@_);
     }
@@ -362,6 +391,7 @@ sub _Parse {
 
     # Unfold all headers
     $self->{'MIMEObj'}->head->unfold;
+    $self->{'MIMEObj'}->head->modify(1);
 
     return ( 1, $self->loc("Template parsed") );
 
@@ -373,12 +403,12 @@ sub _ParseContent {
     my $self = shift;
     my %args = (
         Argument       => undef,
-        AssetObj      => undef,
+        AssetObj       => undef,
         TransactionObj => undef,
         @_
     );
 
-    unless ( $self->CurrentUserHasAssetTypeRight('ShowTemplate') ) {
+    unless ( $self->CurrentUserCanRead() ) {
         return (undef, $self->loc("Permission Denied"));
     }
 
@@ -390,10 +420,6 @@ sub _ParseContent {
     # We need to untaint the content of the template, since we'll be working
     # with it
     $content =~ s/^(.*)$/$1/;
-    my $template = Text::Template->new(
-        TYPE   => 'STRING',
-        SOURCE => $content
-    );
 
     $args{'Asset'} = delete $args{'AssetObj'} if $args{'AssetObj'};
     $args{'Transaction'} = delete $args{'TransactionObj'} if $args{'TransactionObj'};
@@ -407,28 +433,149 @@ sub _ParseContent {
         $args{'loc'} = sub { $self->loc(@_) };
     }
 
-    foreach my $key ( keys %args ) {
+    if ($self->Type eq 'Perl') {
+        return $self->_ParseContentPerl(
+            Content      => $content,
+            TemplateArgs => \%args,
+        );
+    }
+    else {
+        return $self->_ParseContentSimple(
+            Content      => $content,
+            TemplateArgs => \%args,
+        );
+    }
+}
+
+# uses Text::Template for Perl templates
+sub _ParseContentPerl {
+    my $self = shift;
+    my %args = (
+        Content      => undef,
+        TemplateArgs => {},
+        @_,
+    );
+
+    foreach my $key ( keys %{ $args{TemplateArgs} } ) {
+        my $val = $args{TemplateArgs}{ $key };
         next unless ref $args{ $key };
         next if ref $args{ $key } =~ /^(ARRAY|HASH|SCALAR|CODE)$/;
-        my $val = $args{ $key };
-        $args{ $key } = \$val;
+        $args{TemplateArgs}{ $key } = \$val;
     }
 
-
+    my $template = Text::Template->new(
+        TYPE   => 'STRING',
+        SOURCE => $args{Content},
+    );
     my $is_broken = 0;
     my $retval = $template->fill_in(
-        HASH => \%args,
+        HASH => $args{TemplateArgs},
         BROKEN => sub {
             my (%args) = @_;
             $RT::Logger->error("Template parsing error: $args{error}")
                 unless $args{error} =~ /^Died at /; # ignore intentional die()
             $is_broken++;
             return undef;
-        }, 
+        },
     );
     return ( undef, $self->loc('Template parsing error') ) if $is_broken;
 
     return ($retval);
+}
+
+sub _ParseContentSimple {
+    my $self = shift;
+    my %args = (
+        Content      => undef,
+        TemplateArgs => {},
+        @_,
+    );
+
+    $self->_MassageSimpleTemplateArgs(%args);
+
+    my $template = Text::Template->new(
+        TYPE   => 'STRING',
+        SOURCE => $args{Content},
+    );
+    my ($ok) = $template->compile;
+    return ( undef, $self->loc('Template parsing error: [_1]', $Text::Template::ERROR) ) if !$ok;
+
+    # copied from Text::Template::fill_in and refactored to be simple variable
+    # interpolation
+    my $fi_r = '';
+    foreach my $fi_item (@{$template->{SOURCE}}) {
+        my ($fi_type, $fi_text, $fi_lineno) = @$fi_item;
+        if ($fi_type eq 'TEXT') {
+            $fi_r .= $fi_text;
+        } elsif ($fi_type eq 'PROG') {
+            my $fi_res;
+            my $original_fi_text = $fi_text;
+
+            # strip surrounding whitespace for simpler regexes
+            $fi_text =~ s/^\s+//;
+            $fi_text =~ s/\s+$//;
+
+            # if the codeblock is a simple $Variable lookup, use the value from
+            # the TemplateArgs hash...
+            if (my ($var) = $fi_text =~ /^\$(\w+)$/) {
+                if (exists $args{TemplateArgs}{$var}) {
+                    $fi_res = $args{TemplateArgs}{$var};
+                }
+            }
+
+            # if there was no substitution then just reinsert the codeblock
+            if (!defined $fi_res) {
+                $fi_res = "{$original_fi_text}";
+            }
+
+            # If the value of the filled-in text really was undef,
+            # change it to an explicit empty string to avoid undefined
+            # value warnings later.
+            $fi_res = '' unless defined $fi_res;
+
+            $fi_r .= $fi_res;
+        }
+    }
+
+    return $fi_r;
+}
+
+sub _MassageSimpleTemplateArgs {
+    my $self = shift;
+    my %args = (
+        TemplateArgs => {},
+        @_,
+    );
+
+    my $template_args = $args{TemplateArgs};
+
+    if (my $asset = $template_args->{Asset}) {
+        for my $column (qw/Id Name Description Status/) {
+            $template_args->{"Asset".$column} = $asset->$column;
+        }
+        for my $role ( RTx::AssetTracker::Type->RoleGroupTypes ) {
+            my $roleobj = $role.'Obj';
+            $template_args->{"Asset".$role} = $asset->$roleobj->MemberEmailAddressesAsString;
+        }
+        $template_args->{"AssetTypeId"}   = $asset->Type;
+        $template_args->{"AssetTypeName"} = $asset->TypeObj->Name;
+
+        my $cfs = $asset->CustomFields;
+        while (my $cf = $cfs->Next) {
+            $template_args->{"AssetCF" . $cf->Name} = $asset->CustomFieldValuesAsString($cf->Name);
+        }
+    }
+
+    if (my $txn = $template_args->{Transaction}) {
+        for my $column (qw/Id TimeTaken Type Field OldValue NewValue Data Content Subject Description BriefDescription/) {
+            $template_args->{"Transaction".$column} = $txn->$column;
+        }
+
+        my $cfs = $txn->CustomFields;
+        while (my $cf = $cfs->Next) {
+            $template_args->{"TransactionCF" . $cf->Name} = $txn->CustomFieldValuesAsString($cf->Name);
+        }
+    }
 }
 
 sub _DowngradeFromHTML {
@@ -466,7 +613,7 @@ sub _DowngradeFromHTML {
 
 =head2 CurrentUserHasAssetTypeRight
 
-Helper function to call the template's queue's CurrentUserHasAssetTypeRight with the passed in args.
+Helper function to call the template's asset type's CurrentUserHasAssetTypeRight with the passed in args.
 
 =cut
 
@@ -475,6 +622,58 @@ sub CurrentUserHasAssetTypeRight {
     return ( $self->AssetTypeObj->CurrentUserHasRight(@_) );
 }
 
+=head2 SetType
+
+If setting Type to Perl, require the ExecuteCode right.
+
+=cut
+
+sub SetType {
+    my $self    = shift;
+    my $NewType = shift;
+
+    if ($NewType eq 'Perl' && !$self->CurrentUser->HasRight(Right => 'ExecuteCode', Object => $RT::System)) {
+        return ( undef, $self->loc('Permission Denied') );
+    }
+
+    return $self->_Set( Field => 'Type', Value => $NewType );
+}
+
+=head2 SetContent
+
+If changing content and the type is Perl, require the ExecuteCode right.
+
+=cut
+
+sub SetContent {
+    my $self       = shift;
+    my $NewContent = shift;
+
+    if ($self->Type eq 'Perl' && !$self->CurrentUser->HasRight(Right => 'ExecuteCode', Object => $RT::System)) {
+        return ( undef, $self->loc('Permission Denied') );
+    }
+
+    return $self->_Set( Field => 'Content', Value => $NewContent );
+}
+
+sub _UpdateAttributes {
+    my $self = shift;
+    my %args = (
+        NewValues => {},
+        @_,
+    );
+
+    my $type = $args{NewValues}{Type} || $self->Type;
+
+    # forbid updating content when the (possibly new) value of Type is Perl
+    if ($type eq 'Perl' && exists $args{NewValues}{Content}) {
+        if (!$self->CurrentUser->HasRight(Right => 'ExecuteCode', Object => $RT::System)) {
+            return $self->loc('Permission Denied');
+        }
+    }
+
+    return $self->SUPER::_UpdateAttributes(%args);
+}
 
 =head2 CompileCheck
 
@@ -525,10 +724,26 @@ sub CompileCheck {
     return (1, $self->loc("Template compiles"));
 }
 
+=head2 CurrentUserCanRead
+
+=cut
+
+sub CurrentUserCanRead {
+    my $self =shift;
+
+    return 1 if $self->CurrentUserHasAssetTypeRight('ShowTemplate');
+
+    return $self->CurrentUser->HasRight( Right =>'ShowGlobalTemplates', Object => $RT::System )
+        if !$self->AssetTypeObj->Id;
+
+    return;
+}
+
+
 
 =head2 id
 
-Returns the current value of id. 
+Returns the current value of id.
 (In the database, id is stored as int(11).)
 
 
@@ -537,7 +752,7 @@ Returns the current value of id.
 
 =head2 AssetType
 
-Returns the current value of AssetType. 
+Returns the current value of AssetType.
 (In the database, AssetType is stored as int(11).)
 
 
@@ -545,7 +760,7 @@ Returns the current value of AssetType.
 =head2 SetAssetType VALUE
 
 
-Set AssetType to VALUE. 
+Set AssetType to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, AssetType will be stored as a int(11).)
 
@@ -569,7 +784,7 @@ sub AssetTypeObj {
 
 =head2 Name
 
-Returns the current value of Name. 
+Returns the current value of Name.
 (In the database, Name is stored as varchar(200).)
 
 
@@ -577,7 +792,7 @@ Returns the current value of Name.
 =head2 SetName VALUE
 
 
-Set Name to VALUE. 
+Set Name to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Name will be stored as a varchar(200).)
 
@@ -587,7 +802,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Description
 
-Returns the current value of Description. 
+Returns the current value of Description.
 (In the database, Description is stored as varchar(255).)
 
 
@@ -595,7 +810,7 @@ Returns the current value of Description.
 =head2 SetDescription VALUE
 
 
-Set Description to VALUE. 
+Set Description to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Description will be stored as a varchar(255).)
 
@@ -605,7 +820,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Type
 
-Returns the current value of Type. 
+Returns the current value of Type.
 (In the database, Type is stored as varchar(16).)
 
 
@@ -613,7 +828,7 @@ Returns the current value of Type.
 =head2 SetType VALUE
 
 
-Set Type to VALUE. 
+Set Type to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Type will be stored as a varchar(16).)
 
@@ -623,7 +838,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Language
 
-Returns the current value of Language. 
+Returns the current value of Language.
 (In the database, Language is stored as varchar(16).)
 
 
@@ -631,7 +846,7 @@ Returns the current value of Language.
 =head2 SetLanguage VALUE
 
 
-Set Language to VALUE. 
+Set Language to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Language will be stored as a varchar(16).)
 
@@ -641,7 +856,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 TranslationOf
 
-Returns the current value of TranslationOf. 
+Returns the current value of TranslationOf.
 (In the database, TranslationOf is stored as int(11).)
 
 
@@ -649,7 +864,7 @@ Returns the current value of TranslationOf.
 =head2 SetTranslationOf VALUE
 
 
-Set TranslationOf to VALUE. 
+Set TranslationOf to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, TranslationOf will be stored as a int(11).)
 
@@ -659,17 +874,17 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Content
 
-Returns the current value of Content. 
-(In the database, Content is stored as blob.)
+Returns the current value of Content.
+(In the database, Content is stored as text.)
 
 
 
 =head2 SetContent VALUE
 
 
-Set Content to VALUE. 
+Set Content to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
-(In the database, Content will be stored as a blob.)
+(In the database, Content will be stored as a text.)
 
 
 =cut
@@ -677,7 +892,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 LastUpdated
 
-Returns the current value of LastUpdated. 
+Returns the current value of LastUpdated.
 (In the database, LastUpdated is stored as datetime.)
 
 
@@ -686,7 +901,7 @@ Returns the current value of LastUpdated.
 
 =head2 LastUpdatedBy
 
-Returns the current value of LastUpdatedBy. 
+Returns the current value of LastUpdatedBy.
 (In the database, LastUpdatedBy is stored as int(11).)
 
 
@@ -695,7 +910,7 @@ Returns the current value of LastUpdatedBy.
 
 =head2 Creator
 
-Returns the current value of Creator. 
+Returns the current value of Creator.
 (In the database, Creator is stored as int(11).)
 
 
@@ -704,7 +919,7 @@ Returns the current value of Creator.
 
 =head2 Created
 
-Returns the current value of Created. 
+Returns the current value of Created.
 (In the database, Created is stored as datetime.)
 
 
@@ -714,30 +929,30 @@ Returns the current value of Created.
 
 sub _CoreAccessible {
     {
-     
+
         id =>
 		{read => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => ''},
-        AssetType => 
+        AssetType =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Name => 
+        Name =>
 		{read => 1, write => 1, sql_type => 12, length => 200,  is_blob => 0,  is_numeric => 0,  type => 'varchar(200)', default => ''},
-        Description => 
+        Description =>
 		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
-        Type => 
+        Type =>
 		{read => 1, write => 1, sql_type => 12, length => 16,  is_blob => 0,  is_numeric => 0,  type => 'varchar(16)', default => ''},
-        Language => 
+        Language =>
 		{read => 1, write => 1, sql_type => 12, length => 16,  is_blob => 0,  is_numeric => 0,  type => 'varchar(16)', default => ''},
-        TranslationOf => 
+        TranslationOf =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Content => 
-		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'blob', default => ''},
-        LastUpdated => 
+        Content =>
+		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
+        LastUpdated =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
-        LastUpdatedBy => 
+        LastUpdatedBy =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Creator => 
+        Creator =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Created => 
+        Created =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
 
  }

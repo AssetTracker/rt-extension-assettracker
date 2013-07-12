@@ -82,7 +82,7 @@ use RTx::AssetTracker::ScripAction;
 
 Creates a new entry in the Scrips table. Takes a paramhash with:
 
-        AssetType                  => 0,
+        AssetType              => 0,
         Description            => undef,
         Template               => undef,
         ScripAction            => undef,
@@ -102,7 +102,7 @@ retval is 0 for failure or scrip id.  msg is a textual description of what happe
 sub Create {
     my $self = shift;
     my %args = (
-        AssetType                  => 0,
+        AssetType              => 0,
         Template               => 0,                     # name or id
         ScripAction            => 0,                     # name or id
         ScripCondition         => 0,                     # name or id
@@ -113,6 +113,14 @@ sub Create {
         CustomIsApplicableCode => undef,
         @_
     );
+
+    if ($args{CustomPrepareCode} || $args{CustomCommitCode} || $args{CustomIsApplicableCode}) {
+        unless ( $self->CurrentUser->HasRight( Object => $RT::System,
+                                               Right  => 'ExecuteCode' ) )
+        {
+            return ( 0, $self->loc('Permission Denied') );
+        }
+    }
 
     unless ( $args{'AssetType'} ) {
         unless ( $self->CurrentUser->HasRight( Object => $RT::System,
@@ -161,7 +169,7 @@ sub Create {
         unless $condition->Id;
 
     my ( $id, $msg ) = $self->SUPER::Create(
-        AssetType                  => $args{'AssetType'},
+        AssetType              => $args{'AssetType'},
         Template               => $template->Id,
         ScripCondition         => $condition->id,
         Stage                  => $args{'Stage'},
@@ -179,9 +187,7 @@ sub Create {
     }
 }
 
-# }}}
 
-# {{{ sub Delete
 
 =head2 Delete
 
@@ -199,13 +205,11 @@ sub Delete {
     return ( $self->SUPER::Delete(@_) );
 }
 
-# }}}
 
-# {{{ sub AssetTypeObj
 
 =head2 AssetTypeObj
 
-Retuns an RTx::AssetTracker::Type object with this Scrip\'s asset type
+Retuns an RTx::AssetTracker::Type object with this Scrip's asset type
 
 =cut
 
@@ -220,13 +224,11 @@ sub AssetTypeObj {
     return ( $self->{'AssetTypeObj'} );
 }
 
-# }}}
 
-# {{{ sub ActionObj
 
 =head2 ActionObj
 
-Retuns an RT::Action object with this Scrip\'s Action
+Retuns an RT::Action object with this Scrip's Action
 
 =cut
 
@@ -245,9 +247,7 @@ sub ActionObj {
     return ( $self->{'ScripActionObj'} );
 }
 
-# }}}
 
-# {{{ sub ConditionObj
 
 =head2 ConditionObj
 
@@ -263,7 +263,6 @@ sub ConditionObj {
     return $res;
 }
 
-# }}}
 
 =head2 LoadModules
 
@@ -278,11 +277,10 @@ sub LoadModules {
     $self->ActionObj->LoadAction;
 }
 
-# {{{ sub TemplateObj
 
 =head2 TemplateObj
 
-Retuns an RTx::AssetTracker::Template object with this Scrip\'s Template
+Retuns an RTx::AssetTracker::Template object with this Scrip's Template
 
 =cut
 
@@ -297,11 +295,8 @@ sub TemplateObj {
     return ( $self->{'TemplateObj'} );
 }
 
-# }}}
 
-# {{{ Dealing with this instance of a scrip
 
-# {{{ sub Apply
 
 =head2 Apply { AssetObj => undef, TransactionObj => undef}
 
@@ -322,13 +317,13 @@ should be loaded by the SuperUser role
 
 sub Apply {
     my $self = shift;
-    my %args = ( AssetObj      => undef,
+    my %args = ( AssetObj       => undef,
                  TransactionObj => undef,
                  @_ );
 
     $RT::Logger->debug("Now applying scrip ".$self->Id . " for transaction ".$args{'TransactionObj'}->id);
 
-    my $ApplicableTransactionObj = $self->IsApplicable( AssetObj      => $args{'AssetObj'},
+    my $ApplicableTransactionObj = $self->IsApplicable( AssetObj       => $args{'AssetObj'},
                                                         TransactionObj => $args{'TransactionObj'} );
     unless ( $ApplicableTransactionObj ) {
         return undef;
@@ -340,7 +335,7 @@ sub Apply {
 
     #If it's applicable, prepare and commit it
     $RT::Logger->debug("Now preparing scrip ".$self->Id . " for transaction ".$ApplicableTransactionObj->id);
-    unless ( $self->Prepare( AssetObj      => $args{'AssetObj'},
+    unless ( $self->Prepare( AssetObj       => $args{'AssetObj'},
                              TransactionObj => $ApplicableTransactionObj )
       ) {
         return undef;
@@ -358,13 +353,11 @@ sub Apply {
 
 }
 
-# }}}
 
-# {{{ sub IsApplicable
 
 =head2 IsApplicable
 
-Calls the  Condition object\'s IsApplicable method
+Calls the  Condition object's IsApplicable method
 
 Upon success, returns the applicable Transaction object.
 Otherwise, undef is returned.
@@ -380,7 +373,7 @@ that is applicable.
 
 sub IsApplicable {
     my $self = shift;
-    my %args = ( AssetObj      => undef,
+    my %args = ( AssetObj       => undef,
                  TransactionObj => undef,
                  @_ );
 
@@ -409,7 +402,7 @@ sub IsApplicable {
 	    # Load the scrip's Condition object
 	    $ConditionObj->LoadCondition(
 		ScripObj       => $self,
-		AssetObj      => $args{'AssetObj'},
+		AssetObj       => $args{'AssetObj'},
 		TransactionObj => $TransactionObj,
 	    );
 
@@ -430,9 +423,7 @@ sub IsApplicable {
 
 }
 
-# }}}
 
-# {{{ SUb Prepare
 
 =head2 Prepare
 
@@ -442,14 +433,14 @@ Calls the action object's prepare method
 
 sub Prepare {
     my $self = shift;
-    my %args = ( AssetObj      => undef,
+    my %args = ( AssetObj       => undef,
                  TransactionObj => undef,
                  @_ );
 
     my $return;
     eval {
         $self->ActionObj->LoadAction( ScripObj       => $self,
-                                      AssetObj      => $args{'AssetObj'},
+                                      AssetObj       => $args{'AssetObj'},
                                       TransactionObj => $args{'TransactionObj'},
         );
 
@@ -464,9 +455,7 @@ sub Prepare {
         return ($return);
 }
 
-# }}}
 
-# {{{ sub Commit
 
 =head2 Commit
 
@@ -476,7 +465,7 @@ Calls the action object's commit method
 
 sub Commit {
     my $self = shift;
-    my %args = ( AssetObj      => undef,
+    my %args = ( AssetObj       => undef,
                  TransactionObj => undef,
                  @_ );
 
@@ -500,29 +489,61 @@ sub Commit {
     return ($return);
 }
 
-# }}}
 
-# }}}
 
-# {{{ ACL related methods
 
-# {{{ sub _Set
 
 # does an acl check and then passes off the call
 sub _Set {
     my $self = shift;
+    my %args = (
+        Field => undef,
+        Value => undef,
+        @_,
+    );
 
     unless ( $self->CurrentUserHasRight('ModifyScrips') ) {
         $RT::Logger->debug(
                  "CurrentUser can't modify Scrips for " . $self->AssetType . "\n" );
         return ( 0, $self->loc('Permission Denied') );
     }
-    return $self->__Set(@_);
+
+
+    if (exists $args{Value}) {
+        if ($args{Field} eq 'CustomIsApplicableCode' || $args{Field} eq 'CustomPrepareCode' || $args{Field} eq 'CustomCommitCode') {
+            unless ( $self->CurrentUser->HasRight( Object => $RT::System,
+                                                   Right  => 'ExecuteCode' ) ) {
+                return ( 0, $self->loc('Permission Denied') );
+            }
+        }
+        elsif ($args{Field} eq 'AssetType') {
+            if ($args{Value}) {
+                # moving to another asset type
+                my $assettype = RTx::AssetTracker::Type->new( $self->CurrentUser );
+                $assettype->Load($args{Value});
+                unless ($assettype->Id and $assettype->CurrentUserHasRight('ModifyScrips')) {
+                    return ( 0, $self->loc('Permission Denied') );
+                }
+            } else {
+                # moving to global
+                unless ($self->CurrentUser->HasRight( Object => RT->System, Right => 'ModifyScrips' )) {
+                    return ( 0, $self->loc('Permission Denied') );
+                }
+            }
+        }
+        elsif ($args{Field} eq 'Template') {
+            my $template = RT::Template->new( $self->CurrentUser );
+            $template->Load($args{Value});
+            unless ($template->Id and $template->CurrentUserCanRead) {
+                return ( 0, $self->loc('Permission Denied') );
+            }
+        }
+    }
+
+    return $self->SUPER::_Set(@_);
 }
 
-# }}}
 
-# {{{ sub _Value
 # does an acl check and then passes off the call
 sub _Value {
     my $self = shift;
@@ -537,9 +558,7 @@ sub _Value {
     return $self->__Value(@_);
 }
 
-# }}}
 
-# {{{ sub CurrentUserHasRight
 
 =head2 CurrentUserHasRight
 
@@ -556,9 +575,7 @@ sub CurrentUserHasRight {
 
 }
 
-# }}}
 
-# {{{ sub HasRight
 
 =head2 HasRight
 
@@ -588,9 +605,6 @@ sub HasRight {
     }
 }
 
-# }}}
-
-# }}}
 
 
 =head2 CompileCheck
@@ -686,7 +700,7 @@ sub SetTemplate {
 
 =head2 id
 
-Returns the current value of id. 
+Returns the current value of id.
 (In the database, id is stored as int(11).)
 
 
@@ -695,7 +709,7 @@ Returns the current value of id.
 
 =head2 Description
 
-Returns the current value of Description. 
+Returns the current value of Description.
 (In the database, Description is stored as varchar(255).)
 
 
@@ -703,7 +717,7 @@ Returns the current value of Description.
 =head2 SetDescription VALUE
 
 
-Set Description to VALUE. 
+Set Description to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Description will be stored as a varchar(255).)
 
@@ -713,7 +727,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 ScripCondition
 
-Returns the current value of ScripCondition. 
+Returns the current value of ScripCondition.
 (In the database, ScripCondition is stored as int(11).)
 
 
@@ -721,7 +735,7 @@ Returns the current value of ScripCondition.
 =head2 SetScripCondition VALUE
 
 
-Set ScripCondition to VALUE. 
+Set ScripCondition to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ScripCondition will be stored as a int(11).)
 
@@ -745,7 +759,7 @@ sub ScripConditionObj {
 
 =head2 ScripAction
 
-Returns the current value of ScripAction. 
+Returns the current value of ScripAction.
 (In the database, ScripAction is stored as int(11).)
 
 
@@ -753,7 +767,7 @@ Returns the current value of ScripAction.
 =head2 SetScripAction VALUE
 
 
-Set ScripAction to VALUE. 
+Set ScripAction to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ScripAction will be stored as a int(11).)
 
@@ -777,7 +791,7 @@ sub ScripActionObj {
 
 =head2 ConditionRules
 
-Returns the current value of ConditionRules. 
+Returns the current value of ConditionRules.
 (In the database, ConditionRules is stored as text.)
 
 
@@ -785,7 +799,7 @@ Returns the current value of ConditionRules.
 =head2 SetConditionRules VALUE
 
 
-Set ConditionRules to VALUE. 
+Set ConditionRules to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ConditionRules will be stored as a text.)
 
@@ -795,7 +809,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 ActionRules
 
-Returns the current value of ActionRules. 
+Returns the current value of ActionRules.
 (In the database, ActionRules is stored as text.)
 
 
@@ -803,7 +817,7 @@ Returns the current value of ActionRules.
 =head2 SetActionRules VALUE
 
 
-Set ActionRules to VALUE. 
+Set ActionRules to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ActionRules will be stored as a text.)
 
@@ -813,7 +827,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 CustomIsApplicableCode
 
-Returns the current value of CustomIsApplicableCode. 
+Returns the current value of CustomIsApplicableCode.
 (In the database, CustomIsApplicableCode is stored as text.)
 
 
@@ -821,7 +835,7 @@ Returns the current value of CustomIsApplicableCode.
 =head2 SetCustomIsApplicableCode VALUE
 
 
-Set CustomIsApplicableCode to VALUE. 
+Set CustomIsApplicableCode to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, CustomIsApplicableCode will be stored as a text.)
 
@@ -831,7 +845,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 CustomPrepareCode
 
-Returns the current value of CustomPrepareCode. 
+Returns the current value of CustomPrepareCode.
 (In the database, CustomPrepareCode is stored as text.)
 
 
@@ -839,7 +853,7 @@ Returns the current value of CustomPrepareCode.
 =head2 SetCustomPrepareCode VALUE
 
 
-Set CustomPrepareCode to VALUE. 
+Set CustomPrepareCode to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, CustomPrepareCode will be stored as a text.)
 
@@ -849,7 +863,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 CustomCommitCode
 
-Returns the current value of CustomCommitCode. 
+Returns the current value of CustomCommitCode.
 (In the database, CustomCommitCode is stored as text.)
 
 
@@ -857,7 +871,7 @@ Returns the current value of CustomCommitCode.
 =head2 SetCustomCommitCode VALUE
 
 
-Set CustomCommitCode to VALUE. 
+Set CustomCommitCode to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, CustomCommitCode will be stored as a text.)
 
@@ -867,7 +881,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Stage
 
-Returns the current value of Stage. 
+Returns the current value of Stage.
 (In the database, Stage is stored as varchar(32).)
 
 
@@ -875,7 +889,7 @@ Returns the current value of Stage.
 =head2 SetStage VALUE
 
 
-Set Stage to VALUE. 
+Set Stage to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Stage will be stored as a varchar(32).)
 
@@ -885,7 +899,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 AssetType
 
-Returns the current value of AssetType. 
+Returns the current value of AssetType.
 (In the database, AssetType is stored as int(11).)
 
 
@@ -893,7 +907,7 @@ Returns the current value of AssetType.
 =head2 SetAssetType VALUE
 
 
-Set AssetType to VALUE. 
+Set AssetType to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, AssetType will be stored as a int(11).)
 
@@ -903,7 +917,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Template
 
-Returns the current value of Template. 
+Returns the current value of Template.
 (In the database, Template is stored as int(11).)
 
 
@@ -911,7 +925,7 @@ Returns the current value of Template.
 =head2 SetTemplate VALUE
 
 
-Set Template to VALUE. 
+Set Template to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Template will be stored as a int(11).)
 
@@ -921,7 +935,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Creator
 
-Returns the current value of Creator. 
+Returns the current value of Creator.
 (In the database, Creator is stored as int(11).)
 
 
@@ -930,7 +944,7 @@ Returns the current value of Creator.
 
 =head2 Created
 
-Returns the current value of Created. 
+Returns the current value of Created.
 (In the database, Created is stored as datetime.)
 
 
@@ -939,7 +953,7 @@ Returns the current value of Created.
 
 =head2 LastUpdatedBy
 
-Returns the current value of LastUpdatedBy. 
+Returns the current value of LastUpdatedBy.
 (In the database, LastUpdatedBy is stored as int(11).)
 
 
@@ -948,7 +962,7 @@ Returns the current value of LastUpdatedBy.
 
 =head2 LastUpdated
 
-Returns the current value of LastUpdated. 
+Returns the current value of LastUpdated.
 (In the database, LastUpdated is stored as datetime.)
 
 
@@ -958,38 +972,38 @@ Returns the current value of LastUpdated.
 
 sub _CoreAccessible {
     {
-     
+
         id =>
 		{read => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => ''},
-        Description => 
+        Description =>
 		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
-        ScripCondition => 
+        ScripCondition =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        ScripAction => 
+        ScripAction =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        ConditionRules => 
+        ConditionRules =>
 		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
-        ActionRules => 
+        ActionRules =>
 		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
-        CustomIsApplicableCode => 
+        CustomIsApplicableCode =>
 		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
-        CustomPrepareCode => 
+        CustomPrepareCode =>
 		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
-        CustomCommitCode => 
+        CustomCommitCode =>
 		{read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
-        Stage => 
+        Stage =>
 		{read => 1, write => 1, sql_type => 12, length => 32,  is_blob => 0,  is_numeric => 0,  type => 'varchar(32)', default => ''},
-        AssetType => 
+        AssetType =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Template => 
+        Template =>
 		{read => 1, write => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Creator => 
+        Creator =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Created => 
+        Created =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
-        LastUpdatedBy => 
+        LastUpdatedBy =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        LastUpdated => 
+        LastUpdated =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
 
  }

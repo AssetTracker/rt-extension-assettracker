@@ -75,16 +75,13 @@ use RTx::AssetTracker::ScripCondition;
 sub Table {'AT_ScripConditions'};
 
 
-# {{{ sub _Init
 sub _Init { 
   my $self = shift;
   $self->{'table'} = "AT_ScripConditions";
   $self->{'primary_key'} = "id";
   return ( $self->SUPER::_Init(@_));
 }
-# }}}
 
-# {{{ sub LimitToType 
 sub LimitToType  {
   my $self = shift;
   my $type = shift;
@@ -101,7 +98,6 @@ sub LimitToType  {
 		VALUE => 'any');
   
 }
-# }}}
 
 
 =head2 NewItem

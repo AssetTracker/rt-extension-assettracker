@@ -75,15 +75,12 @@ use base 'RTx::AssetTracker::Record';
 sub Table {'AT_ScripConditions'};
 
 
-# {{{  sub _Init 
 sub _Init  {
     my $self = shift; 
     $self->{'table'} = "AT_ScripConditions";
     return ($self->SUPER::_Init(@_));
 }
-# }}}
 
-# {{{ sub _Accessible 
 sub _Accessible  {
     my $self = shift;
     my %Cols = ( Name  => 'read',
@@ -98,9 +95,7 @@ sub _Accessible  {
 	       );
     return($self->SUPER::_Accessible(@_, %Cols));
 }
-# }}}
 
-# {{{ sub Create 
 
 =head2 Create
   
@@ -113,9 +108,7 @@ sub Create  {
     my $self = shift;
     return($self->SUPER::Create(@_));
 }
-# }}}
 
-# {{{ sub Delete 
 
 =head2 Delete
 
@@ -127,9 +120,7 @@ sub Delete  {
     my $self = shift;
     return(0, $self->loc('Unimplemented'));
 }
-# }}}
 
-# {{{ sub Load 
 
 =head2 Load IDENTIFIER
 
@@ -152,9 +143,7 @@ sub Load  {
 	return ($self->LoadByCol('Name', $identifier));
     }
 }
-# }}}
 
-# {{{ sub LoadCondition 
 
 =head2 LoadCondition  HASH
 
@@ -186,16 +175,13 @@ sub LoadCondition  {
                      CurrentUser => $self->CurrentUser 
 				       );
 }
-# }}}
-
-# {{{ The following methods call the Condition object
 
 
-# {{{ sub Describe 
+
 
 =head2 Describe 
 
-Helper method to call the condition module\'s Describe method.
+Helper method to call the condition module's Describe method.
 
 =cut
 
@@ -204,13 +190,11 @@ sub Describe  {
     return ($self->{'Condition'}->Describe());
     
 }
-# }}}
 
-# {{{ sub IsApplicable 
 
 =head2 IsApplicable
 
-Helper method to call the condition module\'s IsApplicable method.
+Helper method to call the condition module's IsApplicable method.
 
 =cut
 
@@ -219,16 +203,12 @@ sub IsApplicable  {
     return ($self->{'Condition'}->IsApplicable());
     
 }
-# }}}
 
-# }}}
 
-# {{{ sub DESTROY
 sub DESTROY {
     my $self=shift;
     $self->{'Condition'} = undef;
 }
-# }}}
 
 
 package RT::Condition;
@@ -240,7 +220,7 @@ package RTx::AssetTracker::ScripCondition;
 
 =head2 id
 
-Returns the current value of id. 
+Returns the current value of id.
 (In the database, id is stored as int(11).)
 
 
@@ -249,7 +229,7 @@ Returns the current value of id.
 
 =head2 Name
 
-Returns the current value of Name. 
+Returns the current value of Name.
 (In the database, Name is stored as varchar(200).)
 
 
@@ -257,7 +237,7 @@ Returns the current value of Name.
 =head2 SetName VALUE
 
 
-Set Name to VALUE. 
+Set Name to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Name will be stored as a varchar(200).)
 
@@ -267,7 +247,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Description
 
-Returns the current value of Description. 
+Returns the current value of Description.
 (In the database, Description is stored as varchar(255).)
 
 
@@ -275,7 +255,7 @@ Returns the current value of Description.
 =head2 SetDescription VALUE
 
 
-Set Description to VALUE. 
+Set Description to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, Description will be stored as a varchar(255).)
 
@@ -285,7 +265,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 ExecModule
 
-Returns the current value of ExecModule. 
+Returns the current value of ExecModule.
 (In the database, ExecModule is stored as varchar(60).)
 
 
@@ -293,7 +273,7 @@ Returns the current value of ExecModule.
 =head2 SetExecModule VALUE
 
 
-Set ExecModule to VALUE. 
+Set ExecModule to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ExecModule will be stored as a varchar(60).)
 
@@ -303,17 +283,17 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Argument
 
-Returns the current value of Argument. 
-(In the database, Argument is stored as varchar(255).)
+Returns the current value of Argument.
+(In the database, Argument is stored as varbinary(255).)
 
 
 
 =head2 SetArgument VALUE
 
 
-Set Argument to VALUE. 
+Set Argument to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
-(In the database, Argument will be stored as a varchar(255).)
+(In the database, Argument will be stored as a varbinary(255).)
 
 
 =cut
@@ -321,7 +301,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 ApplicableTransTypes
 
-Returns the current value of ApplicableTransTypes. 
+Returns the current value of ApplicableTransTypes.
 (In the database, ApplicableTransTypes is stored as varchar(60).)
 
 
@@ -329,7 +309,7 @@ Returns the current value of ApplicableTransTypes.
 =head2 SetApplicableTransTypes VALUE
 
 
-Set ApplicableTransTypes to VALUE. 
+Set ApplicableTransTypes to VALUE.
 Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 (In the database, ApplicableTransTypes will be stored as a varchar(60).)
 
@@ -339,7 +319,7 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 
 =head2 Creator
 
-Returns the current value of Creator. 
+Returns the current value of Creator.
 (In the database, Creator is stored as int(11).)
 
 
@@ -348,7 +328,7 @@ Returns the current value of Creator.
 
 =head2 Created
 
-Returns the current value of Created. 
+Returns the current value of Created.
 (In the database, Created is stored as datetime.)
 
 
@@ -357,7 +337,7 @@ Returns the current value of Created.
 
 =head2 LastUpdatedBy
 
-Returns the current value of LastUpdatedBy. 
+Returns the current value of LastUpdatedBy.
 (In the database, LastUpdatedBy is stored as int(11).)
 
 
@@ -366,7 +346,7 @@ Returns the current value of LastUpdatedBy.
 
 =head2 LastUpdated
 
-Returns the current value of LastUpdated. 
+Returns the current value of LastUpdated.
 (In the database, LastUpdated is stored as datetime.)
 
 
@@ -376,26 +356,26 @@ Returns the current value of LastUpdated.
 
 sub _CoreAccessible {
     {
-     
+
         id =>
 		{read => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => ''},
-        Name => 
+        Name =>
 		{read => 1, write => 1, sql_type => 12, length => 200,  is_blob => 0,  is_numeric => 0,  type => 'varchar(200)', default => ''},
-        Description => 
+        Description =>
 		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
-        ExecModule => 
+        ExecModule =>
 		{read => 1, write => 1, sql_type => 12, length => 60,  is_blob => 0,  is_numeric => 0,  type => 'varchar(60)', default => ''},
-        Argument => 
-		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varchar(255)', default => ''},
-        ApplicableTransTypes => 
+        Argument =>
+		{read => 1, write => 1, sql_type => 12, length => 255,  is_blob => 0,  is_numeric => 0,  type => 'varbinary(255)', default => ''},
+        ApplicableTransTypes =>
 		{read => 1, write => 1, sql_type => 12, length => 60,  is_blob => 0,  is_numeric => 0,  type => 'varchar(60)', default => ''},
-        Creator => 
+        Creator =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        Created => 
+        Created =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
-        LastUpdatedBy => 
+        LastUpdatedBy =>
 		{read => 1, auto => 1, sql_type => 4, length => 11,  is_blob => 0,  is_numeric => 1,  type => 'int(11)', default => '0'},
-        LastUpdated => 
+        LastUpdated =>
 		{read => 1, auto => 1, sql_type => 11, length => 0,  is_blob => 0,  is_numeric => 0,  type => 'datetime', default => ''},
 
  }
