@@ -159,4 +159,40 @@ sub delete_assets {
     }
 }
 
+sub add_rights {
+    my $self = shift;
+    my @list = ref $_[0]? @_: @_? { @_ }: ();
+
+    require RT::ACL;
+    foreach my $e (@list) {
+        my $principal = delete $e->{'Principal'};
+        unless ( ref $principal ) {
+            if ( $principal =~ /^(everyone|(?:un)?privileged)$/i ) {
+                $principal = RT::Group->new( RT->SystemUser );
+                $principal->LoadSystemInternalGroup($1);
+            } elsif ( my @princ = grep { $_ eq $principal } RTx::AssetTracker::Type->RoleGroupTypes ) {
+                $principal = RT::Group->new( RT->SystemUser );
+                $principal->LoadByCols(
+                    Domain => (ref($e->{'Object'})||'RT::System').'-Role',
+                    Type => $princ[0],
+                    ref($e->{'Object'})? (Instance => $e->{'Object'}->id): (),
+                );
+            } else {
+                die "principal is not an object, but also is not name of a system group";
+            }
+        }
+        unless ( $principal->isa('RT::Principal') ) {
+            if ( $principal->can('PrincipalObj') ) {
+                $principal = $principal->PrincipalObj;
+            }
+        }
+        my @rights = ref $e->{'Right'}? @{ $e->{'Right'} }: ($e->{'Right'});
+        foreach my $right ( @rights ) {
+            my ($status, $msg) = $principal->GrantRight( %$e, Right => $right );
+            $RT::Logger->debug($msg);
+        }
+    }
+    return 1;
+}
+
 1;
