@@ -27,6 +27,7 @@ ok $user && $user->id, 'loaded or created user';
     my $rights = $user->PrincipalObj->HasRights( Object => $a );
     is_deeply( $rights, { SeeType => 1 }, 'got it' );
 
+    cleanup();
     ($a) = RTx::AssetTracker::Test->create_assets(
         { Type => $type->id },
         { Owner => $user->EmailAddress },
