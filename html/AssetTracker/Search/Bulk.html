@@ -106,7 +106,7 @@
 <%perl>
 my $cfs = RT::CustomFields->new($session{'CurrentUser'});
 $cfs->LimitToGlobalAsset();
-$cfs->LimitToType($_) for keys %$seen_types;
+$cfs->LimitToAssetType($_) for keys %$seen_types;
 </%perl>
 
 % if ($cfs->Count) {

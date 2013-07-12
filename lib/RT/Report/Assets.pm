@@ -94,7 +94,7 @@ sub Groupings {
         foreach my $id (keys %$types) {
             my $type = RTx::AssetTracker::Type->new( $self->CurrentUser );
             $type->Load($id);
-            $CustomFields->LimitToType($type->Id) if $type->Id;
+            $CustomFields->LimitToAssetType($type->Id) if $type->Id;
         }
         $CustomFields->LimitToGlobal;
         while ( my $CustomField = $CustomFields->Next ) {

@@ -1240,7 +1240,7 @@ sub __DependsOn
     push( @$list, $objs );
 # Custom Fields
     $objs = RT::CustomFields->new( $self->CurrentUser );
-    $objs->LimitToType( $self->id );
+    $objs->LimitToAssetType( $self->id );
     push( @$list, $objs );
 
     $deps->_PushDependencies(

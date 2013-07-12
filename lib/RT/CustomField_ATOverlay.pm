@@ -15,7 +15,7 @@ Loads the Custom field named NAME.
 Will load a Disabled Custom Field even if there is a non-disabled Custom Field
 with the same Name.
 
-If a Type parameter is specified, only look for asset custom fields tied to that Type.
+If a Type parameter is specified, only look for asset custom fields tied to that Asset Type.
 
 If the Type parameter is '0', look for global asset custom fields.
 
@@ -36,7 +36,7 @@ sub LoadByNameAndAssetType {
         return wantarray ? (0, $self->loc("No name provided")) : 0;
     }
 
-    # if we're looking for a type by name, make it a number
+    # if we're looking for an asset type by name, make it a number
     if ( defined $args{'Type'} && ($args{'Type'} =~ /\D/ || !$self->ContextObject) ) {
         my $TypeObj = RTx::AssetTracker::Type->new( $self->CurrentUser );
         $TypeObj->Load( $args{'Type'} );
@@ -51,10 +51,10 @@ sub LoadByNameAndAssetType {
     $CFs->SetContextObject( $self->ContextObject );
     my $field = $args{'Name'} =~ /\D/? 'Name' : 'id';
     $CFs->Limit( FIELD => $field, VALUE => $args{'Name'}, CASESENSITIVE => 0);
-    # Don't limit to type if type is 0.  Trying to do so breaks
+    # Don't limit to asset type if asset type is 0.  Trying to do so breaks
     # RT::Group type CFs.
     if (defined $args{'Type'}) {
-        $CFs->LimitToType( $args{'Type'} );
+        $CFs->LimitToAssetType( $args{'Type'} );
     }
 
     # When loading by name, we _can_ load disabled fields, but prefer

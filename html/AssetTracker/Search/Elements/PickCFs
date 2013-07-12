@@ -54,7 +54,7 @@ foreach my $id (keys %types) {
     # Gotta load up the $type object, since types get stored by name now.
     my $type = RTx::AssetTracker::Type->new($session{'CurrentUser'});
     $type->Load($id);
-    $CustomFields->LimitToType($type->Id) if $type->Id;
+    $CustomFields->LimitToAssetType($type->Id) if $type->Id;
 }
 $CustomFields->LimitToGlobalAsset();
 $CustomFields->OrderBy( FIELD => 'Name', ORDER => 'ASC' );
