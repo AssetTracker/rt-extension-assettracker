@@ -2325,7 +2325,7 @@ sub LimitCustomField {
     $self->Limit(
         VALUE => $args{VALUE},
         FIELD => "CF"
-            .(defined $args{'ASSETTYPE'}? ".{$args{'ASSETTYPE'}}" : '' )
+            .(defined $args{'ASSETTYPE'}? ".$args{'ASSETTYPE'}" : '' )
             .".{" . $CF->Name . "}",
         OPERATOR    => $args{OPERATOR},
         CUSTOMFIELD => 1,
