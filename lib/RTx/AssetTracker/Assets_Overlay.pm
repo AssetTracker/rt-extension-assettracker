@@ -2870,6 +2870,8 @@ sub Import {
     my $n = 1;
     for my $row (@$rows) {
         $n++;
+        next unless @$row;
+
         my ($aid, $msg) = $self->_import($headers, $row, $runscrips, $detailed);
         #warn $row->[0], $msg;
 
