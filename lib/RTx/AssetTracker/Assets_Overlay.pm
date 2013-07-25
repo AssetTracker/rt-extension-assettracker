@@ -3040,7 +3040,7 @@ sub _import_row {
     for my $cell (@{$row->{Kids}}) {
         next unless ref($cell) eq 'RTx::AssetTracker::Assets::Cell';
         for my $data (@{$cell->{Kids}}) {
-            if (ref($data->{Kids})) {
+            if ( ref($data->{Kids}) && @{$data->{Kids}} ) {
                 for my $characters (@{$data->{Kids}}) {
                     my $text = $characters->{Text};
                     push @row, $text;
