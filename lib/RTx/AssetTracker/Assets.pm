@@ -3139,12 +3139,16 @@ sub Import {
     my @update = ();
 
     my $error = 0;
+    my $n = 1;
     for my $row (@$rows) {
+        $n++;
+        next unless @$row;
+
         my ($aid, $msg) = $self->_import($headers, $row, $runscrips, $detailed);
         #warn $row->[0], $msg;
 
         if (!$aid) {
-            push @$msgs, $msg;
+            push @$msgs, $self->loc("Row [_1]: [_2]", $n, $msg);
             $error++;
         }
         elsif ($row->[0] =~ /^(\d+)(\.0)?$/) {
@@ -3196,7 +3200,8 @@ sub _import {
 
     %asset = $self->_fixup_import(%asset);
 
-    my $id = delete $asset{id};
+    my $id = delete $asset{id}
+        or return 0, "id not defined";
     my $asset = RTx::AssetTracker::Asset->new($self->CurrentUser);
     if ($id eq 'new') {
         my ($aid, undef, $err) = $asset->Create( %asset, _Commit => 0, _RecordTransaction => 0 );
@@ -3329,7 +3334,7 @@ sub _import_row {
     for my $cell (@{$row->{Kids}}) {
         next unless ref($cell) eq 'RTx::AssetTracker::Assets::Cell';
         for my $data (@{$cell->{Kids}}) {
-            if (ref($data->{Kids})) {
+            if ( ref($data->{Kids}) && @{$data->{Kids}} ) {
                 for my $characters (@{$data->{Kids}}) {
                     my $text = $characters->{Text};
                     push @row, $text;

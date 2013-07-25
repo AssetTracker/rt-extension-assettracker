@@ -24,7 +24,8 @@ ok $user && $user->id, 'loaded or created user';
         { Type => $type->id },
         { },
     );
-    my $rights = $user->PrincipalObj->HasRights( Object => $a );
+    my $rights;
+    $rights = $user->PrincipalObj->HasRights( Object => $a );
     is_deeply( $rights, { SeeType => 1 }, 'got it' );
 
     cleanup();
