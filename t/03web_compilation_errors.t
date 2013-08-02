@@ -40,8 +40,10 @@ sub test_get {
 
     if ( $file =~ m#^AssetTracker/Admin/Types/Scrip\.html$# ) {
         $file .= '?AssetType=1';
-    } elsif ( $file =~ m#^AssetTracker/Admin/(Global|Types)/Template\.html$# ) {
+    } elsif ( $file =~ m#^AssetTracker/Admin/Global/Template\.html$# ) {
         $file .= '?Create=1';
+    } elsif ( $file =~ m#^AssetTracker/Admin/Types/Template\.html$# ) {
+        $file .= '?Create=1&AssetType=1';
     } elsif ( $file =~ m#^AssetTracker/Admin/Types/(.*)\.html$# ) {
         $file .= '?id=1';
     } elsif ( $file =~ m#^AssetTracker/Asset/Create\.html$# ) {
