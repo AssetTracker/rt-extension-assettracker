@@ -125,7 +125,7 @@ for( qw(Query Format OrderBy Order RowsPerPage) ) {
     $query{$_} = $ARGS{$_};
 }
 
-my %saved_search;
+my %saved_search = ( Type => 'Asset' );
 my @actions = $m->comp( '/Search/Elements/EditSearches:Init', %ARGS, Query => \%query, SavedSearch => \%saved_search);
 
 if ( $NewQuery ) {
