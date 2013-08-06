@@ -68,6 +68,16 @@ If you have AT 1.2.4 installed under RT, do the following:
             --prompt-for-dba-password --action insert \
             --datadir etc/upgrade/<version>
 
+
+UPGRADING FROM AT 2.0.x AND EARLIER
+
+Custom link types are now set with a hash, %AssetLinkTypes, instead of an array, @AssetLinkTypes.
+For example, if you had 
+    @AssetLinkTypes = qw( LocatedAt AtThisLocation );
+in your *_SiteConfig.pm file, you should change it to
+    Set( %AssetLinkTypes, LocatedAt => 'AtThisLocation' );
+
+
 UPGRADING FROM an AT installed under RT 3.6.* or older
 
 If you installed an older version of AT under RT < 3.8 the best strategy is to remove AT files from
@@ -78,10 +88,6 @@ So, for example the configuration option $RTx::AssetTracker::DefaultSearchResult
 $RT::DefaultAssetSearchResultFormat.
 
 TODO: Document converting asset saved searches.
-
-MISSING FEATURES
-
-* There is no RPC system, yet.
 
 AUTHOR
 
