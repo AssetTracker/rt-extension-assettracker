@@ -52,11 +52,11 @@ my $search_mode = $typemap->{Mode};
 my $search_type = $typemap->{Type};
 my $search_relation = RTx::AssetTracker::Asset->LINKDIRMAP->{$search_type}{$search_mode};
 
-my $Query = $search_relation . ' = ' . $id;
+my $Query = $search_relation . " = '$uri'";
 my $SearchURL = RT->Config->Get('WebPath') . '/AssetTracker/Search/Results.html?' . $m->comp('/Elements/QueryString', Query => $Query);
 </%INIT>
 <%ARGS>
-$id
+$uri
 $Label
 $Relation
 </%ARGS>
