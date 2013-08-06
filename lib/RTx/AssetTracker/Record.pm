@@ -554,6 +554,17 @@ sub DeleteCustomFieldValue {
 }
 
 
+# Needed for asset selection when linking
+sub BasicColumns {
+    (
+        [ Name => 'Name' ],
+        [ Description => 'Description' ],
+        [ Type => 'Type' ],
+        [ Status => 'Status' ],
+    );
+}
+
+
 =head2 UnresolvedDependencies
 
 Returns an RT::Tickets object of tickets which this ticket depends on
