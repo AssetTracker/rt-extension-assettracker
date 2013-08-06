@@ -174,6 +174,9 @@ sub LINKORDER     { return  @LINKORDER   }
 sub ConfigureLinks {
     my $class = shift;
 
+    $RT::Logger->critical('Old config option @AssetLinkTypes found. Check the Asset Tracker README for upgrade instructions.')
+        if (@RT::AssetLinkTypes);
+
     my $map = RT->Config->Get('AssetLinkTypes') or return;
 
     while ( my ($forward, $reverse) = each %$map ) {
