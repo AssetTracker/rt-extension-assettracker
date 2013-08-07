@@ -75,7 +75,7 @@ for my $type (@types) {
 
 %   for my $status (@cur_statuses) {
 <td align="right">
-    <a href="<% $link_status->($type, $status) %>"><% $data->{$type->{id}}->{$status } || '-' %></a>
+    <a href="<% $link_status->($type, $status) %>"><% $data->{$type->{id}}->{lc $status } || '-' %></a>
 </td>
 %   }
 </tr>
