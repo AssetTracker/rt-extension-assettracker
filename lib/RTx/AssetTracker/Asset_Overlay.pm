@@ -315,8 +315,8 @@ sub Create {
         Status          => $args{'Status'},
     );
 
-# Parameters passed in during an import that we probably don't want to touch, otherwise
-    foreach my $attr qw(id Creator Created LastUpdated LastUpdatedBy) {
+    # Parameters passed in during an import that we probably don't want to touch, otherwise
+    foreach my $attr ( qw(id Creator Created LastUpdated LastUpdatedBy) ) {
         $params{$attr} = $args{$attr} if ( $args{$attr} );
     }
 
