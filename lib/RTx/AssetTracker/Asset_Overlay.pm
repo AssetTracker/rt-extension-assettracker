@@ -1210,13 +1210,13 @@ sub CurrentUserHasRight {
 
 =head2 CurrentUserCanSee
 
-Returns true if the current user can see the ticket, using ShowTicket
+Returns true if the current user can see the asset, using ShowAsset
 
 =cut
 
 sub CurrentUserCanSee {
     my $self = shift;
-    return $self->CurrentUserHasRight('ShowTicket');
+    return $self->CurrentUserHasRight('ShowAsset');
 }
 
 # {{{ sub HasRight
