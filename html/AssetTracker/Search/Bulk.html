@@ -141,6 +141,13 @@ $cfs->LimitToAssetType($_) for keys %$seen_types;
 % } elsif ($cf->Type eq 'Text') {
 <td><& /Elements/EditCustomFieldText, @add &></td>
 <td>&nbsp;</td>
+% } elsif ($cf->Type eq 'Date') {
+<td><& /Elements/EditCustomFieldDate, @add, Default => undef &></td>
+<td><& /Elements/EditCustomFieldDate, @del, Default => undef &></td>
+% } elsif ($cf->Type eq 'DateTime') {
+% # Pass datemanip format to prevent another tz date conversion
+<td><& /Elements/EditCustomFieldDateTime, @add, Default => undef, Format => 'datemanip' &></td>
+<td><& /Elements/EditCustomFieldDateTime, @del, Default => undef, Format => 'datemanip' &></td>
 % } else {
 %   $RT::Logger->crit("Unknown CustomField type: " . $cf->Type);
 % }
@@ -297,7 +304,27 @@ while ( my $Asset = $Assets->Next ) {
                 unless ( $cf->SingleValue );
 
             my $current_values = $Asset->CustomFieldValues($cfid);
+
+            if ( $cf->Type eq 'DateTime' || $cf->Type eq 'Date' ){
+                # Clear out empty string submissions to avoid
+                # Not set changed to Not set
+                @values = grep length, @values;
+            }
+
             foreach my $value (@values) {
+
+                # Convert for timezone. Without converstion,
+                # HasEntry and DeleteCustomFieldValue fail because
+                # the value in the DB is converted.
+                if ( $op eq 'del'
+                     && ($cf->Type eq 'DateTime' || $cf->Type eq 'Date') ){
+                    my $DateObj = RT::Date->new( $session{'CurrentUser'} );
+                    $DateObj->Set( Format => 'unknown',
+                                   Value  => $value );
+                    $value = $cf->Type eq 'DateTime' ? $DateObj->ISO
+                        : $DateObj->ISO(Time => 0, Seconds => 0);
+                }
+
                 if ( $op eq 'del' && $current_values->HasEntry($value) ) {
                     my ( $id, $msg ) = $Asset->DeleteCustomFieldValue(
                         Field => $cfid,
