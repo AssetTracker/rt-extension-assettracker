@@ -223,6 +223,13 @@ sub ConfigureRole {
         $group->id or $RT::Logger->error("Couldn't create group for system role '$role'");
     }
 
+    $RTx::AssetTracker::Assets::FIELD_METADATA{$role}         = [ 'WATCHERFIELD'    => $role ];
+    $RTx::AssetTracker::Assets::FIELD_METADATA{'Type'.$role}  = [ 'WATCHERFIELD'    => $role => 'Type' ];
+    $RTx::AssetTracker::Assets::FIELD_METADATA{$role.'Group'} = [ 'MEMBERSHIPFIELD' => $role ];
+    $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $role}         = $role;
+    $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc 'Type'.$role}  = 'Type'.$role;
+    $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $role.'Group'} = $role.'Group';
+
     my $right = $self->RoleRight($role);
     my $desc = $self->RoleDescription($role);
 

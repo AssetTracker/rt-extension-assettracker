@@ -107,17 +107,11 @@ our %FIELD_METADATA = (
     Transport        => [ 'PORTFIELD', ],
     TransactionDate  => [ 'TRANSDATE', ],
     Updated          => [ 'TRANSDATE', ],
-    Owner            => [ 'WATCHERFIELD'    => 'Owner', ],
-    Admin            => [ 'WATCHERFIELD'    => 'Admin', ],
     Watcher          => [ 'WATCHERFIELD' ],
-    TypeOwner        => [ 'WATCHERFIELD'    => 'Owner' => 'Type', ],
-    TypeAdmin        => [ 'WATCHERFIELD'    => 'Admin' => 'Type', ],
     TypeWatcher      => [ 'WATCHERFIELD'    => undef   => 'Type', ],
     CustomFieldValue => [ 'CUSTOMFIELD' => 'Asset' ], #loc_left_pair
     CustomField      => [ 'CUSTOMFIELD' => 'Asset' ], #loc_left_pair
     CF               => [ 'CUSTOMFIELD' => 'Asset' ], #loc_left_pair
-    OwnerGroup       => [ 'MEMBERSHIPFIELD' => 'Owner', ],
-    AdminGroup       => [ 'MEMBERSHIPFIELD' => 'Admin', ],
     WatcherGroup     => [ 'MEMBERSHIPFIELD', ],
   );
 
