@@ -4,7 +4,8 @@ The work is released under the GPL
 
 PREREQUISITES
 
-A working RT 3.8/4 installation. (3.8.12 or greater)
+A working RT 4 installation is required for AT 3.0.
+For RT 3.8, use AT 2.0.
 
 WARNING
 
@@ -30,9 +31,10 @@ RT_SiteConfig.pm:
 
 Set(@CustomFieldValuesSources, (qw(RT::CustomFieldValues::ATServers)));
 
-UPGRADE
 
-If you have AT 1.2.4 installed under RT, do the following:
+UPGRADING FROM AT 1.2.4 AND EARLIER
+
+Do the following:
 
 1. Make a backup of any AT customizations.
 
