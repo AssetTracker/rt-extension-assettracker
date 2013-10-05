@@ -4,7 +4,7 @@ The work is released under the GPL
 
 PREREQUISITES
 
-A working RT 4 installation is required for AT 3.0.
+A working RT 4 installation (4.0.14 or greater) is required for AT 3.0.
 For RT 3.8, use AT 2.0.
 
 WARNING
@@ -32,20 +32,9 @@ RT_SiteConfig.pm:
 Set(@CustomFieldValuesSources, (qw(RT::CustomFieldValues::ATServers)));
 
 
-UPGRADING FROM AT 1.2.4 AND EARLIER
+UGRADING
 
-Do the following:
-
-1. Make a backup of any AT customizations.
-
-2. AT now uses the RT plugins system. Remove all AT files fom the RT directories.
-   After the "make install" step above put any AT customizations in
-   $RTHOME/local/plugins/RTx-AssetTracker, add 
-
-3. Add to RT_SiteConfig: 
-       Set(@Plugins,(qw(RTx::AssetTracker)));
-
-4.  Type:
+Follow any version-specific instructions below, then type:
 
     ls etc/upgrade
 
@@ -69,6 +58,20 @@ Do the following:
         /opt/rt4/sbin/rt-setup-database --dba <dba> \
             --prompt-for-dba-password --action insert \
             --datadir etc/upgrade/<version>
+
+
+UPGRADING FROM AT 1.2.4 AND EARLIER
+
+Do the following:
+
+1. Make a backup of any AT customizations.
+
+2. AT now uses the RT plugins system. Remove all AT files fom the RT directories.
+   After the "make install" step above put any AT customizations in
+   $RTHOME/local/plugins/RTx-AssetTracker, add 
+
+3. Add to RT_SiteConfig: 
+       Set(@Plugins,(qw(RTx::AssetTracker)));
 
 
 UPGRADING FROM AT 2.0.x AND EARLIER
