@@ -49,9 +49,15 @@ Set ($TypeStatusUniqueAssetName, 0);
 # then set this to zero to disable IP features in AT
 Set ($EnableIP, 1);
 
-# Control if a user needs ModifyAsset on both assets to create
-# a link between them
-Set ($ModifyBothAssetsForLink, 0);
+=item C<$StrictAssetLinkACL>
+
+When this feature is enabled a user needs I<ModifyAsset> rights on
+both assets to link them together; otherwise, I<ModifyAsset> rights
+on either of them is sufficient.
+
+=cut
+
+Set($StrictAssetLinkACL, 0);
 
 # The number of history items to display on the Asset main page
 # (set to 0 to turn  off)

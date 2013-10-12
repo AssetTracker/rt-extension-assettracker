@@ -1385,7 +1385,7 @@ sub DeleteLink {
     #check acls
     my $right = 0;
     $right++ if $self->CurrentUserHasRight('ModifyAsset');
-    if ( !$right && RT->Config->Get( 'ModifyBothAssetsForLink' ) ) {
+    if ( !$right && RT->Config->Get( 'StrictAssetLinkACL' ) ) {
         return ( 0, $self->loc("Permission Denied") );
     }
 
@@ -1396,8 +1396,8 @@ sub DeleteLink {
     if ( !$other_asset || $other_asset->CurrentUserHasRight('ModifyAsset') ) {
         $right++;
     }
-    if ( ( !RT->Config->Get( 'ModifyBothAssetsForLink' ) && $right == 0 ) ||
-         ( RT->Config->Get( 'ModifyBothAssetsForLink' ) && $right < 2 ) )
+    if ( ( !RT->Config->Get( 'StrictAssetLinkACL' ) && $right == 0 ) ||
+         ( RT->Config->Get( 'StrictAssetLinkACL' ) && $right < 2 ) )
     {
         return ( 0, $self->loc("Permission Denied") );
     }
@@ -1479,7 +1479,7 @@ sub AddLink {
 
     my $right = 0;
     $right++ if $self->CurrentUserHasRight('ModifyAsset');
-    if ( !$right && RT->Config->Get( 'ModifyBothAssetsForLink' ) ) {
+    if ( !$right && RT->Config->Get( 'StrictAssetLinkACL' ) ) {
         return ( 0, $self->loc("Permission Denied") );
     }
 
@@ -1490,8 +1490,8 @@ sub AddLink {
     if ( !$other_asset || $other_asset->CurrentUserHasRight('ModifyAsset') ) {
         $right++;
     }
-    if ( ( !RT->Config->Get( 'ModifyBothAssetsForLink' ) && $right == 0 ) ||
-         ( RT->Config->Get( 'ModifyBothAssetsForLink' ) && $right < 2 ) )
+    if ( ( !RT->Config->Get( 'StrictAssetLinkACL' ) && $right == 0 ) ||
+         ( RT->Config->Get( 'StrictAssetLinkACL' ) && $right < 2 ) )
     {
         return ( 0, $self->loc("Permission Denied") );
     }
