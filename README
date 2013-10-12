@@ -83,6 +83,11 @@ in your *_SiteConfig.pm file, you should change it to
     Set( %AssetLinkTypes, LocatedAt => 'AtThisLocation' );
 
 
+UPGRADING FROM AT 3.0.x AND EARLIER
+
+The setting 'ModifyBothAssetsForLink' has been renamed to 'StrictAssetLinkACL'.
+
+
 UPGRADING FROM an AT installed under RT 3.6.* or older
 
 If you installed an older version of AT under RT < 3.8 the best strategy is to remove AT files from
