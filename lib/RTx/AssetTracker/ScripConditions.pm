@@ -68,7 +68,7 @@ use strict;
 use warnings;
 
 package RTx::AssetTracker::ScripConditions;
-use base 'RTx::AssetTracker::SearchBuilder';
+use base 'RT::SearchBuilder';
 
 use RTx::AssetTracker::ScripCondition;
 

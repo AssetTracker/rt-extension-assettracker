@@ -66,7 +66,7 @@ use strict;
 use warnings;
 
 package RTx::AssetTracker::Templates;
-use base 'RTx::AssetTracker::SearchBuilder';
+use base 'RT::SearchBuilder';
 
 use RTx::AssetTracker::Template;
 
