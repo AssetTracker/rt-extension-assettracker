@@ -119,18 +119,18 @@ our %property_cb = (
         return join ', ', map $_->Content, @{ $values->ItemsArrayRef };
     },
 );
-foreach my $field (qw(Name Description Status TimeLeft TimeWorked TimeEstimated)) {
+foreach my $field (qw(Name Description Status)) {
     $property_cb{ $field } = sub { return $_[0]->$field },
 }
-foreach my $field (qw(Creator LastUpdatedBy Owner)) {
+foreach my $field (qw(Creator LastUpdatedBy)) {
     $property_cb{ $field } = sub {
         my $method = $field .'Obj';
         return $_[0]->$method->Name;
     };
 }
-foreach my $field (qw(Admin Owner)) {
-    $property_cb{ $field."s" } = sub {
-        my $method = $field .'Addresses';
+foreach my $field (RTx::AssetTracker::Type->RoleGroupTypes) {
+    $property_cb{ $field } = sub {
+        my $method = $field .'RoleGroupExportString';
         return $_[0]->$method;
     };
 }
@@ -140,12 +140,12 @@ foreach my $field (qw(LastUpdated Created)) {
         return $_[0]->$method->AsString;
     };
 }
-foreach my $field (qw(IsRunning DependedOnBy HasComponent)) {
+foreach my $field (map { $RT::Link::DIRMAP{$_}{'Target'} } keys %RT::Link::DIRMAP) {
     $property_cb{ $field } = sub {
         return join ', ', map $_->BaseObj->id, @{ $_[0]->$field->ItemsArrayRef };
     };
 }
-foreach my $field (qw(RunsOn DependsOn RefersTo ComponentOf)) {
+foreach my $field (map { $RT::Link::DIRMAP{$_}{'Base'} } keys %RT::Link::DIRMAP) {
     $property_cb{ $field } = sub {
         return join ', ', map $_->TargetObj->id, @{ $_[0]->$field->ItemsArrayRef };
     };
@@ -157,7 +157,7 @@ sub AssetProperties {
     my $user = shift;
     my @res = (
         Basics => [qw(Name Description Status Type )], # loc_qw
-        People => [qw(Owner Admin Creator LastUpdatedBy)], # loc_qw
+        People => [ RTx::AssetTracker::Type->RoleGroupTypes, qw(Creator LastUpdatedBy)], # loc_qw
         Dates  => [qw(Created LastUpdated)], # loc_qw
         Links  => [qw(RunsOn IsRunning DependsOn DependedOnBy RefersTo ReferredToBy ComponentOf HasComponent)], # loc_qw
     );
