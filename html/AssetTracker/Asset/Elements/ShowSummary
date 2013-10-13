@@ -85,7 +85,7 @@
         (($can_modify || $can_modify_cf) ? (title_href => RT->Config->Get('WebPath')."/AssetTracker/Asset/ModifyFields.html?id=".$Asset->Id) : ()),
         class => 'asset-info-cfs',
         hide_empty => 1,
-    &><& /Elements/ShowCustomFields, Object => $Asset &></&>
+    &><& /AssetTracker/Asset/Elements/ShowCustomFields, Asset => $Asset &></&>
 
 % $m->callback( %ARGS, CallbackName => 'RightColumn' );
   </td>
