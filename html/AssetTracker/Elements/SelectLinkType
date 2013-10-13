@@ -47,8 +47,8 @@
 %# END BPS TAGGED BLOCK }}}
 <select name="<%$Name%>">
 <option value="">-</option>
-% foreach my $link ( @link_order ) {
-<option value="<% $link %>"><&|/l&><% $link_types{$link}{Name} %></&></option>
+% foreach my $link ( RT->Config->Get('AssetLinkTypes') ) {
+<option value="<% $link %>"><&|/l&><% RT::Record->FormatType( Type => $link ) %></&></option>
 % }
 </select>
 
@@ -59,6 +59,4 @@ $Default => undef
 
 <%INIT>
 # TODO handle Default
-my %link_types = %{ RTx::AssetTracker::Asset::LINKTYPEMAP() };
-my @link_order =    RTx::AssetTracker::Asset::LINKORDER();
 </%INIT>

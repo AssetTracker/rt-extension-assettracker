@@ -67,25 +67,20 @@ use warnings;
 package RTx::AssetTracker::Asset;
 use base 'RTx::AssetTracker::Record';
 
+use Role::Basic 'with';
+with "RT::Record::Role::Links";
+
 sub Table {'AT_Assets'};
 
 use RTx::AssetTracker::Type;
 use RTx::AssetTracker::Assets;
 use RT::Group;
+use RT::Link;
 use RT::URI::at;
 use RTx::AssetTracker::IPs;
 use RTx::AssetTracker::Ports;
 use RT::URI;
 use RT::CustomField;
-
-
-# A helper table for links mapping to make it easier
-# to build and parse links between assets
-
-our %LINKMAP     = ();
-our @LINKORDER   = ();
-our %LINKTYPEMAP = ();
-our %LINKDIRMAP  = ();
 
 
 sub RegisterLinkType {
@@ -94,25 +89,13 @@ sub RegisterLinkType {
     my $base   = shift;
     my $target = shift;
 
-    #return if exists $LINKTYPEMAP{$base};
+    $RT::Link::TYPEMAP{$base}{Type} = $base;
+    $RT::Link::TYPEMAP{$base}{Mode} = 'Target';
 
-    $LINKTYPEMAP{$base}{Type} = $base;
-    $LINKTYPEMAP{$base}{Mode} = 'Target';
-    my $base_name = $base;
-    $base_name =~ s/([a-z])([A-Z])/$1 $2/g;
-    $LINKTYPEMAP{$base}{Name} = $base_name;
-    $LINKTYPEMAP{$base}{Mate} = $target;
+    $RT::Link::TYPEMAP{$target}{Type} = $base;
+    $RT::Link::TYPEMAP{$target}{Mode} = 'Base';
 
-    $LINKTYPEMAP{$target}{Type} = $base;
-    $LINKTYPEMAP{$target}{Mode}   = 'Base';
-    my $target_name = $target;
-    $target_name =~ s/([a-z])([A-Z])/$1 $2/g;
-    $LINKTYPEMAP{$target}{Name} = $target_name;
-    $LINKTYPEMAP{$target}{Mate} = $base;
-
-    $LINKDIRMAP{$base} = { Base => $base, Target => $target };
-
-    push @LINKORDER, $base, $target;
+    $RT::Link::DIRMAP{$base} = { Base => $base, Target => $target };
 
     {
  
@@ -120,18 +103,17 @@ sub RegisterLinkType {
 
     *$base   = sub {
         my $self = shift;
-        return ( $self->_Links( $LINKTYPEMAP{$target}{Mode}, $base ) );
+        return ( $self->_Links( $RT::Link::TYPEMAP{$target}{Mode}, $base ) );
     } unless $class->can($base);
 
     *$target = sub {
         my $self = shift;
-        return ( $self->_Links( $LINKTYPEMAP{$base}{Mode},   $base ) );
+        return ( $self->_Links( $RT::Link::TYPEMAP{$base}{Mode},   $base ) );
     } unless $class->can($target);
 
     }
 
     # sets up the Limit methods for links
-    #RTx::AssetTracker::Assets::RegisterLinkField($base, $target);
     $RTx::AssetTracker::Assets::FIELD_METADATA{$base}   = [ 'LINK' => To   => $base ];
     $RTx::AssetTracker::Assets::FIELD_METADATA{$target} = [ 'LINK' => From => $base ];
     $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $base}   = $base;
@@ -163,11 +145,6 @@ sub RegisterLinkType {
 
 }
 
-
-sub LINKMAP       { return \%LINKMAP   }
-sub LINKTYPEMAP   { return \%LINKTYPEMAP   }
-sub LINKDIRMAP    { return \%LINKDIRMAP   }
-sub LINKORDER     { return  @LINKORDER   }
 
 sub ConfigureLinks {
     my $class = shift;
@@ -426,10 +403,21 @@ sub Create {
         }
     }
 
+    # Deal with setting up links
 
-    #Add links
-    my ($addlink_rv, $addlink_errors) = $self->_AddLinksOnCreateOrUpdate(%args);
-    push @non_fatal_errors, @$addlink_errors;
+    # TODO: Adding link may fire scrips on other end and those scrips
+    # could create transactions on this ticket before 'Create' transaction.
+    #
+    # We should implement different lifecycle: record 'Create' transaction,
+    # create links and only then fire create transaction's scrips.
+    #
+    # Ideal variant: add all links without firing scrips, record create
+    # transaction and only then fire scrips on the other ends of links.
+    #
+    # //RUZ
+    push @non_fatal_errors, $self->_AddLinksOnCreate(\%args, {
+        Silent => !$args{'_RecordTransaction'},
+    });
 
     #Add IP addresses
     my $ips = defined $args{'IP Address'} ? $args{'IP Address'} : [];
@@ -491,54 +479,6 @@ sub Create {
 
     }
 }
-
-sub _AddLinksOnCreateOrUpdate {
-    my ($self, %args) = @_;
-
-    my @errors;
-
-    #Add links
-    foreach my $type ( keys %LINKTYPEMAP ) {
-        next unless ( defined $args{$type} );
-        foreach my $link (
-            ref( $args{$type} ) ? @{ $args{$type} } : ( $args{$type} ) )
-        {
-            my ( $val, $msg, $obj ) = $self->__GetAssetFromURI( URI => $link );
-            unless ($val) {
-                push @errors, $msg;
-                next;
-            }
-
-            # Check rights on the other end of the link if we must
-            # then run _AddLink that doesn't check for ACLs
-            if ( RT->Config->Get( 'StrictLinkACL' ) ) {
-                if ( $obj && !$obj->CurrentUserHasRight('ModifyAsset') ) {
-                    push @errors, $self->loc('Linking. Permission denied');
-                    next;
-                }
-            }
-
-            if ( $obj && lc $obj->Status eq 'deleted' ) {
-                push @errors,
-                  $self->loc("Linking. Can't link to a deleted asset");
-                next;
-            }
-
-            my ( $wval, $wmsg ) = $self->_AddLink(
-                Type                          => $LINKTYPEMAP{$type}->{'Type'},
-                $LINKTYPEMAP{$type}->{'Mode'} => $link,
-                Silent                        => !$args{'_RecordTransaction'},
-                'Silent'. ( $LINKTYPEMAP{$type}->{'Mode'} eq 'Base'? 'Target': 'Base' )
-                                              => 1,
-            );
-
-            push @errors, $wmsg unless ($wval);
-        }
-    }
-
-    return (@errors ? 0 : 1), \@errors;
-}
-
 
 
 sub UpdateAsset {
@@ -752,8 +692,10 @@ sub UpdateAsset {
     $target_links->Limit( FIELD => 'Target', VALUE => $self->URI );
     $_->Delete for @{ $target_links->ItemsArrayRef };
 
-    my ($addlink_rv, $addlink_errors) = $self->_AddLinksOnCreateOrUpdate(%args);
-    return $addlink_rv, 0, join("\n", @$addlink_errors) unless $addlink_rv;
+    my @addlink_errors = $self->_AddLinksOnCreate(\%args, {
+        Silent => !$args{'_Detailed'},
+    });
+    return 0, 0, join("\n", @addlink_errors) if @addlink_errors;
 
     #TODO support IP transactions
     #Delete existing IPs
@@ -1349,238 +1291,6 @@ sub _Links {
 
 
 
-=head2 DeleteLink
-
-Delete a link. takes a paramhash of Base, Target, Type, Silent,
-SilentBase and SilentTarget. Either Base or Target must be null.
-The null value will be replaced with this asset's id.
-
-If Silent is true then no transaction would be recorded, in other
-case you can control creation of transactions on both base and
-target with SilentBase and SilentTarget respectively. By default
-both transactions are created.
-
-=cut
-
-sub DeleteLink {
-    my $self = shift;
-    my %args = (
-        Base         => undef,
-        Target       => undef,
-        Type         => undef,
-        Silent       => undef,
-        SilentBase   => undef,
-        SilentTarget => undef,
-        TransactionData => undef,
-        @_
-    );
-
-    unless ( $args{'Target'} || $args{'Base'} ) {
-        $RT::Logger->error("Base or Target must be specified");
-        return ( 0, $self->loc('Either base or target must be specified') );
-    }
-
-    #check acls
-    my $right = 0;
-    $right++ if $self->CurrentUserHasRight('ModifyAsset');
-    if ( !$right && RT->Config->Get( 'StrictAssetLinkACL' ) ) {
-        return ( 0, $self->loc("Permission Denied") );
-    }
-
-    # If the other URI is an RTx::AssetTracker::Asset, we want to make sure the user
-    # can modify it too...
-    my ($status, $msg, $other_asset) = $self->__GetAssetFromURI( URI => $args{'Target'} || $args{'Base'} );
-    return (0, $msg) unless $status;
-    if ( !$other_asset || $other_asset->CurrentUserHasRight('ModifyAsset') ) {
-        $right++;
-    }
-    if ( ( !RT->Config->Get( 'StrictAssetLinkACL' ) && $right == 0 ) ||
-         ( RT->Config->Get( 'StrictAssetLinkACL' ) && $right < 2 ) )
-    {
-        return ( 0, $self->loc("Permission Denied") );
-    }
-
-    my ($val, $Msg) = $self->SUPER::_DeleteLink(%args);
-    return ( 0, $Msg ) unless $val;
-
-    return ( $val, $Msg ) if $args{'Silent'};
-
-    my ($direction, $remote_link);
-
-    if ( $args{'Base'} ) {
-        $remote_link = $args{'Base'};
-        $direction = 'Target';
-    }
-    elsif ( $args{'Target'} ) {
-        $remote_link = $args{'Target'};
-        $direction = 'Base';
-    }
-
-    my $remote_uri = RT::URI->new( $self->CurrentUser );
-    $remote_uri->FromURI( $remote_link );
-
-    unless ( $args{ 'Silent'. $direction } ) {
-        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
-            Type      => 'DeleteLink',
-            Field     => $LINKDIRMAP{$args{'Type'}}->{$direction},
-            OldValue  => $remote_uri->URI || $remote_link,
-            TimeTaken => 0,
-            Data      => $args{TransactionData},
-        );
-        $RT::Logger->error("Couldn't create transaction: $Msg") unless $Trans;
-    }
-
-    if ( !$args{ 'Silent'. ( $direction eq 'Target'? 'Base': 'Target' ) } && $remote_uri->IsLocal ) {
-        my $OtherObj = $remote_uri->Object;
-        my ( $val, $Msg ) = $OtherObj->_NewTransaction(
-            Type           => 'DeleteLink',
-            Field          => $direction eq 'Target' ? $LINKDIRMAP{$args{'Type'}}->{Base}
-                                            : $LINKDIRMAP{$args{'Type'}}->{Target},
-            OldValue       => $self->URI,
-            ActivateScrips => !RT->Config->Get('LinkTransactionsRun1Scrip'),
-            TimeTaken      => 0,
-        );
-        $RT::Logger->error("Couldn't create transaction: $Msg") unless $val;
-    }
-
-    return ( $val, $Msg );
-}
-
-
-
-=head2 AddLink
-
-Takes a paramhash of Type and one of Base or Target. Adds that link to this asset.
-
-If Silent is true then no transaction would be recorded, in other
-case you can control creation of transactions on both base and
-target with SilentBase and SilentTarget respectively. By default
-both transactions are created.
-
-=cut
-
-sub AddLink {
-    my $self = shift;
-    my %args = ( Target       => '',
-                 Base         => '',
-                 Type         => '',
-                 Silent       => undef,
-                 SilentBase   => undef,
-                 SilentTarget => undef,
-                 TransactionData => undef,
-                 @_ );
-
-    unless ( $args{'Target'} || $args{'Base'} ) {
-        $RT::Logger->error("Base or Target must be specified");
-        return ( 0, $self->loc('Either base or target must be specified') );
-    }
-
-    my $right = 0;
-    $right++ if $self->CurrentUserHasRight('ModifyAsset');
-    if ( !$right && RT->Config->Get( 'StrictAssetLinkACL' ) ) {
-        return ( 0, $self->loc("Permission Denied") );
-    }
-
-    # If the other URI is an RTx::AssetTracker::Asset, we want to make sure the user
-    # can modify it too...
-    my ($status, $msg, $other_asset) = $self->__GetAssetFromURI( URI => $args{'Target'} || $args{'Base'} );
-    return (0, $msg) unless $status;
-    if ( !$other_asset || $other_asset->CurrentUserHasRight('ModifyAsset') ) {
-        $right++;
-    }
-    if ( ( !RT->Config->Get( 'StrictAssetLinkACL' ) && $right == 0 ) ||
-         ( RT->Config->Get( 'StrictAssetLinkACL' ) && $right < 2 ) )
-    {
-        return ( 0, $self->loc("Permission Denied") );
-    }
-
-    return ( 0, "Can't link to a deleted asset" )
-      if $other_asset && lc $other_asset->Status eq 'deleted';
-
-    return $self->_AddLink(%args);
-}
-
-sub __GetAssetFromURI {
-    my $self = shift;
-    my %args = ( URI => '', @_ );
-
-    # If the other URI is an RTx::AssetTracker::Asset, we want to make sure the user
-    # can modify it too...
-    my $uri_obj = RT::URI->new( $self->CurrentUser );
-    unless ($uri_obj->FromURI( $args{'URI'} )) {
-        my $msg = $self->loc( "Couldn't resolve '[_1]' into a URI.", $args{'URI'} );
-        $RT::Logger->warning( $msg );
-        return( 0, $msg );
-    }
-    my $obj = $uri_obj->Resolver->Object;
-    unless ( UNIVERSAL::isa($obj, 'RTx::AssetTracker::Asset') && $obj->id ) {
-        return (1, 'Found not an asset', undef);
-    }
-    return (1, 'Found asset', $obj);
-}
-
-=head2 _AddLink
-
-Private non-acled variant of AddLink so that links can be added during create.
-
-=cut
-
-sub _AddLink {
-    my $self = shift;
-    my %args = ( Target       => '',
-                 Base         => '',
-                 Type         => '',
-                 Silent       => undef,
-                 SilentBase   => undef,
-                 SilentTarget => undef,
-                 @_ );
-
-    my ($val, $msg, $exist) = $self->SUPER::_AddLink(%args);
-    return ($val, $msg) if !$val || $exist;
-    return ($val, $msg) if $args{'Silent'};
-
-    my ($direction, $remote_link);
-    if ( $args{'Target'} ) {
-        $remote_link  = $args{'Target'};
-        $direction    = 'Base';
-    } elsif ( $args{'Base'} ) {
-        $remote_link  = $args{'Base'};
-        $direction    = 'Target';
-    }
-
-    my $remote_uri = RT::URI->new( $self->CurrentUser );
-    $remote_uri->FromURI( $remote_link );
-
-    unless ( $args{ 'Silent'. $direction } ) {
-        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
-            Type      => 'AddLink',
-            Field     => $LINKDIRMAP{$args{'Type'}}->{$direction},
-            NewValue  =>  $remote_uri->URI || $remote_link,
-            TimeTaken => 0,
-            Data      => $args{TransactionData},
-        );
-        $RT::Logger->error("Couldn't create transaction: $Msg") unless $Trans;
-    }
-
-    if ( !$args{ 'Silent'. ( $direction eq 'Target'? 'Base': 'Target' ) } && $remote_uri->IsLocal ) {
-        my $OtherObj = $remote_uri->Object;
-        my ( $val, $msg ) = $OtherObj->_NewTransaction(
-            Type           => 'AddLink',
-            Field          => $direction eq 'Target' ? $LINKDIRMAP{$args{'Type'}}->{Base}
-                                            : $LINKDIRMAP{$args{'Type'}}->{Target},
-            NewValue       => $self->URI,
-            ActivateScrips => !RT->Config->Get('LinkTransactionsRun1Scrip'),
-            TimeTaken      => 0,
-        );
-        $RT::Logger->error("Couldn't create transaction: $msg") unless $val;
-    }
-
-    return ( $val, $msg );
-}
-
-
-
-
 =head2 SetStatus STATUS
 
 Set this asset's status.
@@ -1843,6 +1553,12 @@ sub ACLEquivalenceObjects {
     return $self->TypeObj;
 
 }
+
+=head2 ModifyLinkRight
+
+=cut
+
+sub ModifyLinkRight { "ModifyAsset" }
 
 
 =head2 CustomFieldValues

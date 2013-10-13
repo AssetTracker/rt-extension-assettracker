@@ -248,13 +248,13 @@ while ( my $Asset = $Assets->Next ) {
     my @watchresults =
         ProcessAssetWatchers( AssetObj => $Asset, ARGSRef => \%ARGS );
 
-    foreach my $type ( keys %{ RTx::AssetTracker::Asset::LINKDIRMAP() } ) {
+    foreach my $type ( keys %{RT->Config->Get('AssetLinkTypes')} ) {
         $ARGS{ $Asset->id . "-" . $type } = $ARGS{"Asset-$type"};
         $ARGS{ $type . "-" . $Asset->id } = $ARGS{"$type-Asset"};
     }
     @linkresults =
         ProcessAssetLinks( AssetObj => $Asset, ARGSRef => \%ARGS );
-    foreach my $type ( keys %{ RTx::AssetTracker::Asset::LINKDIRMAP() } ) {
+    foreach my $type ( keys %{RT->Config->Get('AssetLinkTypes')} ) {
         delete $ARGS{ $type . "-" . $Asset->id };
         delete $ARGS{ $Asset->id . "-" . $type };
     }

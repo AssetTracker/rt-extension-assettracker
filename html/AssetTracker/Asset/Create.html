@@ -115,14 +115,12 @@
 
 <em><&|/l&>(Enter ticket ids or URLs, separated with spaces)</&></em>
 <table border="0">
-%foreach my $type ( @link_order ) {
-<tr><td class="label"><&|/l&><% $link_types{$type}{Name} %></&></td>
-% if ( $link_types{$type}{Mode} eq 'Target' ) {
-    <td><input size="10" name="new-<% $link_types{$type}{Type} %>" value="<% $ARGS{"new-$link_types{$type}{Type}"} || '' %>" /></td>
-% } elsif ( $link_types{$type}{Mode} eq 'Base' ) {
-    <td><input size="10" name="<% $link_types{$type}{Type} %>-new" value="<% $ARGS{"$link_types{$type}{Type}-new"} || '' %>" /></td>
-% }
-</tr>
+
+%foreach my $type ( keys %{RT->Config->Get('AssetLinkTypes')} ) {
+% my $base = $RT::Link::DIRMAP{$type}->{'Base'};
+% my $target = $RT::Link::DIRMAP{$type}->{'Target'};
+<tr><td class="label"><% loc $base %></td><td><input size="10" name="new-<% $type %>" value="<% $ARGS{"new-$type"} || '' %>" /></td></tr>
+<tr><td class="label"><% loc $target %></td><td><input size="10" name="<% $type %>-new" value="<% $ARGS{"$type-new"} || '' %>" /></td></tr>
 %}
 
 </table>
@@ -138,9 +136,6 @@
 $m->callback( CallbackName => "Init", ARGSRef => \%ARGS );
 my $Type = $ARGS{Type};
 $session{DefaultType} = $Type;
-
-my %link_types = %{ RTx::AssetTracker::Asset::LINKTYPEMAP() };
-my @link_order =    RTx::AssetTracker::Asset::LINKORDER();
 
 if ($CloneAsset) {
     my $CloneAssetObj = RTx::AssetTracker::Asset->new( $session{CurrentUser} );

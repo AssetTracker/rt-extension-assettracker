@@ -83,7 +83,7 @@ push @fields, qw(
     LastUpdated LastUpdatedRelative
 );
 
-push @fields, RTx::AssetTracker::Asset::LINKORDER();
+push @fields, RT->Config->Get('AssetLinkTypes');
 
 push @fields, qw(
     IP

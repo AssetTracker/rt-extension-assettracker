@@ -110,7 +110,7 @@ sub create_assets {
     while ( @data ) {
         my %args = %{ shift @data };
         $args{$_} = $res[ $args{$_} ]->id foreach
-            grep $args{ $_ }, keys %RTx::AssetTracker::Asset::LINKTYPEMAP;
+            grep $args{ $_ }, keys %RT::Link::TYPEMAP;
         $args{'Name'} ||= $defaults->{'Type'} . " asset #" . ++$i;
         push @res, $self->create_asset( %$defaults, %args );
     }

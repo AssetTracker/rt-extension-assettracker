@@ -67,6 +67,8 @@ use warnings;
 package RTx::AssetTracker::Record;
 use base 'RT::Record';
 
+use RT::Link;
+
 
 =head2 URI
 
@@ -225,6 +227,316 @@ sub _UpdateAttributes {
     }
 
     return @results;
+}
+
+
+=head2 FormatLink
+
+Takes either a Target or a Base and returns a string of human friendly text.
+
+Wrapped to add friendly text for Assets
+
+=cut
+
+{
+    no warnings qw 'redefine';
+
+    my $Orig_FormatLink = RT::Record->can('FormatLink')
+        or die "API change? Can't find method 'FormatLink'";
+    *RT::Record::FormatLink = sub {
+        my $self = shift;
+        my %args = ( Object => undef,
+                     FallBack => '',
+                     @_
+                   );
+        if ($args{Object} && $args{Object}->isa("RTx::AssetTracker::Asset")) {
+            return "Asset " . $args{Object}->id;
+        }
+        return $Orig_FormatLink->($self, %args);
+    };
+
+}
+
+=head2 _AddLink
+
+Takes a paramhash of Type and one of Base or Target. Adds that link to this object.
+
+If Silent is true then no transactions will be recorded.  You can individually
+control transactions on both base and target and with SilentBase and
+SilentTarget respectively. By default both transactions are created.
+
+If the link destination is a local object and does the
+L<RT::Record::Role::Status> role, this method ensures object Status is not
+"deleted".  Linking to deleted objects is forbidden.
+
+If the link destination (i.e. not C<$self>) is a local object and the
+C<$StrictLinkACL> option is enabled, this method checks the appropriate right
+on the destination object (if any, as returned by the L</ModifyLinkRight>
+method).  B<< The subclass is expected to check the appropriate right on the
+source object (i.e.  C<$self>) before calling this method. >>  This allows a
+different right to be used on the source object during creation, for example.
+
+Returns a tuple of (link ID, message, flag if link already existed).
+
+=cut
+
+sub _AddLink {
+    my $self = shift;
+    my %args = (
+        Target       => '',
+        Base         => '',
+        Type         => '',
+        Silent       => undef,
+        Silent       => undef,
+        SilentBase   => undef,
+        SilentTarget => undef,
+        TransactionData => undef,
+        @_
+    );
+
+    # Remote_link is the URI of the object that is not this ticket
+    my $remote_link;
+    my $direction;
+
+    if ( $args{'Base'} and $args{'Target'} ) {
+        $RT::Logger->debug( "$self tried to create a link. both base and target were specified" );
+        return ( 0, $self->loc("Can't specify both base and target") );
+    }
+    elsif ( $args{'Base'} ) {
+        $args{'Target'} = $self->URI();
+        $remote_link    = $args{'Base'};
+        $direction      = 'Target';
+    }
+    elsif ( $args{'Target'} ) {
+        $args{'Base'} = $self->URI();
+        $remote_link  = $args{'Target'};
+        $direction    = 'Base';
+    }
+    else {
+        return ( 0, $self->loc('Either base or target must be specified') );
+    }
+
+    my $remote_uri = RT::URI->new( $self->CurrentUser );
+    if ($remote_uri->FromURI( $remote_link )) {
+        my $remote_obj = $remote_uri->IsLocal ? $remote_uri->Object : undef;
+        if ($remote_obj and $remote_obj->id) {
+            # Enforce the remote end of StrictLinkACL
+            if (RT->Config->Get("StrictLinkACL")) {
+                my $right = $remote_obj->ModifyLinkRight;
+
+                return (0, $self->loc("Permission denied"))
+                    if $right and
+                   not $self->CurrentUser->HasRight( Right => $right, Object => $remote_obj );
+            }
+
+            # Prevent linking to deleted objects
+            if ($remote_obj->DOES("RT::Record::Role::Status")
+                and $remote_obj->Status eq "deleted") {
+                return (0, $self->loc("Linking to a deleted [_1] is not allowed", $self->loc(lc($remote_obj->RecordType))));
+            }
+        }
+    } else {
+        return (0, $self->loc("Couldn't resolve '[_1]' into a link.", $remote_link));
+    }
+
+    # Check if the link already exists - we don't want duplicates
+    my $old_link = RT::Link->new( $self->CurrentUser );
+    $old_link->LoadByParams( Base   => $args{'Base'},
+                             Type   => $args{'Type'},
+                             Target => $args{'Target'} );
+    if ( $old_link->Id ) {
+        $RT::Logger->debug("$self Somebody tried to duplicate a link");
+        return ( $old_link->id, $self->loc("Link already exists"), 1 );
+    }
+
+    if ( $args{'Type'} =~ /^(?:DependsOn|MemberOf)$/ ) {
+
+        my @tickets = $self->_AllLinkedTickets(
+            LinkType  => $args{'Type'},
+            Direction => $direction eq 'Target' ? 'Base' : 'Target',
+        );
+        if ( grep { $_->id == ( $direction eq 'Target' ? $args{'Base'} : $args{'Target'} ) } @tickets ) {
+            return ( 0, $self->loc("Refused to add link which would create a circular relationship") );
+        }
+    }
+
+    # Storing the link in the DB.
+    my $link = RT::Link->new( $self->CurrentUser );
+    my ($linkid, $linkmsg) = $link->Create( Target => $args{Target},
+                                            Base   => $args{Base},
+                                            Type   => $args{Type} );
+
+    unless ($linkid) {
+        $RT::Logger->error("Link could not be created: ".$linkmsg);
+        return ( 0, $self->loc("Link could not be created: [_1]", $linkmsg) );
+    }
+
+    my $basetext = $self->FormatLink(Object   => $link->BaseObj,
+                                     FallBack => $args{Base});
+    my $targettext = $self->FormatLink(Object   => $link->TargetObj,
+                                       FallBack => $args{Target});
+    my $typetext = $self->FormatType(Type => $args{Type});
+    my $TransString = "$basetext $typetext $targettext.";
+
+    # No transactions for you!
+    return ($linkid, $TransString) if $args{'Silent'};
+
+    my $opposite_direction = $direction eq 'Target' ? 'Base': 'Target';
+
+    # Some transactions?
+    unless ( $args{ 'Silent'. $direction } ) {
+        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+            Type      => 'AddLink',
+            Field     => $RT::Link::DIRMAP{$args{'Type'}}->{$direction},
+            NewValue  => $remote_uri->URI || $remote_link,
+            TimeTaken => 0,
+            Data      => $args{'TransactionData'},
+        );
+        $RT::Logger->error("Couldn't create transaction: $Msg") unless $Trans;
+    }
+
+    if ( !$args{"Silent$opposite_direction"} && $remote_uri->IsLocal ) {
+        my $OtherObj = $remote_uri->Object;
+        my ( $val, $msg ) = $OtherObj->_NewTransaction(
+            Type           => 'AddLink',
+            Field          => $RT::Link::DIRMAP{$args{'Type'}}->{$opposite_direction},
+            NewValue       => $self->URI,
+            TimeTaken      => 0,
+        );
+        $RT::Logger->error("Couldn't create transaction: $msg") unless $val;
+    }
+
+    return ($linkid, $TransString);
+}
+
+=head2 _DeleteLink
+
+Takes a paramhash of Type and one of Base or Target. Removes that link from this object.
+
+If Silent is true then no transactions will be recorded.  You can individually
+control transactions on both base and target and with SilentBase and
+SilentTarget respectively. By default both transactions are created.
+
+If the link destination (i.e. not C<$self>) is a local object and the
+C<$StrictLinkACL> option is enabled, this method checks the appropriate right
+on the destination object (if any, as returned by the L</ModifyLinkRight>
+method).  B<< The subclass is expected to check the appropriate right on the
+source object (i.e.  C<$self>) before calling this method. >>
+
+Returns a tuple of (status flag, message).
+
+=cut 
+
+sub _DeleteLink {
+    my $self = shift;
+    my %args = (
+        Base         => undef,
+        Target       => undef,
+        Type         => undef,
+        Silent       => undef,
+        SilentBase   => undef,
+        SilentTarget => undef,
+        TransactionData => undef,
+        @_
+    );
+
+    # We want one of base and target. We don't care which but we only want _one_.
+    my $direction;
+    my $remote_link;
+
+    if ( $args{'Base'} and $args{'Target'} ) {
+        $RT::Logger->debug("$self ->_DeleteLink. got both Base and Target");
+        return ( 0, $self->loc("Can't specify both base and target") );
+    }
+    elsif ( $args{'Base'} ) {
+        $args{'Target'} = $self->URI();
+        $remote_link    = $args{'Base'};
+        $direction      = 'Target';
+    }
+    elsif ( $args{'Target'} ) {
+        $args{'Base'} = $self->URI();
+        $remote_link  = $args{'Target'};
+        $direction    = 'Base';
+    }
+    else {
+        $RT::Logger->error("Base or Target must be specified");
+        return ( 0, $self->loc('Either base or target must be specified') );
+    }
+
+    my $remote_uri = RT::URI->new( $self->CurrentUser );
+    if ($remote_uri->FromURI( $remote_link )) {
+        # Enforce the remote end of StrictLinkACL
+        my $remote_obj = $remote_uri->IsLocal ? $remote_uri->Object : undef;
+        if ($remote_obj and $remote_obj->id and RT->Config->Get("StrictLinkACL")) {
+            my $right = $remote_obj->ModifyLinkRight;
+
+            return (0, $self->loc("Permission denied"))
+                if $right and
+               not $self->CurrentUser->HasRight( Right => $right, Object => $remote_obj );
+        }
+    } else {
+        return (0, $self->loc("Couldn't resolve '[_1]' into a link.", $remote_link));
+    }
+
+    my $link = RT::Link->new( $self->CurrentUser );
+    $RT::Logger->debug( "Trying to load link: "
+            . $args{'Base'} . " "
+            . $args{'Type'} . " "
+            . $args{'Target'} );
+
+    $link->LoadByParams(
+        Base   => $args{'Base'},
+        Type   => $args{'Type'},
+        Target => $args{'Target'}
+    );
+
+    unless ($link->id) {
+        $RT::Logger->debug("Couldn't find that link");
+        return ( 0, $self->loc("Link not found") );
+    }
+
+    my $basetext = $self->FormatLink(Object   => $link->BaseObj,
+                                     FallBack => $args{Base});
+    my $targettext = $self->FormatLink(Object   => $link->TargetObj,
+                                       FallBack => $args{Target});
+    my $typetext = $self->FormatType(Type => $args{Type});
+    my $TransString = "$basetext no longer $typetext $targettext.";
+
+    my ($ok, $msg) = $link->Delete();
+    unless ($ok) {
+        RT->Logger->error("Link could not be deleted: $msg");
+        return ( 0, $self->loc("Link could not be deleted: [_1]", $msg) );
+    }
+
+    # No transactions for you!
+    return (1, $TransString) if $args{'Silent'};
+
+    my $opposite_direction = $direction eq 'Target' ? 'Base': 'Target';
+
+    # Some transactions?
+    unless ( $args{ 'Silent'. $direction } ) {
+        my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
+            Type      => 'DeleteLink',
+            Field     => $RT::Link::DIRMAP{$args{'Type'}}->{$direction},
+            OldValue  => $remote_uri->URI || $remote_link,
+            TimeTaken => 0,
+            Data      => $args{'TransactionData'},
+        );
+        $RT::Logger->error("Couldn't create transaction: $Msg") unless $Trans;
+    }
+
+    if ( !$args{"Silent$opposite_direction"} && $remote_uri->IsLocal ) {
+        my $OtherObj = $remote_uri->Object;
+        my ( $val, $msg ) = $OtherObj->_NewTransaction(
+            Type           => 'DeleteLink',
+            Field          => $RT::Link::DIRMAP{$args{'Type'}}->{$opposite_direction},
+            OldValue       => $self->URI,
+            TimeTaken      => 0,
+        );
+        $RT::Logger->error("Couldn't create transaction: $msg") unless $val;
+    }
+
+    return (1, $TransString);
 }
 
 
