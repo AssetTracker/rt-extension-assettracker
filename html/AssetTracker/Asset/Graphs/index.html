@@ -90,11 +90,11 @@ my $id = $ARGS{'id'};
 my $asset = LoadAsset( $id );
 $ARGS{'id'} = $id = $asset->id;
 
-$ARGS{'LeadingLink'} ||= 'Members';
+$ARGS{'LeadingLink'} ||= 'HasComponent';
 if ( $ARGS{'ShowLinks'} && !ref $ARGS{'ShowLinks'} ) {
     $ARGS{'ShowLinks'} = [$ARGS{'ShowLinks'}];
 } elsif ( !$ARGS{'ShowLinks'} ) {
-    $ARGS{'ShowLinks'} = [ qw(RunsOn DependsOn RefersTo ComponentOf) ];
+    $ARGS{'ShowLinks'} = [ RT->Config->Get('AssetLinkTypes') ];
 }
 $ARGS{'ShowLinks'} = [ grep $_ ne $ARGS{'LeadingLink'}, @{ $ARGS{'ShowLinks'} } ];
 $ARGS{'MaxDepth'} = 3 unless defined $ARGS{'MaxDepth'} && length $ARGS{'MaxDepth'};

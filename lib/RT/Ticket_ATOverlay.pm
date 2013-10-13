@@ -45,21 +45,4 @@ my $Orig_AddLink = __PACKAGE__->can('_AddLink')
 };
 
 
-=head2 LINKTYPEMAP
-
-Asset Tracker wraps this method to add the asset link types
-
-=cut
-
-my $Orig_LINKTYPEMAP = __PACKAGE__->can('LINKTYPEMAP')
-    or die "API change? Can't find method 'LINKTYPEMAP'";
-*LINKTYPEMAP = sub {
-
-    my $self = shift;
-    my $ticket_map = $Orig_LINKTYPEMAP->($self);
-    my $asset_map = RTx::AssetTracker::Asset->LINKTYPEMAP();
-
-    return { %$asset_map, %$ticket_map };
-};
-
 1;

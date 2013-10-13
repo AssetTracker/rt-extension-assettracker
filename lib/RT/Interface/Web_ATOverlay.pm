@@ -599,7 +599,6 @@ Returns an array of results messages.
 =cut
 
 sub ProcessAssetLinks {
-
     my %args = (
         AssetObj => undef,
         ARGSRef   => undef,
@@ -611,10 +610,8 @@ sub ProcessAssetLinks {
     my $AssetObj = $args{'AssetObj'};
     my $ARGSRef   = $args{'ARGSRef'};
 
-    my $LINKTYPEMAP = RTx::AssetTracker::Asset::LINKTYPEMAP();
-    my $all_links = join('|', keys %$LINKTYPEMAP);
-    my $LINKDIRMAP = RTx::AssetTracker::Asset::LINKDIRMAP();
-    my $all_bases = join('|', keys %$LINKDIRMAP);
+    my $all_links = join('|', keys %RT::Link::TYPEMAP);
+    my $all_bases = join('|', keys %RT::Link::DIRMAP);
     foreach my $arg (keys %$ARGSRef) {
 
         if ($arg =~ /^AddLink-Asset-(.+)$/) {
@@ -625,21 +622,7 @@ sub ProcessAssetLinks {
                 my ( $val, $msg ) = $AssetObj->AddLink( Target => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
                 push @results, $msg;
             } else {
-                $linktype = $LINKTYPEMAP->{$linktype}{Type} if $LINKTYPEMAP->{$linktype}{Mode} eq 'Base';
-                my ( $val, $msg ) = $AssetObj->AddLink( Base => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
-                push @results, $msg;
-            }
-        }
-        elsif ($arg =~ /^AddLink-Other$/) {
-            next unless $ARGSRef->{$arg} =~ /($all_links)/;
-            my $id = $ARGSRef->{'AddLink-Other-URI'};
-            next unless $id;
-            my $linktype = $ARGSRef->{$arg};
-            if ($linktype =~ /^($all_bases)$/) {
-                my ( $val, $msg ) = $AssetObj->AddLink( Target => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
-                push @results, $msg;
-            } else {
-                $linktype = $LINKTYPEMAP->{$linktype}{Type} if $LINKTYPEMAP->{$linktype}{Mode} eq 'Base';
+                $linktype = $RT::Link::TYPEMAP{$linktype}{Type} if $RT::Link::TYPEMAP{$linktype}{Mode} eq 'Base';
                 my ( $val, $msg ) = $AssetObj->AddLink( Base => $id, Type   => $linktype, TransactionData => $ARGSRef->{LinkComment} || $ARGSRef->{GlobalComment} );
                 push @results, $msg;
             }
@@ -663,7 +646,7 @@ sub ProcessAssetLinks {
         }
     }
 
-    foreach my $linktype ( keys %$LINKDIRMAP ) {
+    foreach my $linktype ( keys %RT::Link::DIRMAP ) {
         if ( $ARGSRef->{ $AssetObj->Id . "-$linktype" } ) {
             $ARGSRef->{ $AssetObj->Id . "-$linktype" } = join( ' ', @{ $ARGSRef->{ $AssetObj->Id . "-$linktype" } } )
                 if ref( $ARGSRef->{ $AssetObj->Id . "-$linktype" } );
@@ -951,6 +934,19 @@ my $Orig_GetPrincipalsMap = __PACKAGE__->can('GetPrincipalsMap')
     }
     return @map;
 };
+
+
+=head2 SplitCamelCase
+
+=cut
+
+sub SplitCamelCase {
+    my $str = shift;
+
+    my @parts = $str =~ /[A-Z](?:[A-Z]+|[a-z]*)(?=$|[A-Z])/g;
+
+    return join ' ', @parts;
+}
 
 
 1;

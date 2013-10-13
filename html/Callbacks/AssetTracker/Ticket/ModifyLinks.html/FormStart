@@ -1,5 +1,5 @@
 <&| /Widgets/TitleBox, title => loc('Asset Search'),   width => "100%", class => 'asset-info-links' &>
-<& /AssetTracker/Elements/EditLinks, AssetObj => undef, AssetField => $ARGSRef->{AssetField}, AssetString => $ARGSRef->{AssetString}, AssetOp => $ARGSRef->{AssetOp}, SearchOnly => 1, TicketLinkTypes => 1 &>
+<& /AssetTracker/Elements/AddLinks, AssetObj => undef, AssetField => $ARGSRef->{AssetField}, AssetString => $ARGSRef->{AssetString}, AssetOp => $ARGSRef->{AssetOp}, TicketLinkTypes => 1 &>
 </&>
 <%ARGS>
 $ARGSRef

@@ -1,3 +1,12 @@
+<table>
+  <tr>
+    <td valign="top">
+
+      <&|/l&>Find assets whose</&>
+      <br />
+      <& /AssetTracker/Elements/SelectAssets &>
+      <input type="submit" class="button" name="OnlySearchForAsset" value="<&|/l&>Go!</&>" />
+
 % if ($Assets and $Assets->Count and $ShowFind) {
 <p><&|/l&>Add new links to Assets</&>:<br>
 
@@ -21,17 +30,9 @@
 </table>
 % }
 
-% if (!$SearchOnly) {
-<p><&|/l&>Add new links to</&>:<br>
-<table>
-<tr><td>
-<&|/l&>Type</&>
-</td><td>
-<&|/l&>URI</&>
-</td></tr>
-    <tr><td><&/AssetTracker/Elements/SelectLinkType, Name => "AddLink-Other" &></td> <td><input Name="AddLink-Other-URI"></td></tr>
+    </td>
+  </tr>
 </table>
-% }
 
 <%init>
 my ($Assets);
@@ -65,6 +66,5 @@ $AssetString => undef
 $AllowRetired => 0
 $AssetObj => undef
 $ShowFind => 1
-$SearchOnly => 0
 $TicketLinkTypes => 0
 </%ARGS>

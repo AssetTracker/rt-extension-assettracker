@@ -185,7 +185,7 @@ $COLUMN_MAP = {
     # Everything from LINKTYPEMAP
     (map {
         $_ => $LinkCallback->( $_ )
-    } keys %RTx::AssetTracker::Asset::LINKTYPEMAP),
+    } keys %RT::Link::TYPEMAP),
 
     '_CLASS' => {
         value => sub { return $_[1] % 2 ? 'oddline' : 'evenline' }

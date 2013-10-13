@@ -57,7 +57,8 @@
 % my (@extra);
 % push @extra, titleright_raw => '<a href="'. RT->Config->Get('WebPath') . '/AssetTracker/Asset/Graphs/index.html?id='.$Asset->id.'">'.loc('Graph').'</a>' unless RT->Config->Get('DisableGraphViz');
 <&| /Widgets/TitleBox, title => loc('Edit Links'), class => 'asset-info-links', @extra &>
-<& /AssetTracker/Elements/EditLinks, AssetObj => $Asset, AssetField => $AssetField, AssetString => $AssetString, AssetOp => $AssetOp &> 
+<& /AssetTracker/Elements/AddLinks, AssetObj => $Asset, AssetField => $AssetField, AssetString => $AssetString, AssetOp => $AssetOp &>
+<& /AssetTracker/Elements/EditLinks, Object => $Asset &>
 </&>
 
 <&| /Widgets/TitleBox, title => loc('Comments'), class => 'asset-info-comment' &>

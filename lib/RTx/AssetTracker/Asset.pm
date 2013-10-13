@@ -87,25 +87,13 @@ sub RegisterLinkType {
     my $base   = shift;
     my $target = shift;
 
-    #return if exists $LINKTYPEMAP{$base};
+    $RT::Link::TYPEMAP{$base}{Type} = $base;
+    $RT::Link::TYPEMAP{$base}{Mode} = 'Target';
 
-    $LINKTYPEMAP{$base}{Type} = $base;
-    $LINKTYPEMAP{$base}{Mode} = 'Target';
-    my $base_name = $base;
-    $base_name =~ s/([a-z])([A-Z])/$1 $2/g;
-    $LINKTYPEMAP{$base}{Name} = $base_name;
-    $LINKTYPEMAP{$base}{Mate} = $target;
+    $RT::Link::TYPEMAP{$target}{Type} = $base;
+    $RT::Link::TYPEMAP{$target}{Mode} = 'Base';
 
-    $LINKTYPEMAP{$target}{Type} = $base;
-    $LINKTYPEMAP{$target}{Mode}   = 'Base';
-    my $target_name = $target;
-    $target_name =~ s/([a-z])([A-Z])/$1 $2/g;
-    $LINKTYPEMAP{$target}{Name} = $target_name;
-    $LINKTYPEMAP{$target}{Mate} = $base;
-
-    $LINKDIRMAP{$base} = { Base => $base, Target => $target };
-
-    push @LINKORDER, $base, $target;
+    $RT::Link::DIRMAP{$base} = { Base => $base, Target => $target };
 
     {
  
@@ -113,18 +101,17 @@ sub RegisterLinkType {
 
     *$base   = sub {
         my $self = shift;
-        return ( $self->_Links( $LINKTYPEMAP{$target}{Mode}, $base ) );
+        return ( $self->_Links( $RT::Link::TYPEMAP{$target}{Mode}, $base ) );
     } unless $class->can($base);
 
     *$target = sub {
         my $self = shift;
-        return ( $self->_Links( $LINKTYPEMAP{$base}{Mode},   $base ) );
+        return ( $self->_Links( $RT::Link::TYPEMAP{$base}{Mode},   $base ) );
     } unless $class->can($target);
 
     }
 
     # sets up the Limit methods for links
-    #RTx::AssetTracker::Assets::RegisterLinkField($base, $target);
     $RTx::AssetTracker::Assets::FIELD_METADATA{$base}   = [ 'LINK' => To   => $base ];
     $RTx::AssetTracker::Assets::FIELD_METADATA{$target} = [ 'LINK' => From => $base ];
     $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $base}   = $base;

@@ -125,8 +125,8 @@ for my $i ( 1..($MaxDepth||6) ) {
 <%ARGS>
 $id => undef
 $Direction => 'TB'
-$LeadingLink => 'Members'
-@ShowLinks => RTx::AssetTracker::Asset::LINKMAP()
+$LeadingLink => 'HasComponent'
+@ShowLinks => undef
 $MaxDepth => 3
 $FillUsing => ''
 $ShowLinkDescriptions => 0
@@ -135,7 +135,7 @@ $ShowLinkDescriptions => 0
 require RT::Graph::AssetTracker::Assets;
 require RT::Link;
 
-my @link_types = RTx::AssetTracker::Asset::LINKORDER();
+my @link_types = RT->Config->Get('AssetLinkTypes');
 @ShowLinks = grep $_ ne $LeadingLink, @ShowLinks;
 </%INIT>
 

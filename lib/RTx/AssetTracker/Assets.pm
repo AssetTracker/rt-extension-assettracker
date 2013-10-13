@@ -118,41 +118,6 @@ our %FIELD_METADATA = (
 # Lower Case version of FIELDS, for case insensitivity
 our %LOWER_CASE_FIELDS = map { ( lc($_) => $_ ) } (keys %FIELD_METADATA);
 
-
-#sub RegisterLinkField {
-#
-#    my $base   = shift;
-#    my $target = shift;
-#
-#    $FIELD_METADATA{$base}   = [ 'LINK' => To   => $base ];
-#    $FIELD_METADATA{$target} = [ 'LINK' => From => $base ];
-#
-#    {
-#        no strict 'refs';
-#
-#        my $limit_base   = "Limit$base";
-#        my $limit_target = "Limit$target";
-#
-#        *$limit_base = sub {
-#            my $self = shift;
-#            my $asset_uri = shift;
-#            $self->LimitLinkedTo ( TARGET => $asset_uri,
-#                                   TYPE => $base,          );
-#
-#        };
-#        *$limit_target = sub {
-#            my $self = shift;
-#            my $asset_uri = shift;
-#            $self->LimitLinkedFrom ( BASE => $asset_uri,
-#                                     TYPE => $base,        );
-#
-#        };
-#
-#    }
-#
-#}
-
-
 our %SEARCHABLE_SUBFIELDS = (
     User => [qw(
         EmailAddress Name RealName Nickname Organization Address1 Address2

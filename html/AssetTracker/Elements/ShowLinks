@@ -47,17 +47,43 @@
 %# END BPS TAGGED BLOCK }}}
 <table>
 
-% for my $link ( keys %$link_dir ) {
-    <& ShowLinkPair, Asset => $Asset, Base => $link, Map => $link_types &>
+%foreach my $type ( keys %{RT->Config->Get('AssetLinkTypes')} ) {
+% my $base = $RT::Link::DIRMAP{$type}->{'Base'};
+% my $target = $RT::Link::DIRMAP{$type}->{'Target'};
+  <tr>
+    <td class="labeltop"><& ShowRelationLabel, uri => $uri, Label => loc(SplitCamelCase($base)), Relation => $base &>:\
+    </td>
+    <td class="value">
+<ul>
+% while (my $Link = $Asset->$base->Next) {
+<li><& /Elements/ShowLink, URI => $Link->TargetURI &></li>
 % }
+</ul>
+    </td>
+  </tr>
+  <tr>
+    <td class="labeltop"><& ShowRelationLabel, uri => $uri, Label => loc(SplitCamelCase($target)), Relation => $target &>:\
+    </td>
+    <td class="value">
+<ul>
+% while (my $Link = $Asset->$target->Next) {
+%     next if !$TicketLinks && $type eq 'RefersTo' && $Link->BaseURI->IsLocal && ref( $Link->BaseObj ) eq 'RT::Ticket';
+<li><& /Elements/ShowLink, URI => $Link->BaseURI &></li>
+% }
+</ul>
+    </td>
+  </tr>
+%}
 
-% # Allow people to add more rows to the table                                       % $m->callback( %ARGS );
+% # Allow people to add more rows to the table
+% $m->callback( %ARGS );
 </table>
 <%INIT>
-my $link_types = \%RT::Link::TYPEMAP;
-my $link_dir   = \%RT::Link::DIRMAP;
-</%INIT>
 
+my $uri = $Asset->URI;
+
+</%INIT>
 <%ARGS>
 $Asset => undef
+$TicketLinks => 1
 </%ARGS>

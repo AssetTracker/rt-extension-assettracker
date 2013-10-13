@@ -432,7 +432,7 @@ sub _DeleteLink {
     unless ( $args{ 'Silent'. $direction } ) {
         my ( $Trans, $Msg, $TransObj ) = $self->_NewTransaction(
             Type      => 'DeleteLink',
-            Field     => $RT::Link::DIRMAP->{$args{'Type'}}->{$direction},
+            Field     => $RT::Link::DIRMAP{$args{'Type'}}->{$direction},
             OldValue  => $remote_uri->URI || $remote_link,
             TimeTaken => 0,
 	    Data      => $args{'TransactionData'},
@@ -444,7 +444,7 @@ sub _DeleteLink {
         my $OtherObj = $remote_uri->Object;
         my ( $val, $msg ) = $OtherObj->_NewTransaction(
             Type           => 'DeleteLink',
-            Field          => $RT::Link::DIRMAP->{$args{'Type'}}->{$opposite_direction},
+            Field          => $RT::Link::DIRMAP{$args{'Type'}}->{$opposite_direction},
             OldValue       => $self->URI,
             ActivateScrips => !RT->Config->Get('LinkTransactionsRun1Scrip'),
             TimeTaken      => 0,
