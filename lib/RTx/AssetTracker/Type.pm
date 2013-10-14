@@ -1242,8 +1242,19 @@ sub __DependsOn
     $objs->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Type-Role' );
     $objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
     push( @$list, $objs );
+
+# Scrips
+    $objs = RTx::AssetTracker::Scrips->new( $self->CurrentUser );
+    $objs->LimitToAssetType( $self->id );
+    push( @$list, $objs );
+
+# Templates
+    $objs = $self->Templates;
+    push( @$list, $objs );
+
 # Custom Fields
     $objs = RT::CustomFields->new( $self->CurrentUser );
+    $objs->SetContextObject( $self );
     $objs->LimitToAssetType( $self->id );
     push( @$list, $objs );
 
