@@ -3156,7 +3156,7 @@ sub Import {
     }
 
     if ($error) {
-    $RT::Logger->error( "Asset import error. Rolling back DB transactions." );
+    $RT::Logger->info( "Asset import error. Rolling back DB transactions." );
         $RT::Handle->Rollback();
         return 0, $msgs;
     }
