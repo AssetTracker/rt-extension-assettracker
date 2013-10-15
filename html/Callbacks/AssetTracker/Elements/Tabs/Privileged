@@ -35,7 +35,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
             $obj->Load($id);
 
             if ( $obj and $obj->id ) {
-                my $actions = PageMenu()->child('actions');
+                my $actions = PageMenu()->child( actions => title => loc('Actions'), sort_order  => 95 );
                 my $tabs = PageMenu();
                 $tabs->child( display => title => loc('Display') => path => "/AssetTracker/Asset/Display.html?id=" . $id );
                 $tabs->child( history => title => loc('History') => path => "/AssetTracker/Asset/History.html?id=" . $id );
