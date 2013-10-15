@@ -102,7 +102,7 @@ else {
                 Type             => $type->Name,
                 Name             => "",
                 Description      => "",
-                Status           => "new",
+                Status           => "production",
                 TransactionData  => "",
 		map { $_ => [] } ActiveRoleArray(),
             },
