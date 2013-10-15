@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2005 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,7 +43,7 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 %# REST/1.0/Forms/asset/links
 %#
@@ -50,9 +52,9 @@ $id
 $format => 's'
 $changes => undef
 </%ARGS>
-<%perl>
+<%INIT>
 my @data;
-my $asset = new RTx::AssetTracker::Asset $session{CurrentUser};
+my $asset = RTx::AssetTracker::Asset->new($session{CurrentUser});
 
 $asset->Load($id);
 if (!$asset->Id) {
@@ -60,17 +62,10 @@ if (!$asset->Id) {
 }
 
 my ($c, $o, $k, $e) = ("", [], {}, 0);
-my @fields = qw(DependsOn DependedOnBy RefersTo ReferredToBy RunsOn IsRunning ComponentOf HasComponent );
-@fields = (@fields, @RTx::AssetTracker::LinkTypes); # Make sure we know about Custom Link types
+my @fields = RT->Config->Get('AssetLinkTypes');
 my %fields = map { lc $_ => $_ } @fields;
-my @F = @fields;
-my %lfields;
-# Don't forget that the Type argument must always be the name of the forward link type;
-# the forward and reverse links are differentiated by the Mode
-while (my ($t,$b) = splice(@F, 0, 2)) {
-  $lfields{$t} = { Type => $t, Mode => 'Target' },
-  $lfields{$b} = { Type => $t, Mode => 'Base' },
-}
+
+my %lfields = %RT::AssetTracker::LINKTYPEMAP;
 
 if ($changes) {
     my ($get, $set, $key, $val, $n, $s);
@@ -94,11 +89,12 @@ if ($changes) {
             my %new;
             foreach my $nkey (@{vsplit($val)}) {
                 if ($nkey =~ /^\d+$/) {
-                    my $uri = new RT::URI $session{CurrentUser};
-                    my $as = new RTx::AssetTracker::Asset $session{CurrentUser};
+                    my $uri = RT::URI->new($session{CurrentUser});
+                    my $as = RTx::AssetTracker::Asset->new($session{CurrentUser});
                     $as->Load($nkey);
                     if ($as->Id) {
-                        $nkey = $uri->FromObject($as);
+                        $uri->FromObject($as);
+                        $nkey = $uri->URI;
                     }
                     else {
                         $n = 0;
@@ -155,15 +151,9 @@ else {
 
         my $field = $lfields{$key}->{Mode};
         while (my $link = $asset->$key->Next) {
-            # If we have the optional link tag defined, use it
-            if (eval { $link->Attribute } ) {
-              push @val, $link->$field . ":" . $link->Attribute;
-            }
-            else {
-              push @val, $link->$field;
-            }
+            push @val, $link->$field;
         }
-        push(@val, "") if (@val == 0 && $format eq 'l');
+        push(@val, "") if (@val == 0 && defined $format && $format eq 'l');
         push @data, [ $key => [ @val ] ] if @val;
     }
 
@@ -173,4 +163,4 @@ else {
 }
 
 return [ $c, $o, $k, $e ];
-</%perl>
+</%INIT>

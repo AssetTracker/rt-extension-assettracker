@@ -1,40 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%# 
-%# This software is Copyright (c) 1996-2009 Best Practical Solutions, LLC
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
 %# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 %# 02110-1301 or visit their web page on the internet at
 %# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
-%# 
-%# 
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -43,7 +43,7 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 %# REST/1.0/Forms/asset/default
 %#
@@ -62,7 +62,7 @@ my $cf_spec = RT::Interface::REST->custom_field_spec(1);
 my @comments;
 my ($c, $o, $k, $e) = ("", [], {}, 0);
 my %data   = %$changes;
-my $asset  = new RTx::AssetTracker::Asset $session{CurrentUser};
+my $asset  = RTx::AssetTracker::Asset->new($session{CurrentUser});
 my @dates  = qw(Created LastUpdated);
 my @people = RTx::AssetTracker::Type->RoleGroupTypes();
 my @create = ( qw(Type Name Description Status),
@@ -79,19 +79,26 @@ if ($id ne 'new') {
     if (!$asset->Id) {
         return [ "# Asset $id does not exist.", [], {}, 1 ];
     }
-    elsif (!$asset->CurrentUserHasRight('ShowAsset') ||
-           (%data && !$asset->CurrentUserHasRight('ModifyAsset')))
-    {
-        my $act = %data ? "modify" : "display";
-        return [ "# You are not allowed to $act asset $id.", [], {}, 1 ];
+    elsif ( %data ) {
+        if ( $data{status} && lc $data{status} eq 'deleted' && ! grep { $_ ne 'id' && $_ ne 'status' } keys %data ) {
+            if ( !$asset->CurrentUserHasRight('DeleteAsset') ) {
+                return [ "# You are not allowed to delete asset $id.", [], {}, 1 ];
+            }
+        }
+        elsif ( !$asset->CurrentUserHasRight('ModifyAsset') ) {
+                return [ "# You are not allowed to modify asset $id.", [], {}, 1 ];
+        }
+    }
+    elsif (!$asset->CurrentUserHasRight('ShowAsset')) {
+        return [ "# You are not allowed to display asset $id.", [], {}, 1 ];
     }
 }
 else {
     if (!keys(%data)) {
         # GET asset/new: Return a suitable default form.
-        # We get defaults from type/1 (XXX: What if it isn't there?).
-        my $type = new RTx::AssetTracker::Type $session{CurrentUser};
-        $type->Load(1);
+        # We get defaults from assettype/1 (XXX: What if it isn't there?).
+        my $assettype = RTx::AssetTracker::Type->new($session{CurrentUser});
+        $assettype->Load(1);
 
         return [
             "# Required: id, Type",
@@ -99,7 +106,7 @@ else {
                 RTx::AssetTracker::Type->RoleGroupTypes() ) ],
             {
                 id               => "asset/new",
-                Type             => $type->Name,
+                Type             => $assettype->Name,
                 Name             => "",
                 Description      => "",
                 Status           => "production",
@@ -117,7 +124,7 @@ else {
         foreach my $k (keys %data) {
             # flexibly parse any dates
             if ($dates{lc $k}) {
-                my $time = new RT::Date $session{CurrentUser};
+                my $time = RT::Date->new($session{CurrentUser});
                 $time->Set(Format => 'unknown', Value => $data{$k});
                 $data{$k} = $time->ISO;
             }
@@ -145,6 +152,12 @@ else {
             elsif (lc $k eq 'transactiondata') {
                 $transactiondata = delete $data{$k};
             }
+        }
+
+        if ( $e ) {
+            unshift @comments, "# Could not create asset.";
+            $k = \%data;
+            goto DONE;
         }
 
         # people fields allow multiple values
@@ -231,6 +244,7 @@ if (!keys(%data)) {
 }
 else {
     my ($get, $set, $key, $val, $n, $s);
+    my $updated;
 
     foreach $key (keys %data) {
         $val = $data{$key};
@@ -252,8 +266,10 @@ else {
         elsif (exists $simple{$key}) {
             $key = $simple{$key};
             $set = "Set$key";
+            my $current = $asset->$key;
+            $current = '' unless defined $current;
 
-            next if (($val eq $asset->$key)|| ($asset->$key =~ /^\d+$/ && $val == $asset->$key));
+            next if ($val eq $current) or ($current =~ /^\d+$/ && $val =~ /^\d+$/ && $val == $current);
             ($n, $s) = $asset->$set("$val");
         }
         elsif (exists $dates{$key}) {
@@ -268,7 +284,7 @@ else {
 
             $set = "Set$key";
 
-            my $time = new RT::Date $session{CurrentUser};
+            my $time = RT::Date->new($session{CurrentUser});
             $time->Set(Format => 'sql', Value => $asset->$key);
             next if ($val =~ /^not set$/i || $val eq $time->AsString);
 
@@ -281,7 +297,7 @@ else {
 
             my %new  = map {$_=>1} @{ vsplit($val) };
             my %old  = map {$_=>1} $asset->$key->MemberEmailAddresses;
-            my $type = $key eq 'Requestors' ? 'Requestor' : $key;
+            my $type = $key;
 
             foreach $p (keys %old) {
                 unless (exists $new{$p}) {
@@ -291,13 +307,6 @@ else {
                 }
             }
             foreach $p (keys %new) {
-                # XXX: This is a stupid test.
-                unless ($p =~ /^[\w.+-]+\@([\w.-]+\.)*\w+.?$/) {
-                    $s = 0;
-                    $n = "$p is not a valid email address.";
-                    push @msgs, [ $s, $n ];
-                    next;
-                }
                 unless ($asset->IsWatcher(Type => $type, Email => $p)) {
                     ($s, $n) = $asset->AddWatcher(Type => $type,
                                                    Email => $p);
@@ -329,11 +338,18 @@ else {
             else {
                 my $vals = $asset->CustomFieldValues($cf->id);
 
-                if ( $cf->SingleValue ) {
+                if ( !defined $val || !length $val ) {
+                    while ( my $val = $vals->Next ) {
+                        ($n, $s) = $asset->DeleteCustomFieldValue(
+                            Field => $cf, ValueId => $val->id,
+                        );
+                        $s =~ s/^# // if defined $s;
+                    }
+                }
+                elsif ( $cf->SingleValue ) {
                     my $old = $vals->Next;
                     if ( $old ) {
                         if ( $val ne $old->Content ) {
-                            $old->Delete;
                             ($n, $s) = $asset->AddCustomFieldValue(
                                  Field => $cf, Value => $val );
                             $s =~ s/^# // if defined $s;
@@ -347,14 +363,14 @@ else {
                 }
                 else {
                     my @new;
-                    my ( $a, $b ) = split /,/, $val, 2;
+                    my ( $a, $b ) = split /\s*,\s*/, $val, 2;
                     while ($a) {
                         no warnings 'uninitialized';
                         if ( $a =~ /^'/ ) {
                             my $s = $a;
                             while ( $a !~ /'$/ || ( $a !~ /(\\\\)+'$/
                                             && $a =~ /(\\)+'$/ ) ) {
-                                ( $a, $b ) = split /,/, $b, 2;
+                                ( $a, $b ) = split /\s*,\s*/, $b, 2;
                                 $s .= ',' . $a;
                             }
                             $s =~ s/^'//;
@@ -362,20 +378,20 @@ else {
                             $s =~ s/\\'/'/g;
                             push @new, $s;
                         }
-                        elsif ( $a =~ /^q{/ ) {
+                        elsif ( $a =~ /^q\{/ ) {
                             my $s = $a;
-                            while ( $a !~ /}$/ ) {
-                                ( $a, $b ) = split /,/, $b, 2;
+                            while ( $a !~ /\}$/ ) {
+                                ( $a, $b ) = split /\s*,\s*/, $b, 2;
                                 $s .= ',' . $a;
                             }
-                            $s =~ s/^q{//;
-                            $s =~ s/}//;
+                            $s =~ s/^q\{//;
+                            $s =~ s/\}//;
                             push @new, $s;
                         }
                         else {
                             push @new, $a;
                         }
-                        ( $a, $b ) = split /,/, $b, 2;
+                        ( $a, $b ) = split /\s*,\s*/, $b, 2;
                     }
 
                     my %new;
@@ -387,7 +403,7 @@ else {
                             $new{$c}--;
                         }
                         else {
-                            $v->Delete();
+                            $asset->DeleteCustomFieldValue( Field => $cf, ValueId => $v->id );
                         }
                     }
                     for ( @new ) {
@@ -400,7 +416,7 @@ else {
                 }
             }
         }
-        elsif ($key ne 'id' && $key ne 'type' && $key ne 'creator') {
+        elsif ($key ne 'id' && $key ne 'type' && $key ne 'creator' && $key ne 'content-type' ) {
             $n = 0;
             $s = "Unknown field.";
         }
@@ -410,14 +426,16 @@ else {
             $e = 1;
             push @comments, "# $key: $s";
             unless (@$o) {
-                my %o = keys %$changes;
-                delete $o{id};
-                @$o = ("id", keys %o);
+                # move id forward
+                @$o = ("id", grep { $_ ne 'id' } keys %$changes);
                 $k = $changes;
             }
         }
+        else {
+            $updated ||= 1;
+        }
     }
-    push(@comments, "# Asset ".$asset->id." updated.") unless $n == 0;
+    push(@comments, "# Asset ".$asset->id." updated.") if $updated;
 }
 
 DONE:
