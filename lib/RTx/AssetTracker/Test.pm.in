@@ -57,6 +57,31 @@ sub load_or_create_type {
     return $obj;
 }
 
+=head2 load_or_create_asset_custom_field
+
+=cut
+
+sub load_or_create_asset_custom_field {
+    my $self = shift;
+    my %args = ( Disabled => 0, LookupType => 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset', @_ );
+    my $obj = RT::CustomField->new( $RT::SystemUser );
+    if ( $args{'Name'} ) {
+        $obj->LoadByName( Name => $args{'Name'}, Type => $args{'AssetType'} );
+    } else {
+        die "Name is required";
+    }
+    unless ( $obj->id ) {
+        my ($val, $msg) = $obj->Create( %args );
+        die "$msg" unless $val;
+        my $typeobj = RTx::AssetTracker::Type->new( $RT::SystemUser );
+        $typeobj->Load( $args{'AssetType'} );
+        ($val, $msg) = $obj->AddToObject( $typeobj );
+        die "$msg" unless $val;
+    }
+
+    return $obj;
+}
+
 sub delete_type_watchers {
     my $self = shift;
     my @types = @_;
