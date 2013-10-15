@@ -1,38 +1,40 @@
 %# BEGIN BPS TAGGED BLOCK {{{
-%# 
+%#
 %# COPYRIGHT:
-%#  
-%# This software is Copyright (c) 1996-2006 Best Practical Solutions, LLC 
-%#                                          <jesse@bestpractical.com>
-%# 
+%#
+%# This software is Copyright (c) 1996-2013 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
 %# (Except where explicitly superseded by other copyright notices)
-%# 
-%# 
+%#
+%#
 %# LICENSE:
-%# 
+%#
 %# This work is made available to you under the terms of Version 2 of
 %# the GNU General Public License. A copy of that license should have
 %# been provided with this software, but in any event can be snarfed
 %# from www.gnu.org.
-%# 
+%#
 %# This work is distributed in the hope that it will be useful, but
 %# WITHOUT ANY WARRANTY; without even the implied warranty of
 %# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 %# General Public License for more details.
-%# 
+%#
 %# You should have received a copy of the GNU General Public License
 %# along with this program; if not, write to the Free Software
-%# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-%# 
-%# 
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
 %# CONTRIBUTION SUBMISSION POLICY:
-%# 
+%#
 %# (The following paragraph is not intended to limit the rights granted
 %# to you to modify and distribute this software under the terms of
 %# the GNU General Public License and is only of importance to you if
 %# you choose to contribute your changes and enhancements to the
 %# community by submitting them to Best Practical Solutions, LLC.)
-%# 
+%#
 %# By intentionally submitting any modifications, corrections or
 %# derivatives to this work, or any other work intended for use with
 %# Request Tracker, to Best Practical Solutions, LLC, you confirm that
@@ -41,57 +43,138 @@
 %# royalty-free, perpetual, license to use, copy, create derivative
 %# works based on those contributions, and sublicense and distribute
 %# those contributions and any derivatives thereof.
-%# 
+%#
 %# END BPS TAGGED BLOCK }}}
 %# REST/1.0/Forms/assettype/default
 %#
 <%ARGS>
 $id
 $format => 's'
-$changes => {}
 $fields => undef # these are the fields passed to the rt "-f" flag.
+$changes => {}
 </%ARGS>
 <%perl>
 my @comments;
-my @data;
 my ($c, $o, $k, $e) = ("", [], {}, 0);
 my %data = %$changes;
-my $assettype = new RTx::AssetTracker::Type $session{CurrentUser};
-my @people = RTx::AssetTracker::Type->RoleGroupTypes();
-my @basics = qw(Name Description);
-$assettype->Load($id);
-if (!$assettype->Id) {
-  return [ "# Asset Type/ID $id does not exist.", [], {}, 1 ];
+my $assettype = RTx::AssetTracker::Type->new($session{CurrentUser});
+my @fields = qw(Name Description);
+my %fields = map { lc $_ => $_ } @fields;
+
+if ($id ne 'new') {
+    $assettype->Load($id);
+    if (!$assettype->Id) {
+        return [ "# Asset type $id does not exist.", [], {}, 1 ];
+    }
+}
+else {
+    if (keys %data == 0) {
+        return [
+            "# Required: Name",
+            [ "id", @fields ],
+            {
+                id => 'assettype/new',
+                Name => '<asset type name>',
+                Description => "",
+            },
+            0
+        ];
+    }
+    else {
+        my %v;
+        my %create = %fields;
+
+        foreach my $k (keys %data) {
+            if (exists $create{lc $k}) {
+                $v{$create{lc $k}} = delete $data{$k};
+            }
+        }
+
+        if ($v{Name} eq '<asset type name>') {
+            my %o = keys %$changes;
+            delete @o{"id", @fields};
+            return [
+                "# Please set the asset type name.",
+                [ "id", @fields, keys %o ], $changes, 1
+            ];
+        }
+
+        $assettype->Create(%v);
+        unless ($assettype->Id) {
+            return [ "# Could not create asset type.", [], {}, 1 ];
+        }
+
+        delete $data{id};
+        $id = $assettype->Id;
+        push(@comments, "# Asset type $id created.");
+        goto DONE if keys %data == 0;
+    }
 }
 
-if (%$changes != 0) {
-  $e = 1;
-  $c = "Cannot modify Asset Type CF definitions via REST";
-  goto DONE;
+if ( keys %data == 0) {
+    my @data;
+
+    push @data, [ id => "assettype/".$assettype->Id ];
+    foreach my $key (@fields) {
+        push @data, [ $key => $assettype->$key ];
+    }
+
+    # Custom fields
+    my $CustomFields = $assettype->CustomFields;
+    while ( my $CustomField = $CustomFields->Next() ) {
+        next
+            unless ( !%$fields
+            || exists $fields->{ lc "CF-" . $CustomField->Name } );
+        next unless $CustomField->CurrentUserHasRight('SeeCustomField');
+        my $CFvalues = $assettype->CustomFieldValues( $CustomField->Id );
+        my @CFvalues;
+        while ( my $CFvalue = $CFvalues->Next() ) {
+            push @CFvalues, $CFvalue->Content;
+        }
+        push @data, [ "CF-" . $CustomField->Name => \@CFvalues ];
+    }
+
+    my %k = map {@$_} @data;
+    $o = [ map {$_->[0]} @data ];
+    $k = \%k;
 }
+else {
+    my ($get, $set, $key, $val, $n, $s);
+    my $updated;
+    foreach $key (keys %data) {
+        $val = $data{$key};
+        $key = lc $key;
+        $n = 1;
 
-if (%data == 0) {
-  
-  # Query must come with an asset Id
-  push @data, [ id    => "assettype/".$assettype->Id   ];
+        if (exists $fields{$key}) {
+            $key = $fields{$key};
+            $set = "Set$key";
 
-  # Might also come with some basic fields
-  foreach (@basics) {
-    next unless (!%$fields || (exists $fields->{lc $_}));
- 	  push @data, [$_ => $assettype->$_ ];
-  }
-  # Might also come with some Role fields
-  foreach my $key (@people) {    
-    next unless (!%$fields || (exists $fields->{lc $key}));
-    my $rg = $key . 'RoleGroup';
-    push @data, [ $key => [ $assettype->$rg->MemberEmailAddresses ] ];
-  }
-  
-  
-  my %k = map {@$_} @data;
-  $o = [ map {$_->[0]} @data ];
-  $k = \%k;
+            next if $val eq $assettype->$key;
+            ($n, $s) = $assettype->$set($val);
+        }
+        elsif ($key ne 'id') {
+            $n = 0;
+            $s = "Unknown field.";
+        }
 
+    SET:
+        if ($n == 0) {
+            $e = 1;
+            push @comments, "# $key: $s";
+            unless (@$o) {
+                my %o = keys %$changes;
+                delete @o{"id", @fields};
+                @$o = ("id", @fields, keys %o);
+                $k = $changes;
+            }
+        }
+        else {
+            $updated ||= 1;
+        }
+    }
+
+    push(@comments, "# Asset type $id updated.") if $updated;
 }
 
 DONE:
