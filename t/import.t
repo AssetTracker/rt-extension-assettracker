@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 
-package T::Import;
 use strict;
 use warnings;
 
