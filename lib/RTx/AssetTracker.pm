@@ -23,15 +23,8 @@ use version; our $VERSION = version->declare("2.9.0");
 
 
 use RT::System;
-RT::System::AddRights(
-    BulkUpdate  => "Perform bulk updates on assets", # loc_pair
-    AssetImport => "Import assets", # loc_pair
-);
-
-RT::System::AddRightCategories(
-    BulkUpdate  => 'Staff',
-    AssetImport => 'Staff',
-);
+'RT::System'->AddRight( Staff => BulkUpdate  => 'Perform bulk updates on assets'); # loc_pair
+'RT::System'->AddRight( Staff => AssetImport => 'Import assets'); # loc_pair
 
 RT->AddJavaScript('assetautocomplete.js');
 

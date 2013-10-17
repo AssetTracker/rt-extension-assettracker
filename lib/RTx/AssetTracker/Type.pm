@@ -67,6 +67,9 @@ use warnings;
 package RTx::AssetTracker::Type;
 use base 'RTx::AssetTracker::Record';
 
+use Role::Basic 'with';
+with "RT::Record::Role::Rights";
+
 sub Table {'AT_Types'};
 
 use RT::CustomField;
@@ -76,74 +79,18 @@ use RT::Group;
 our @DEFAULT_ACTIVE_STATUS = qw(production development qa pilot dr test);
 our @DEFAULT_INACTIVE_STATUS = qw(retired deleted);
 
-our $RIGHTS = {
-    SeeType            => 'Can this principal see this asset type',       # loc_pair
-    AdminType          => 'Create, delete and modify asset types',        # loc_pair
-    AssignCustomFields => 'Assign and remove custom fields',              # loc_pair
-    ModifyTypeAdmins   => 'Modify administrators for asset type',         # loc_pair
-    ModifyTypeWatchers => 'Modify watchers for asset type',               # loc_pair
-    ShowAsset      => 'See asset details',                                # loc_pair
-    CreateAsset    => 'Create assets of this asset type',                 # loc_pair
-    ModifyAsset    => 'Modify assets of this asset type',                 # loc_pair
-    RetireAsset    => 'Retire assets of this asset type',                 # loc_pair
-    DeleteAsset    => 'Delete assets',                                    # loc_pair
-};
-
-our $RIGHT_CATEGORIES = {
-    SeeType            => 'General',
-    ShowAsset          => 'General',
-    ModifyAsset        => 'General',
-    CreateAsset        => 'General',
-    AdminType          => 'Admin',
-    AssignCustomFields => 'Staff',
-    ModifyTypeAdmins   => 'Staff',
-    ModifyTypeWatchers => 'Staff',
-    RetireAsset        => 'Staff',
-    DeleteAsset        => 'Staff',
-};
-
-# Tell RT::ACE that this sort of object can get acls granted
-$RT::ACE::OBJECT_TYPES{'RTx::AssetTracker::Type'} = 1;
-
-# TODO: This should be refactored out into an RT::ACLedObject or something
-# stuff the rights into a hash of rights that can exist.
-
-__PACKAGE__->AddRights(%$RIGHTS);
-__PACKAGE__->AddRightCategories(%$RIGHT_CATEGORIES);
-
-RT::System::AddRights(%$RIGHTS);
-RT::System::AddRightCategories(%$RIGHT_CATEGORIES);
+__PACKAGE__->AddRight( General => SeeType            => 'Can this principal see this asset type' ); # loc_pair
+__PACKAGE__->AddRight( Admin   => AdminType          => 'Create, delete and modify asset types' ); # loc_pair
+__PACKAGE__->AddRight( Staff   => AssignCustomFields => 'Assign and remove custom fields' ); # loc_pair
+__PACKAGE__->AddRight( Staff   => ModifyTypeAdmins   => 'Modify administrators for asset type' ); # loc_pair
+__PACKAGE__->AddRight( Staff   => ModifyTypeWatchers => 'Modify watchers for asset type' ); # loc_pair
+__PACKAGE__->AddRight( General => ShowAsset          => 'See asset details' ); # loc_pair
+__PACKAGE__->AddRight( General => CreateAsset        => 'Create assets of this asset type' ); # loc_pair
+__PACKAGE__->AddRight( General => ModifyAsset        => 'Modify assets of this asset type' ); # loc_pair
+__PACKAGE__->AddRight( Staff   => RetireAsset        => 'Retire assets of this asset type' ); # loc_pair
+__PACKAGE__->AddRight( Staff   => DeleteAsset        => 'Delete assets' ); # loc_pair
 
 require RT::Lifecycle;
-
-=head2 AddRights C<RIGHT>, C<DESCRIPTION> [, ...]
-
-Adds the given rights to the list of possible rights.  This method
-should be called during server startup, not at runtime.
-
-=cut
-
-sub AddRights {
-    my $self = shift;
-    my %new = @_;
-    $RIGHTS = { %$RIGHTS, %new };
-    %RT::ACE::LOWERCASERIGHTNAMES = ( %RT::ACE::LOWERCASERIGHTNAMES,
-                                      map { lc($_) => $_ } keys %new);
-}
-
-=head2 AddRightCategories C<RIGHT>, C<CATEGORY> [, ...]
-
-Adds the given right and category pairs to the list of right categories.  This
-method should be called during server startup, not at runtime.
-
-=cut
-
-sub AddRightCategories {
-    my $self = shift if ref $_[0] or $_[0] eq __PACKAGE__;
-    my %new = @_;
-    $RIGHT_CATEGORIES = { %$RIGHT_CATEGORIES, %new };
-}
-
 
 # Custom field support
 RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type' => "Asset Types" );
@@ -230,15 +177,7 @@ sub ConfigureRole {
     $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc 'Type'.$role}  = 'Type'.$role;
     $RTx::AssetTracker::Assets::LOWER_CASE_FIELDS{lc $role.'Group'} = $role.'Group';
 
-    my $right = $self->RoleRight($role);
-    my $desc = $self->RoleDescription($role);
-
-    $self->AddRights( $right => $desc );
-    $self->AddRightCategories( $right => 'General' );
-    RT::System->AddRights( $right => $desc );
-    RT::System->AddRightCategories( $right => 'General' );
-
-    $RT::ACE::LOWERCASERIGHTNAMES{ lc $right } = $right;
+    __PACKAGE__->AddRight( General => $self->RoleRight($role) => $self->RoleDescription($role) );
 
     my $group_role_method = $role . "RoleGroup";
     my $is_role_method = 'Is' . $role;
@@ -313,29 +252,6 @@ sub ConfigureRole {
 
 
 # }}}
-
-
-=head2 AvailableRights
-
-Returns a hash of available rights for this object. The keys are the right names and the values are a description of what the rights do
-
-=cut
-
-sub AvailableRights {
-    my $self = shift;
-    return($RIGHTS);
-}
-
-=head2 RightCategories
-
-Returns a hashref where the keys are rights for this type of object and the
-values are the category (General, Staff, Admin) the right falls into.
-
-=cut
-
-sub RightCategories {
-    return $RIGHT_CATEGORIES;
-}
 
 
 sub Lifecycle {
