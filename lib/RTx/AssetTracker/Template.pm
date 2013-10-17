@@ -257,7 +257,7 @@ sub Create {
         $args{'AssetType'} = $AssetTypeObj->Id;
     }
 
-    my $result = $self->SUPER::Create(
+    my ( $result, $msg ) = $self->SUPER::Create(
         Content     => $args{'Content'},
         AssetType   => $args{'AssetType'},
         Description => $args{'Description'},
@@ -265,7 +265,11 @@ sub Create {
         Type        => $args{'Type'},
     );
 
-    return ($result);
+    if ( wantarray ) {
+    	return ( $result, $msg );
+    } else {
+    	return ( $result );
+    }
 
 }
 
