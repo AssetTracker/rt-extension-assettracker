@@ -66,12 +66,12 @@ Do the following:
 
 1. Make a backup of any AT customizations.
 
-2. AT now uses the RT plugins system. Remove all AT files fom the RT directories.
+2. AT uses the RT plugins system. Remove all AT files fom the RT directories.
    After the "make install" step above put any AT customizations in
    $RTHOME/local/plugins/RTx-AssetTracker, add 
 
 3. Add to RT_SiteConfig: 
-       Set(@Plugins,(qw(RTx::AssetTracker)));
+       Plugins( "RTx::AssetTracker" );
 
 
 UPGRADING FROM AT 2.0.x AND EARLIER
