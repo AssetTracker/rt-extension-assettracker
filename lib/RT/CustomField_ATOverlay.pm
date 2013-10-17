@@ -8,6 +8,10 @@ use RT::CustomField;
 use RT::CurrentUser;
 
 
+__PACKAGE__->RegisterLookupType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' => "Assets", ); #loc
+__PACKAGE__->RegisterLookupType( 'RTx::AssetTracker::Type' => "Asset Types", ); #loc
+
+
 =head2 LoadByNameAndAssetType (Type => TYPEID, Name => NAME)
 
 Loads the Custom field named NAME.

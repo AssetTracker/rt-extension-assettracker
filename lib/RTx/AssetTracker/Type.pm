@@ -92,9 +92,6 @@ __PACKAGE__->AddRight( Staff   => DeleteAsset        => 'Delete assets' ); # loc
 
 require RT::Lifecycle;
 
-# Custom field support
-RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type' => "Asset Types" );
-
 # {{{ Setup Roles/Watchers
 
 our %DEFAULT_ROLES = (

@@ -78,8 +78,6 @@ use RTx::AssetTracker::Ports;
 use RT::URI;
 use RT::CustomField;
 
-RT::CustomField->_ForObjectType( 'RTx::AssetTracker::Type-RTx::AssetTracker::Asset' => "Assets" );
-
 
 # A helper table for links mapping to make it easier
 # to build and parse links between assets
