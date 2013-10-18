@@ -147,7 +147,7 @@ ok($group->HasMember($RT::SystemUser->UserObj->PrincipalObj), "the owner group h
 {
 
 my $aa = RTx::AssetTracker::Asset->new($RT::SystemUser);
-my ($id, $tid, $msg)= $aa->Create(Type => 'servers',
+my ($id, $tid, $msg)= $aa->Create(Type => 'Servers',
             Name => 'test');
 ok($id, $msg);
 is($aa->Status, 'production', "New asset is created as production");
