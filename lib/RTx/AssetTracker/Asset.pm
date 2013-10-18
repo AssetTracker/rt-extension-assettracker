@@ -68,7 +68,8 @@ package RTx::AssetTracker::Asset;
 use base 'RTx::AssetTracker::Record';
 
 use Role::Basic 'with';
-with "RT::Record::Role::Links";
+with "RT::Record::Role::Links",
+     "RT::Record::Role::Roles";
 
 sub Table {'AT_Assets'};
 

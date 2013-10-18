@@ -68,7 +68,8 @@ package RTx::AssetTracker::Type;
 use base 'RTx::AssetTracker::Record';
 
 use Role::Basic 'with';
-with "RT::Record::Role::Rights";
+with "RT::Record::Role::Roles",
+     "RT::Record::Role::Rights";
 
 sub Table {'AT_Types'};
 
@@ -151,9 +152,13 @@ sub ConfigureRoles {
 }
 
 sub ConfigureRole {
-
     my $self = shift;
     my $role = shift;
+
+    RTx::AssetTracker::Asset->RegisterRole(
+        Name            => $role,
+        EquivClasses    => ['RTx::AssetTracker::Type'],
+    );
 
     # if the system role group doesn't exist, create it
     my $group = RT::Group->new( $RT::SystemUser );
@@ -409,7 +414,7 @@ sub Create {
         return ( 0, $self->loc('Asset type could not be created') );
     }
 
-    my $create_ret = $self->_CreateTypeGroups();
+    my $create_ret = $self->_CreateRoleGroups();
     unless ($create_ret) {
         $RT::Handle->Rollback();
         return ( 0, $self->loc('Asset type could not be created') );
@@ -637,99 +642,6 @@ sub RoleGroupTypes {
     }
 }
 
-=head2 IsRoleGroupType
-
-Returns whether the passed-in type is a role group type.
-
-=cut
-
-sub IsRoleGroupType {
-    my $self = shift;
-    my $type = shift;
-
-    for my $valid_type ($self->RoleGroupTypes) {
-        return 1 if $type eq $valid_type;
-    }
-
-    return 0;
-}
-
-
-=head2 _CreateTypeGroups
-
-Create the asset groups and links for this asset.
-This routine expects to be called from Asset->Create _inside of a transaction_
-
-It will create two groups for this asset: Admin and Owner ( Or,
-whatever roles were configured in AT_SiteConfig.
-
-It will return true on success and undef on failure.
-
-=cut
-
-sub _CreateTypeGroups {
-    my $self = shift;
-
-    my @types = $self->RoleGroupTypes();
-
-    foreach my $type (@types) {
-        my $ok = $self->_CreateTypeRoleGroup($type);
-        return undef if !$ok;
-    }
-
-    return 1;
-}
-
-
-# Wrap RT::Group::CreateRoleGroup so that it can deal with groups for
-# the RTx::AssetTracker domain.
-{
-    package RT::Group;
-    no warnings qw(redefine);
-
-    my $Orig_CreateRoleGroup = __PACKAGE__->can('CreateRoleGroup')
-        or die "API change? Can't find method 'CreateRoleGroup'";
-    *CreateRoleGroup = sub {
-        my $self = shift;
-        my %args = ( Instance => undef,
-                     Type     => undef,
-                     Domain   => undef,
-                     @_ );
-
-        return $Orig_CreateRoleGroup->($self, %args)
-            unless $args{'Domain'} =~ /^RTx::AssetTracker/;
-
-        unless (RTx::AssetTracker::Type->IsRoleGroupType($args{Type})) {
-            return ( 0, $self->loc("Invalid Group Type") );
-        }
-
-
-        return ( $self->_Create( Domain            => $args{'Domain'},
-                                 Instance          => $args{'Instance'},
-                                 Name              => $args{'Type'},
-                                 InsideTransaction => 1 ) );
-    }
-}
-
-
-sub _CreateTypeRoleGroup {
-    my $self = shift;
-    my $type = shift;
-
-    my $type_obj = RT::Group->new($self->CurrentUser);
-    my ($id, $msg) = $type_obj->CreateRoleGroup(Instance => $self->Id, 
-                                                    Type => $type,
-                                                    Domain => 'RTx::AssetTracker::Type-Role');
-    unless ($id) {
-        $RT::Logger->error("Couldn't create an Asset Type group of type '$type' for type ".
-                            $self->Id.": ".$msg);
-        return(undef);
-    }
-
-    return $id;
-}
-
-
 
 # _HasModifyWatcherRight {{{
 sub _HasModifyWatcherRight {
@@ -746,7 +658,7 @@ sub _HasModifyWatcherRight {
     #If the watcher we're trying to add is for the current user
     if ( defined $args{'PrincipalId'} && $self->CurrentUser->PrincipalId  eq $args{'PrincipalId'}) {
 
-        if ( $self->IsRoleGroupType( $args{'Type'} ) ) {
+        if ( $self->HasRole($args{'Type'}) ) {
             return 1 if $self->CurrentUserHasRight( $self->RoleRight($args{'Type'}) );
         }
         else {
@@ -794,7 +706,7 @@ sub AddWatcher {
     }
 
     return ( 0, "Unknown watcher type [_1]", $args{Type} )
-        unless $self->IsRoleGroupType($args{Type});
+        unless $self->HasRole($args{Type});
 
     my ($ok, $msg) = $self->_HasModifyWatcherRight(%args);
     return ($ok, $msg) if !$ok;
@@ -941,7 +853,7 @@ sub DeleteWatcher {
     }
 
     return ( 0, $self->loc('Unknown watcher type [_1]', $args{Type}) )
-        unless $self->IsRoleGroupType($args{Type});
+        unless $self->HasRole($args{Type});
 
     my ($ok, $msg) = $self->_HasModifyWatcherRight(%args);
     return ($ok, $msg) if !$ok;
@@ -1097,7 +1009,7 @@ sub LoadTypeRoleGroup {
     # create it
     unless ( $group->id ) {
         my ($id, $msg) = $group->_Create(Instance => $self->Id,
-                                            Type => $args{Type},
+                                            Name => $args{Type},
                                             Domain => 'RTx::AssetTracker::Type-Role',
                                             InsideTransaction => 0);
         unless ($id) {

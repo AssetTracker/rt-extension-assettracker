@@ -19,7 +19,7 @@ if ( $request_path =~ m{^/AssetTracker/Search/Grid.html} ) {
             $column->{output} = [ $m->scomp( '/AssetTracker/Elements/SelectType', Name => "Asset-".$Record->Id."-Type", Default => $Record->Type ) ];
             $column->{output}->[0] =~ s/\n//g;
         }
-        elsif ( RTx::AssetTracker::Type->IsRoleGroupType( $col ) ) {
+        elsif ( RTx::AssetTracker::Type->HasRole( $col ) ) {
             $column->{output} = [ '<textarea cols="30" rows="3" name="Asset-'.$Record->Id.'-'.$col.'">' ];
             my $method = $col . 'RoleGroup';
             my $members = $Record->$method->MembersObj;
