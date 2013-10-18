@@ -23,7 +23,7 @@ jQuery(function() {
             continue;
 
         var options = {
-            source: "<% RT->Config->Get('WebPath')%>/Helpers/Autocomplete/Assets"
+            source: RT.Config.WebHomePath + "/Helpers/Autocomplete/Assets"
         };
 
         var queryargs = [];
