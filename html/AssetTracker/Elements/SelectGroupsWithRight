@@ -80,7 +80,7 @@ else {
 my %group_uniq_hash;
 foreach my $object (@objects) {
     my $Groups = RT::Groups->new($session{CurrentUser});
-    $Groups->Limit(FIELD => 'Domain', OPERATOR => '=', VALUE => $Domain);
+    $Groups->Limit( FIELD => 'Domain', OPERATOR => '=', VALUE => $Domain, CASESENSITIVE => 0 );
     $Groups->WithRight(Right => $Right,
                        Object => $object,
                        EquivObjects => [ @equiv_objects ],
