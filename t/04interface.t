@@ -133,7 +133,7 @@ $m->submit_form(with_fields => { 'AssetField'  => $aid,
 $m->content_contains($asset1->Name, "found " . $asset1->Name);
 $m->submit_form(with_fields => { "AddLink-Asset-$a1uri" => 'ComponentOf' } );
 
-$m->content_contains("URI $a3uri component of URI $a1uri", "Asset component link was created");
+$m->content_contains("Asset " . $asset3->Id . " component of Asset " . $asset1->Id, "Asset component link was created");
 }
 
 # Now try to create a linked ticket.

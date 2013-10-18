@@ -1134,8 +1134,8 @@ sub _CustomFieldDecipher {
     my ($self, $string, $lookuptype) = @_;
     $lookuptype ||= $self->_SingularClass->CustomFieldLookupType;
 
-    my ($object, $field, $column) = ($string =~ /^(?:(.+?)\.)?{(.+)}(?:\.(Content|LargeContent))?$/);
-    $field ||= ($string =~ /^{(.*?)}$/)[0] || $string;
+    my ($object, $field, $column) = ($string =~ /^(?:(.+?)\.)?\{(.+)\}(?:\.(Content|LargeContent))?$/);
+    $field ||= ($string =~ /^\{(.*?)\}$/)[0] || $string;
 
     my ($cf, $applied_to);
 
@@ -1157,7 +1157,7 @@ sub _CustomFieldDecipher {
     if ( $field =~ /\D/ ) {
         $object ||= '';
         my $cfs = RT::CustomFields->new( $self->CurrentUser );
-        $cfs->Limit( FIELD => 'Name', VALUE => $field, ($applied_to ? (CASESENSITIVE => 0) : ()) );
+        $cfs->Limit( FIELD => 'Name', VALUE => $field, CASESENSITIVE => 0 );
         $cfs->LimitToLookupType($lookuptype);
 
         if ($applied_to) {
@@ -3191,8 +3191,7 @@ sub _fixup_import {
     }
 
     #links
-    my $LINKTYPEMAP = RTx::AssetTracker::Asset::LINKTYPEMAP();
-    for my $type (keys %$LINKTYPEMAP) {
+    for my $type ( keys %RT::Link::TYPEMAP ) {
         next unless exists $asset{$type} && defined $asset{$type};
         my @URIs = split(/,/, delete $asset{$type});
         $fixed{$type} = \@URIs;
