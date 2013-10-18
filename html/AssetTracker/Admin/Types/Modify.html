@@ -121,7 +121,7 @@ unless ($Create) {
 
 if ( $TypeObj->Id ) {
     $title = loc('Configuration for asset type [_1]', $TypeObj->Name );
-    my @attribs= qw(Description Name Lifecycle);
+    my @attribs= qw(Description Name Lifecycle Disabled);
 
     # we're asking about enabled on the web page but really care about disabled
     if ( $SetEnabled ) {
