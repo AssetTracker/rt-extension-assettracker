@@ -67,6 +67,9 @@ use warnings;
 package RTx::AssetTracker::Assets;
 use base 'RT::SearchBuilder';
 
+use Role::Basic 'with';
+with 'RT::SearchBuilder::Role::Roles';
+
 use RTx::AssetTracker::Asset;
 
 sub Table {'AT_Assets'};
@@ -878,107 +881,6 @@ sub _WatcherLimit {
     return ($groups, $group_members, $users);
 }
 
-sub _RoleGroupsJoin {
-    my $self = shift;
-    my %args = (New => 0, Class => 'Asset', Type => '', @_);
-    return $self->{'_sql_role_group_aliases'}{ $args{'Class'} .'-'. $args{'Type'} }
-        if $self->{'_sql_role_group_aliases'}{ $args{'Class'} .'-'. $args{'Type'} }
-           && !$args{'New'};
-
-    # we always have watcher groups for asset, so we use INNER join
-    my $groups = $self->Join(
-        ALIAS1          => 'main',
-        FIELD1          => $args{'Class'} eq 'Type'? 'Type': 'id',
-        TABLE2          => 'Groups',
-        FIELD2          => 'Instance',
-        ENTRYAGGREGATOR => 'AND',
-    );
-    $self->Limit(
-        LEFTJOIN        => $groups,
-        ALIAS           => $groups,
-        FIELD           => 'Domain',
-        VALUE           => 'RTx::AssetTracker::'. $args{'Class'} .'-Role',
-    );
-    $self->Limit(
-        LEFTJOIN        => $groups,
-        ALIAS           => $groups,
-        FIELD           => 'Type',
-        VALUE           => $args{'Type'},
-    ) if $args{'Type'};
-
-    $self->{'_sql_role_group_aliases'}{ $args{'Class'} .'-'. $args{'Type'} } = $groups
-        unless $args{'New'};
-
-    return $groups;
-}
-
-sub _GroupMembersJoin {
-    my $self = shift;
-    my %args = (New => 1, GroupsAlias => undef, Left => 1, @_);
-
-    return $self->{'_sql_group_members_aliases'}{ $args{'GroupsAlias'} }
-        if $self->{'_sql_group_members_aliases'}{ $args{'GroupsAlias'} }
-            && !$args{'New'};
-
-    my $alias = $self->Join(
-        $args{'Left'} ? (TYPE            => 'LEFT') : (),
-        ALIAS1          => $args{'GroupsAlias'},
-        FIELD1          => 'id',
-        TABLE2          => 'CachedGroupMembers',
-        FIELD2          => 'GroupId',
-        ENTRYAGGREGATOR => 'AND',
-    );
-    $self->Limit(
-        $args{'Left'} ? (LEFTJOIN => $alias) : (),
-        ALIAS => $alias,
-        FIELD => 'Disabled',
-        VALUE => 0,
-    );
-
-    $self->{'_sql_group_members_aliases'}{ $args{'GroupsAlias'} } = $alias
-        unless $args{'New'};
-
-    return $alias;
-}
-
-=head2 _WatcherJoin
-
-Helper function which provides joins to a watchers table both for limits
-and for ordering.
-
-=cut
-
-sub _WatcherJoin {
-    my $self = shift;
-    my $type = shift || '';
-
-
-    my $groups = $self->_RoleGroupsJoin( Type => $type );
-    my $group_members = $self->_GroupMembersJoin( GroupsAlias => $groups );
-    # XXX: work around, we must hide groups that
-    # are members of the role group we search in,
-    # otherwise them result in wrong NULLs in Users
-    # table and break ordering. Now, we know that
-    # RT doesn't allow to add groups as members of the
-    # ticket roles, so we just hide entries in CGM table
-    # with MemberId == GroupId from results
-    $self->Limit(
-        LEFTJOIN   => $group_members,
-        FIELD      => 'GroupId',
-        OPERATOR   => '!=',
-        VALUE      => "$group_members.MemberId",
-        QUOTEVALUE => 0,
-    );
-    my $users = $self->Join(
-        TYPE            => 'LEFT',
-        ALIAS1          => $group_members,
-        FIELD1          => 'MemberId',
-        TABLE2          => 'Users',
-        FIELD2          => 'id',
-    );
-    return ($groups, $group_members, $users);
-}
-
 =head2 _WatcherMembershipLimit
 
 Handle watcher membership limits, i.e. whether the watcher belongs to a
@@ -1730,7 +1632,7 @@ sub OrderByCols {
                     TABLE2 => 'AT_Types',
                     FIELD2 => 'id',
                 );
-                push @res, { %$row, ALIAS => $alias, FIELD => "Name" };
+                push @res, { %$row, ALIAS => $alias, FIELD => "Name", CASESENSITIVE => 0 };
             } elsif ( ( $meta->[0] eq 'ENUM' && ($meta->[1]||'') eq 'User' )
                 || ( $meta->[0] eq 'WATCHERFIELD' && ($meta->[1]||'') eq 'Owner' )
             ) {
@@ -1741,7 +1643,7 @@ sub OrderByCols {
                     TABLE2 => 'Users',
                     FIELD2 => 'id',
                 );
-                push @res, { %$row, ALIAS => $alias, FIELD => "Name" };
+                push @res, { %$row, ALIAS => $alias, FIELD => "Name", CASESENSITIVE => 0 };
             } else {
                 push @res, $row;
             }
@@ -2578,9 +2480,9 @@ sub CurrentUserCanSee {
     if ( my @tmp = grep !ref $roles{ $_ }, keys %roles ) {
 
         my $groups = RT::Groups->new( RT->SystemUser );
-        $groups->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Type-Role' );
+        $groups->Limit( FIELD => 'Domain', VALUE => 'RTx::AssetTracker::Type-Role', CASESENSITIVE => 0 );
         foreach ( @tmp ) {
-            $groups->Limit( FIELD => 'Name', VALUE => $_ );
+            $groups->Limit( FIELD => 'Name', VALUE => $_, CASESENSITIVE => 0 );
         }
         my $principal_alias = $groups->Join(
             ALIAS1 => 'main',
@@ -2676,6 +2578,7 @@ sub CurrentUserCanSee {
                 FIELD           => 'Name',
                 VALUE           => $role,
                 ENTRYAGGREGATOR => 'AND',
+                CASESENSITIVE   => 0
             );
             $limit_types->( 'AND', @$types ) if ref $types;
             $ea = 'OR' if $ea eq 'AND';

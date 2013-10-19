@@ -626,7 +626,7 @@ sub UpdateAsset {
                 }
             }
 
-            my ( $wval, $wmsg ) = $self->_AddWatcher(
+            my ( $wval, $wmsg ) = $self->AddWatcher(
                 Type   => $type,
                 $field => $watcher,
                 Silent => !$args{_Detailed},
@@ -776,18 +776,29 @@ sub _CreateAssetGroups {
 
 
 
+sub _HasModifyWatcherRight {
+    my $self = shift;
+    my ($type, $principal) = @_;
+
+    # ModifyTicket works in any case
+    return 1 if $self->CurrentUserHasRight('ModifyTicket');
+    # If the watcher isn't the current user then the current user has no right
+    return 0 unless $self->CurrentUser->PrincipalId == $principal->id;
+
+    # If it's a Role and they don't have RoleRight, bail
+    return 0 if $self->TypeObj->HasRole($type) and not $self->CurrentUserHasRight($self->TypeObj->RoleRight($type));
+
+    return 1;
+}
+
+
 =head2 AddWatcher
 
-AddWatcher takes a parameter hash. The keys are as follows:
+Applies access control checking, then calls L<RT::Record/AddRoleMember>.
+Additionally, C<Email> is accepted as an alternative argument name for
+C<User>.
 
-Type        One of Asset->RoleGroupTypes
-
-PrinicpalId The RT::Principal id of the user or group that's being added as a watcher
-
-Email       The email address of the new watcher. If a user with this
-            email address can't be found, a new nonprivileged user will be created.
-
-If the watcher you're trying to set has an RT account, set the PrincipalId paremeter to their User Id. Otherwise, set the Email parameter to their Email address.
+Returns a tuple of (status, message).
 
 =cut
 
@@ -800,137 +811,26 @@ sub AddWatcher {
         @_
     );
 
-    # ModifyAsset works in any case
-    return $self->_AddWatcher( %args )
-        if $self->CurrentUserHasRight('ModifyAsset');
-    if ( $args{'Email'} ) {
-        my ($addr) = RT::EmailParser->ParseEmailAddress( $args{'Email'} );
-        return (0, $self->loc("Couldn't parse address from '[_1]' string", $args{'Email'} ))
-            unless $addr;
-
-        if ( lc $self->CurrentUser->EmailAddress
-            eq lc RT::User->CanonicalizeEmailAddress( $addr->address ) )
-        {
-            $args{'PrincipalId'} = $self->CurrentUser->id;
-            delete $args{'Email'};
-        }
-    }
-
-    # If the watcher isn't the current user then the current user has no right
-    # bail
-    unless ( $args{'PrincipalId'} && $self->CurrentUser->id == $args{'PrincipalId'} ) {
-        return ( 0, $self->loc("Permission Denied") );
-    }
-
-    #  If they don't have RoleRight for this role, bail
-    if ( $args{'Type'} ) {
-        unless ( $self->CurrentUserHasRight(RTx::AssetTracker::Type->RoleRight($args{'Type'})) ) {
-            return ( 0, $self->loc('Permission Denied') );
-        }
-    }
-    else {
-        $RT::Logger->warning( "AddWatcher got passed a bogus type");
-        return ( 0, $self->loc('Error in parameters to Asset->AddWatcher') );
-    }
-
-    return $self->_AddWatcher( %args );
-}
-
-#This contains the meat of AddWatcher. but can be called from a routine like
-# Create, which doesn't need the additional acl check
-sub _AddWatcher {
-    my $self = shift;
-    my %args = (
-        Type   => undef,
-        Silent => undef,
-        PrincipalId => undef,
-        Email => undef,
-        Name  => undef,
-        TransactionData => undef,
-        @_
+    $args{ACL} = sub { $self->_HasModifyWatcherRight( @_ ) };
+    $args{User} ||= delete $args{Email};
+    my ($principal, $msg) = $self->AddRoleMember(
+        %args,
+        InsideTransaction => 1,
     );
-
-    my $principal = RT::Principal->new($self->CurrentUser);
-    if ($args{'Email'}) {
-        if ( RT::EmailParser->IsRTAddress( $args{'Email'} ) ) {
-            return (0, $self->loc("[_1] is an address RT receives mail at. Adding it as a '[_2]' would create a mail loop", $args{'Email'}, $self->loc($args{'Type'})));
-        }
-        my $user = RT::User->new(RT->SystemUser);
-        $user->LoadByEmail($args{'Email'});
-        $args{'PrincipalId'} = $user->PrincipalId if $user->Id;
-    }
-    elsif ($args{'Name'}) {
-        my $user = RT::User->new(RT->SystemUser);
-        $user->Load($args{'Name'});
-        $args{'PrincipalId'} = $user->PrincipalId if $user->Id;
-    }
-    if ($args{'PrincipalId'}) {
-        $principal->Load($args{'PrincipalId'});
-        if ( $principal->id and $principal->IsUser and my $email = $principal->Object->EmailAddress ) {
-            return (0, $self->loc("[_1] is an address RT receives mail at. Adding it as a '[_2]' would create a mail loop", $email, $self->loc($args{'Type'})))
-                if RT::EmailParser->IsRTAddress( $email );
-
-        }
-    }
-
-
-    # If we can't find this watcher, we need to bail.
-    unless ($principal->Id) {
-            $RT::Logger->error("Could not load a user with the email address '".$args{'Email'}. "' to add as a watcher for asset ".$self->Id);
-        return(0, $self->loc("Could not find that user"));
-    }
-
-
-    my $group = $self->LoadAssetRoleGroup(Type => $args{'Type'});
-    unless ($group->id) {
-        return(0,$self->loc("Group not found"));
-    }
-
-    if ( $group->HasMember( $principal)) {
-
-        return ( 0, $self->loc('[_1] is already a [_2] for this asset',
-                    $principal->Object->Name, $self->loc($args{'Type'})) );
-    }
-
-
-    my ( $m_id, $m_msg ) = $group->_AddMember( PrincipalId => $principal->Id,
-                                               InsideTransaction => 1 );
-    unless ($m_id) {
-        $RT::Logger->error("Failed to add ".$principal->Id." as a member of group ".$group->Id.": ".$m_msg);
-
-        return ( 0, $self->loc('Could not make [_1] a [_2] for this asset',
-                    $principal->Object->Name, $self->loc($args{'Type'})) );
-    }
-
-    unless ( $args{'Silent'} ) {
-        $self->_NewTransaction(
-            Type     => 'AddWatcher',
-            NewValue => $principal->Id,
-            Field    => $args{'Type'},
-            Data     => $args{TransactionData},
-        );
-    }
+    return ( 0, $msg) unless $principal;
 
     return ( 1, $self->loc('Added [_1] as a [_2] for this asset',
                 $principal->Object->Name, $self->loc($args{'Type'})) );
 }
 
 
+=head2 DeleteWatcher
 
+Applies access control checking, then calls L<RT::Record/DeleteRoleMember>.
+Additionally, C<Email> is accepted as an alternative argument name for
+C<User>.
 
-=head2 DeleteWatcher { Type => TYPE, PrincipalId => PRINCIPAL_ID, Email => EMAIL_ADDRESS }
-
-
-Deletes an Asset watcher.  Takes two arguments:
-
-Type  (one of Asset->RoleGroupTypes)
-
-and one of
-
-PrincipalId (an RT::Principal Id of the watcher you want to remove)
-    OR
-Email (the email address of an existing wathcer)
-
+Returns a tuple of (status, message).
 
 =cut
 
@@ -941,102 +841,19 @@ sub DeleteWatcher {
     my %args = ( Type        => undef,
                  PrincipalId => undef,
                  Email       => undef,
-                 Name        => undef,
-                 TransactionData => undef,
                  @_ );
 
-    unless ( $args{'PrincipalId'} || $args{'Email'} ) {
-        return ( 0, $self->loc("No principal specified") );
-    }
-    my $principal = RT::Principal->new( $self->CurrentUser );
-    if ( $args{'PrincipalId'} ) {
-
-        $principal->Load( $args{'PrincipalId'} );
-    }
-    elsif ($args{'Email'}) {
-        my $user = RT::User->new( $self->CurrentUser );
-        $user->LoadByEmail( $args{'Email'} );
-        $principal->Load( $user->Id );
-    }
-    elsif ($args{'Name'}) {
-        my $user = RT::User->new( $self->CurrentUser );
-        $user->Load( $args{'Name'} );
-        $principal->Load( $user->Id );
-    }
-
-    # If we can't find this watcher, we need to bail.
-    unless ( $principal->Id ) {
-        return ( 0, $self->loc("Could not find that principal") );
-    }
-
-    my $group = $self->LoadAssetRoleGroup( Type => $args{'Type'} );
-    unless ( $group->id ) {
-        return ( 0, $self->loc("Group not found") );
-    }
-
-    # Check ACLS
-    #If the watcher we're trying to add is for the current user
-    if ( $self->CurrentUser->PrincipalId == $principal->id ) {
-
-        #  If they don't have 'RoleRight' for this role
-        #   or 'ModifyAsset', bail
-        if ( $args{'Type'} ) {
-            unless (    $self->CurrentUserHasRight('ModifyAsset')
-                     or $self->CurrentUserHasRight(RTx::AssetTracker::Type->RoleRight($args{'Type'})) ) {
-                return ( 0, $self->loc('Permission Denied') );
-            }
-        }
-        else {
-            $RT::Logger->warning("$self -> DeleteWatcher got passed a bogus type");
-            return ( 0,
-                     $self->loc('Error in parameters to Asset->DeleteWatcher') );
-        }
-    }
-
-    # If the watcher isn't the current user
-    # and the current user  doesn't have 'ModifyAsset' bail
-    else {
-        unless ( $self->CurrentUserHasRight('ModifyAsset') ) {
-            return ( 0, $self->loc("Permission Denied") );
-        }
-    }
-
-    # }}}
-
-    # see if this user is already a watcher.
-
-    unless ( $group->HasMember($principal) ) {
-        return ( 0,
-                 $self->loc( '[_1] is not a [_2] for this asset',
-                             $principal->Object->Name, $args{'Type'} ) );
-    }
-
-    my ( $m_id, $m_msg ) = $group->_DeleteMember( $principal->Id );
-    unless ($m_id) {
-        $RT::Logger->error( "Failed to delete "
-                            . $principal->Id
-                            . " as a member of group "
-                            . $group->Id . ": "
-                            . $m_msg );
-
-        return (0,
-                $self->loc(
-                    'Could not remove [_1] as a [_2] for this asset',
-                    $principal->Object->Name, $args{'Type'} ) );
-    }
-
-    unless ( $args{'Silent'} ) {
-        $self->_NewTransaction( Type     => 'DelWatcher',
-                                OldValue => $principal->Id,
-                                Field    => $args{'Type'},
-                                Data     => $args{TransactionData} );
-    }
+    $args{ACL} = sub { $self->_HasModifyWatcherRight( @_ ) };
+    $args{User} ||= delete $args{Email};
+    my ($principal, $msg) = $self->DeleteRoleMember( %args );
+    return ( 0, $msg ) unless $principal;
 
     return ( 1,
              $self->loc( "[_1] is no longer a [_2] for this asset.",
                          $principal->Object->Name,
-                         $args{'Type'} ) );
+                         $self->loc($args{'Type'}) ) );
 }
+
 
 
 
