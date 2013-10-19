@@ -24,7 +24,7 @@ $ make
 $ make install
 $ make initdb
 
-Add RTx::AssetTracker to your Plugins in etc/RT_SiteConfig.pm and restart your web server.
+Add Plugin("RT::Extension::AssetTracker"); to etc/RT_SiteConfig.pm and restart your web server.
 
 If you like to use Assets as CF SourceValues, you can activate it as example like this inside
 RT_SiteConfig.pm:
@@ -68,10 +68,10 @@ Do the following:
 
 2. AT uses the RT plugins system. Remove all AT files fom the RT directories.
    After the "make install" step above put any AT customizations in
-   $RTHOME/local/plugins/RTx-AssetTracker, add 
+   $RTHOME/local/plugins/RT-Extension-AssetTracker, add 
 
 3. Add to RT_SiteConfig: 
-       Plugins( "RTx::AssetTracker" );
+       Plugin( "RT::Extension::AssetTracker" );
 
 
 UPGRADING FROM AT 2.0.x AND EARLIER
@@ -84,6 +84,11 @@ in your *_SiteConfig.pm file, you should change it to
 
 
 UPGRADING FROM AT 3.0.x AND EARLIER
+
+The name of the plugin is now "RT-Extension-AssetTracker" instead of "RTx-AssetTracker".
+That means instead of installing to "plugins/RTx-AssetTracker" AT must be installed at
+"plugins/RT-Extension-AssetTracker". And to enable AT, enter
+Plugin("RT::Extension::AssetTracker"); in your RT_SiteConfig.pm file.
 
 The settings 'ModifyBothAssetsForLink' and 'StrictAssetLinkACL' have been removed. Now all
 links, assets included, obey the 'StrictLinkACL' setting.
