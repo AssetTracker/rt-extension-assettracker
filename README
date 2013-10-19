@@ -85,7 +85,8 @@ in your *_SiteConfig.pm file, you should change it to
 
 UPGRADING FROM AT 3.0.x AND EARLIER
 
-The setting 'ModifyBothAssetsForLink' has been renamed to 'StrictAssetLinkACL'.
+The settings 'ModifyBothAssetsForLink' and 'StrictAssetLinkACL' have been removed. Now all
+links, assets included, obey the 'StrictLinkACL' setting.
 
 
 UPGRADING FROM an AT installed under RT 3.6.* or older
