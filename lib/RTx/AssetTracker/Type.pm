@@ -165,7 +165,7 @@ sub ConfigureRole {
     $group->LoadByCols( Domain => 'RT::System-Role', Name => $role );
     unless ( $group->id ) {
         $group->_Create( Domain            => 'RT::System-Role',
-                         Instance          => 0,
+                         Instance          => 1,
                          Name              => $role,
                          Description       => 'SystemRolegroup for internal use',  # loc
                          InsideTransaction => 0 );
