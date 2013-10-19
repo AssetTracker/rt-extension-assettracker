@@ -378,7 +378,7 @@ sub _LinkLimit {
             TABLE2 => 'Links',
             FIELD2 => $linkfield
         );
-        $sb->SUPER::Limit(
+        $sb->Limit(
             LEFTJOIN => $linkalias,
             FIELD    => 'Type',
             OPERATOR => '=',
@@ -401,13 +401,13 @@ sub _LinkLimit {
             TABLE2 => 'Links',
             FIELD2 => $linkfield
         );
-        $sb->SUPER::Limit(
+        $sb->Limit(
             LEFTJOIN => $linkalias,
             FIELD    => 'Type',
             OPERATOR => '=',
             VALUE    => $meta->[2],
         ) if $meta->[2];
-        $sb->SUPER::Limit(
+        $sb->Limit(
             LEFTJOIN => $linkalias,
             FIELD    => $matchfield,
             OPERATOR => '=',
@@ -769,7 +769,7 @@ sub _WatcherLimit {
         $group_members ||= $self->_GroupMembersJoin( GroupsAlias => $groups );
         # to avoid joining the table Users into the query, we just join GM
         # and make sure we don't match records where group is member of itself
-        $self->SUPER::Limit(
+        $self->Limit(
             LEFTJOIN   => $group_members,
             FIELD      => 'GroupId',
             OPERATOR   => '!=',
@@ -808,7 +808,7 @@ sub _WatcherLimit {
         if ( @users <= 1 ) {
             my $uid = 0;
             $uid = $users[0]->id if @users;
-            $self->SUPER::Limit(
+            $self->Limit(
                 LEFTJOIN      => $group_members,
                 ALIAS         => $group_members,
                 FIELD         => 'MemberId',
@@ -822,7 +822,7 @@ sub _WatcherLimit {
                 VALUE           => 'NULL',
             );
         } else {
-            $self->SUPER::Limit(
+            $self->Limit(
                 LEFTJOIN   => $group_members,
                 FIELD      => 'GroupId',
                 OPERATOR   => '!=',
@@ -836,7 +836,7 @@ sub _WatcherLimit {
                 TABLE2          => 'Users',
                 FIELD2          => 'id',
             );
-            $self->SUPER::Limit(
+            $self->Limit(
                 LEFTJOIN      => $users,
                 ALIAS         => $users,
                 FIELD         => $rest{SUBKEY},
@@ -893,13 +893,13 @@ sub _RoleGroupsJoin {
         FIELD2          => 'Instance',
         ENTRYAGGREGATOR => 'AND',
     );
-    $self->SUPER::Limit(
+    $self->Limit(
         LEFTJOIN        => $groups,
         ALIAS           => $groups,
         FIELD           => 'Domain',
         VALUE           => 'RTx::AssetTracker::'. $args{'Class'} .'-Role',
     );
-    $self->SUPER::Limit(
+    $self->Limit(
         LEFTJOIN        => $groups,
         ALIAS           => $groups,
         FIELD           => 'Type',
@@ -928,7 +928,7 @@ sub _GroupMembersJoin {
         FIELD2          => 'GroupId',
         ENTRYAGGREGATOR => 'AND',
     );
-    $self->SUPER::Limit(
+    $self->Limit(
         $args{'Left'} ? (LEFTJOIN => $alias) : (),
         ALIAS => $alias,
         FIELD => 'Disabled',
@@ -962,7 +962,7 @@ sub _WatcherJoin {
     # RT doesn't allow to add groups as members of the
     # ticket roles, so we just hide entries in CGM table
     # with MemberId == GroupId from results
-    $self->SUPER::Limit(
+    $self->Limit(
         LEFTJOIN   => $group_members,
         FIELD      => 'GroupId',
         OPERATOR   => '!=',
@@ -1218,7 +1218,7 @@ sub _CustomFieldJoin {
             TABLE2 => 'ObjectCustomFieldValues',
             FIELD2 => 'ObjectId',
         );
-        $self->SUPER::Limit(
+        $self->Limit(
             LEFTJOIN        => $ObjectCFs,
             FIELD           => 'CustomField',
             VALUE           => $cfid,
@@ -1233,7 +1233,7 @@ sub _CustomFieldJoin {
             FIELD2     => 'ObjectId',
         );
 
-        $self->SUPER::Limit(
+        $self->Limit(
             LEFTJOIN        => $ocfalias,
             ENTRYAGGREGATOR => 'OR',
             FIELD           => 'ObjectId',
@@ -1247,13 +1247,13 @@ sub _CustomFieldJoin {
             TABLE2     => 'CustomFields',
             FIELD2     => 'id',
         );
-        $self->SUPER::Limit(
+        $self->Limit(
             LEFTJOIN        => $CFs,
             ENTRYAGGREGATOR => 'AND',
             FIELD           => 'LookupType',
             VALUE           => $type,
         );
-        $self->SUPER::Limit(
+        $self->Limit(
             LEFTJOIN        => $CFs,
             ENTRYAGGREGATOR => 'AND',
             FIELD           => 'Name',
@@ -1267,7 +1267,7 @@ sub _CustomFieldJoin {
             TABLE2 => 'ObjectCustomFieldValues',
             FIELD2 => 'CustomField',
         );
-        $self->SUPER::Limit(
+        $self->Limit(
             LEFTJOIN        => $ObjectCFs,
             FIELD           => 'ObjectId',
             VALUE           => "$ObjectAlias.id",
@@ -1276,13 +1276,13 @@ sub _CustomFieldJoin {
         );
     }
 
-    $self->SUPER::Limit(
+    $self->Limit(
         LEFTJOIN        => $ObjectCFs,
         FIELD           => 'ObjectType',
         VALUE           => RT::CustomField->ObjectTypeFromLookupType($type),
         ENTRYAGGREGATOR => 'AND'
     );
-    $self->SUPER::Limit(
+    $self->Limit(
         LEFTJOIN        => $ObjectCFs,
         FIELD           => 'Disabled',
         OPERATOR        => '=',
@@ -1660,7 +1660,7 @@ sub _CustomFieldLimit {
         # if column is defined then deal only with it
         # otherwise search in Content and in LargeContent
         if ( $column ) {
-            $self->SUPER::Limit( $fix_op->(
+            $self->Limit( $fix_op->(
                 LEFTJOIN   => $ObjectCFs,
                 ALIAS      => $ObjectCFs,
                 FIELD      => $column,
@@ -1670,7 +1670,7 @@ sub _CustomFieldLimit {
             ) );
         }
         else {
-            $self->SUPER::Limit(
+            $self->Limit(
                 LEFTJOIN   => $ObjectCFs,
                 ALIAS      => $ObjectCFs,
                 FIELD      => 'Content',
@@ -1789,7 +1789,7 @@ sub OrderByCols {
                TABLE2 => 'CustomFieldValues',
                FIELD2 => 'CustomField',
            );
-           $self->SUPER::Limit(
+           $self->Limit(
                LEFTJOIN        => $CFvs,
                FIELD           => 'Name',
                QUOTEVALUE      => 0,
@@ -2603,7 +2603,7 @@ sub CurrentUserCanSee {
     }
 
     unless ( @direct_types || keys %roles ) {
-        $self->SUPER::Limit(
+        $self->Limit(
             SUBCLAUSE => 'ACL',
             ALIAS => 'main',
             FIELD => 'id',
@@ -2619,7 +2619,7 @@ sub CurrentUserCanSee {
         if ( $join_roles ) {
             $role_group_alias = $self->_RoleGroupsJoin( New => 1 );
             $cgm_alias = $self->_GroupMembersJoin( GroupsAlias => $role_group_alias );
-            $self->SUPER::Limit(
+            $self->Limit(
                 LEFTJOIN   => $cgm_alias,
                 FIELD      => 'MemberId',
                 OPERATOR   => '=',
@@ -2632,7 +2632,7 @@ sub CurrentUserCanSee {
 
             return unless @types;
             if ( @types == 1 ) {
-                $self->SUPER::Limit(
+                $self->Limit(
                     SUBCLAUSE => 'ACL',
                     ALIAS => 'main',
                     FIELD => 'Name',
@@ -2642,7 +2642,7 @@ sub CurrentUserCanSee {
             } else {
                 $self->SUPER::_OpenParen('ACL');
                 foreach my $q ( @types ) {
-                    $self->SUPER::Limit(
+                    $self->Limit(
                         SUBCLAUSE => 'ACL',
                         ALIAS => 'main',
                         FIELD => 'Name',
@@ -2661,7 +2661,7 @@ sub CurrentUserCanSee {
         $ea = 'OR' if $limit_types->( $ea, @direct_types );
         while ( my ($role, $types) = each %roles ) {
             $self->SUPER::_OpenParen('ACL');
-            $self->SUPER::Limit(
+            $self->Limit(
                 SUBCLAUSE       => 'ACL',
                 ALIAS           => $cgm_alias,
                 FIELD           => 'MemberId',
@@ -2670,7 +2670,7 @@ sub CurrentUserCanSee {
                 QUOTEVALUE      => 0,
                 ENTRYAGGREGATOR => $ea,
             );
-            $self->SUPER::Limit(
+            $self->Limit(
                 SUBCLAUSE       => 'ACL',
                 ALIAS           => $role_group_alias,
                 FIELD           => 'Name',

@@ -43,18 +43,18 @@ if ($AssetString) {
         my $Types = RTx::AssetTracker::Types->new($session{'CurrentUser'});
         $Types->Limit(FIELD => 'Name', OPERATOR => $AssetOp, VALUE => $AssetString);
         while (my $type = $Types->Next) {
-            $Assets->Limit(FIELD => 'Type', VALUE => $type->Id) if $type->Id;
+            $Assets->LimitField(FIELD => 'Type', VALUE => $type->Id) if $type->Id;
         }
     }
     elsif (($AssetField eq 'Name') or ($AssetField eq 'Description') or ($AssetField eq 'Status') ) {
-        $Assets->Limit(FIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp);
+        $Assets->LimitField(FIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp);
     }
     else {
         $Assets->LimitCustomField(CUSTOMFIELD => $AssetField, VALUE => $AssetString, OPERATOR => $AssetOp );
     }
-    $Assets->Limit(FIELD => 'Status', VALUE => 'retired', OPERATOR => '!=') unless $AllowRetired;
+    $Assets->LimitField(FIELD => 'Status', VALUE => 'retired', OPERATOR => '!=') unless $AllowRetired;
     #eliminate the assets own id
-    $Assets->Limit(FIELD => 'id', VALUE => $AssetObj->Id, OPERATOR => '!=') if ref $AssetObj;
+    $Assets->LimitField(FIELD => 'id', VALUE => $AssetObj->Id, OPERATOR => '!=') if ref $AssetObj;
 }
 
 </%init>

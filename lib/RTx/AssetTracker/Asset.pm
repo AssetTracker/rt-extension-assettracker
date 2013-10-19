@@ -1232,18 +1232,18 @@ sub SatisfiesUniqueness {
     $Type->Load($type);
 
     if (RT->Config->Get('GlobalUniqueAssetName')) {
-        $Assets->Limit(FIELD => "Name", VALUE => $name);
-        $Assets->Limit(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
+        $Assets->LimitField(FIELD => "Name", VALUE => $name);
+        $Assets->LimitField(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
         return (0, "Asset name $name isn't unique across the entire asset database") if $Assets->Count;
     }
     if (RT->Config->Get('TypeUniqueAssetName')) {
-        $Assets->Limit(FIELD => "Type", VALUE => $type);
-        $Assets->Limit(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
+        $Assets->LimitField(FIELD => "Type", VALUE => $type);
+        $Assets->LimitField(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
         return (0, "Asset name $name isn't unique among assets of type: " . $Type->Name) if $Assets->Count;
     }
     if (RT->Config->Get('TypeStatusUniqueAssetName')) {
-        $Assets->Limit(FIELD => "Status", VALUE => $stat);
-        $Assets->Limit(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
+        $Assets->LimitField(FIELD => "Status", VALUE => $stat);
+        $Assets->LimitField(FIELD => "id", OPERATOR => "!=", VALUE => $self->Id) if $self->Id;
         return (0, "Asset name $name isn't unique among assets of type: " . $Type->Name . ", and status: $stat") if $Assets->Count;
     }
 
