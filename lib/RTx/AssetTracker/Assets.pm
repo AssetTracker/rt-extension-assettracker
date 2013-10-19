@@ -2635,7 +2635,7 @@ sub CurrentUserCanSee {
                 $self->Limit(
                     SUBCLAUSE => 'ACL',
                     ALIAS => 'main',
-                    FIELD => 'Name',
+                    FIELD => 'Type',
                     VALUE => $_[0],
                     ENTRYAGGREGATOR => $ea,
                 );
@@ -2645,7 +2645,7 @@ sub CurrentUserCanSee {
                     $self->Limit(
                         SUBCLAUSE => 'ACL',
                         ALIAS => 'main',
-                        FIELD => 'Name',
+                        FIELD => 'Type',
                         VALUE => $q,
                         ENTRYAGGREGATOR => $ea,
                     );
