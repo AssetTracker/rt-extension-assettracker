@@ -3,14 +3,8 @@
 use strict;
 use warnings;
 
+use RTx::AssetTracker::Test tests => 57;
 
-BEGIN {
-    use RTx::AssetTracker::Test tests => 57;
-    RT::LoadConfig();
-    RT::Init();
-}
-
-use base qw(Test::Class);
 use RTx::AssetTracker;
 use RTx::AssetTracker::Assets;
 use RT::CurrentUser;
@@ -22,18 +16,18 @@ use constant NOSCRIPS => 0;
 use constant DETAILED => 1;
 use constant NODETAIL => 0;
 
-sub startup :Test(startup=>3) {
-    my ($self) = @_;
+my ($cu, $asset1);
 
+{
+    diag "startup";
     my $user_obj = RT::User->new( $RT::SystemUser );
     $user_obj->LoadOrCreateByEmail( 'todd@chaka.net' );
     $user_obj->SetName( 'todd' );
     $user_obj->SetPrivileged( 1 );
     $user_obj->PrincipalObj->GrantRight( Right => 'SuperUser' );
 
-    my $cu = RT::CurrentUser->new();
+    $cu = RT::CurrentUser->new();
     $cu->LoadByName('todd');
-    $self->{cu} = $cu;
 
     my $group = RT::Group->new( $RT::SystemUser );
     $group->LoadUserDefinedGroup( 'group foo' );
@@ -73,10 +67,10 @@ sub startup :Test(startup=>3) {
                      Type => 'Servers',
                    Status => 'production', };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $asset);
     ok($rv, 'asset created');
-    $self->{asset} = RTx::AssetTracker::Asset->new($cu);
-    $self->{asset}->Load($rv->[0]);
+    $asset1 = RTx::AssetTracker::Asset->new($cu);
+    $asset1->Load($rv->[0]);
 
     #make sure CF exists
 
@@ -88,34 +82,32 @@ sub startup :Test(startup=>3) {
     }
 }
 
-sub simple_import :Tests(2) {
-    my ($self) = @_;
-
-    my $before_count = $self->asset_count;
+{
+    diag "simple_import";
+    my $before_count = asset_count();
     my $good_asset = { id => 'new', 
                      Name => "Simple Asset $$",
                      Type => 'Servers',
                    Status => 'production', };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'simple asset create');
-    is($self->asset_count(), $before_count+1);
+    is(asset_count(), $before_count+1);
 
 }
 
-sub simple_update :Tests(8) {
-    my ($self) = @_;
-
-    my $before_count = $self->asset_count;
+{
+    diag "simple_update";
+    my $before_count = asset_count();
     my $good_asset = { id => 'new', 
                      Name => "Simple Asset for update $$",
               Description => "Simple Asset for update $$",
                      Type => 'Servers',
                    Status => 'production', };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'simple asset create');
-    is($self->asset_count(), $before_count+1);
+    is(asset_count(), $before_count+1);
 
     my $aid = $rv->[0];
     my $asset_update = { id => $aid,
@@ -123,12 +115,12 @@ sub simple_update :Tests(8) {
                        Type => 'Virtual',
                      Status => 'test', };
 
-    ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $asset_update);
+    ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $asset_update);
     ok($rv, 'simple asset update');
-    is($self->asset_count(), $before_count+1);
+    is(asset_count(), $before_count+1);
 
     is($rv->[0], $aid);
-    my $asset = RTx::AssetTracker::Asset->new($self->{cu});
+    my $asset = RTx::AssetTracker::Asset->new($cu);
     $asset->Load($aid);
     is($asset->Name, $asset_update->{Name});
     is($asset->TypeObj->Name, $asset_update->{Type});
@@ -136,10 +128,9 @@ sub simple_update :Tests(8) {
 
 }
 
-sub import_new :Tests(16) {
-    my ($self) = @_;
-
-    my $before_count = $self->asset_count;
+{
+    diag "import_new";
+    my $before_count = asset_count();
     my $good_asset = { id => 'new', 
                      Name => "My Asset $$",
                      Type => 'Servers',
@@ -148,14 +139,14 @@ sub import_new :Tests(16) {
                     Owner => 'todd@chaka.net, root@localhost,@group foo',
                     Admin => 'todd@chaka.net',
                       Foo => 'foo value',
-                 RefersTo => $self->{asset}->URI,
+                 RefersTo => $asset1->URI,
            'IP Address' => 'eth0:127.0.0.1:ffffffffffff:22,80:22' };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'asset created');
-    is($self->asset_count(), $before_count+1);
+    is(asset_count(), $before_count+1);
 
-    my $a = RTx::AssetTracker::Asset->new($self->{cu});
+    my $a = RTx::AssetTracker::Asset->new($cu);
     is(ref($rv), 'ARRAY', "list of asset IDs returned");
     $a->Load($rv->[0]);
 
@@ -169,7 +160,7 @@ sub import_new :Tests(16) {
     ok($a->IsWatcher( Type => 'Owner', Email => 'todd@chaka.net' ), 'role watcher found');
     ok($a->IsWatcher( Type => 'Owner', Email => 'root@localhost' ), 'role watcher found');
     ok($a->IsWatcher( Type => 'Admin', Email => 'todd@chaka.net' ), 'role watcher found');
-    my $g = RT::Group->new($self->{cu});
+    my $g = RT::Group->new($cu);
     $g->LoadUserDefinedGroup("group foo");
     ok($a->IsWatcher( Type => 'Owner', PrincipalId => $g->PrincipalId ), 'group role watcher found');
 
@@ -179,7 +170,7 @@ sub import_new :Tests(16) {
 
     #links
     my $refers = $a->RefersTo;
-    is($refers->First->Target, $self->{asset}->URI, 'link created');
+    is($refers->First->Target, $asset1->URI, 'link created');
 
     #ips
     my $ip = $a->IPs->First;
@@ -188,9 +179,8 @@ sub import_new :Tests(16) {
     is($ip->MAC, 'ffffffffffff');
 }
 
-sub update :Tests(9) {
-    my ($self) = @_;
-
+{
+    diag "update";
     my $good_asset = { id => 'new', 
                      Name => "My Asset to Update $$",
                      Type => 'Servers',
@@ -199,10 +189,10 @@ sub update :Tests(9) {
                     Owner => 'todd@chaka.net, root@localhost,@group foo',
                     Admin => 'todd@chaka.net',
                       Foo => 'foo value',
-                 RefersTo => $self->{asset}->URI,
+                 RefersTo => $asset1->URI,
            'IP Address' => 'eth0:127.0.0.3:ffffffffffff:22,80:22' };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'asset created');
 
     my $updated_asset = Storable::dclone($good_asset);
@@ -211,12 +201,12 @@ sub update :Tests(9) {
     $updated_asset->{Owner} = 'root@localhost,@group foo',
     $updated_asset->{'IP Address'} = 'eth0:127.0.0.4:ffffffffffff:22,80:22';
     $updated_asset->{RefersTo} = undef;
-    $updated_asset->{DependsOn} = $self->{asset}->URI;
+    $updated_asset->{DependsOn} = $asset1->URI;
 
-    ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $updated_asset);
+    ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $updated_asset);
     ok($rv, 'asset updated');
 
-    my $asset = RTx::AssetTracker::Asset->new($self->{cu});
+    my $asset = RTx::AssetTracker::Asset->new($cu);
     $asset->Load($rv->[0]);
     is($asset->FirstCustomFieldValue('Foo'), $updated_asset->{Foo}, 'custom field updated');
     ok(!$asset->IsWatcher(Type => 'Owner', Email => 'todd@chaka.net'), 'watcher removed');
@@ -230,10 +220,9 @@ sub update :Tests(9) {
     is($ips[0], '127.0.0.4', 'found updated IP');
 }
 
-sub bad_import :Tests(2) {
-    my ($self) = @_;
-
-    my $before_count = $self->asset_count;
+{
+    diag "bad_import";
+    my $before_count = asset_count();
     my $good_asset = { id => 'new', 
                      Name => "My Asset $$",
                      Type => 'Servers',
@@ -245,25 +234,23 @@ sub bad_import :Tests(2) {
 
     my $bad_asset = Storable::dclone($good_asset);
     $bad_asset->{id} = 'bad'; #asset id must be an integer or new
-
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset, $bad_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset, $bad_asset);
     is($rv, 0, "not imported");
-    is($before_count, $self->asset_count());
+    is($before_count, asset_count());
 }
 
-sub test_update_transactions :Tests(6) {
-    my ($self) = @_;
-
+{
+    diag "test_update_transactions";
     my $good_asset = { id => 'new', 
                      Name => "Simple Asset transactions $$",
                      Type => 'Servers',
                    Status => 'production', };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, DETAILED, $good_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, DETAILED, $good_asset);
     ok($rv, 'simple asset create');
     my $aid = $rv->[0];
 
-    my $asset = RTx::AssetTracker::Asset->new($self->{cu});
+    my $asset = RTx::AssetTracker::Asset->new($cu);
     $asset->Load($aid);
     is($asset->Transactions->Count, 1, 'create transaction');
 
@@ -272,10 +259,10 @@ sub test_update_transactions :Tests(6) {
                        Type => 'Virtual',
                      Status => 'test', };
 
-    ($rv, $msgs) = $self->Import(NOSCRIPS, DETAILED, $asset_update);
+    ($rv, $msgs) = Import(NOSCRIPS, DETAILED, $asset_update);
     ok($rv, 'simple asset update');
 
-    $asset = RTx::AssetTracker::Asset->new($self->{cu});
+    $asset = RTx::AssetTracker::Asset->new($cu);
     $asset->Load($aid);
     is($asset->Transactions->Count, 4, 'update, type, and status transactions');
 
@@ -285,20 +272,19 @@ sub test_update_transactions :Tests(6) {
                       Admin => 'todd@chaka.net',
                      Status => 'test', };
 
-    ($rv, $msgs) = $self->Import(NOSCRIPS, DETAILED, $asset_update);
+    ($rv, $msgs) = Import(NOSCRIPS, DETAILED, $asset_update);
     ok($rv, 'simple asset update');
 
-    $asset = RTx::AssetTracker::Asset->new($self->{cu});
+    $asset = RTx::AssetTracker::Asset->new($cu);
     $asset->Load($aid);
     is($asset->Transactions->Count, 7, 'watcher, update and type transactions');
 
 }
 
 
-sub test_multicf_import :Tests(8) {
-    my ($self) = @_;
-
-    my $before_count = $self->asset_count;
+{
+    diag "test_multicf_import";
+    my $before_count = asset_count();
     my @vals = ( 'one', 'two', 'three' );
 
     my $good_asset = { id => 'new', 
@@ -307,11 +293,11 @@ sub test_multicf_import :Tests(8) {
                    Status => 'production',
                       Bar => join( "\n", @vals ) };
 
-    my ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    my ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'multi-value cf import');
-    is($self->asset_count(), $before_count+1);
+    is(asset_count(), $before_count+1);
 
-    my $a = RTx::AssetTracker::Asset->new($self->{cu});
+    my $a = RTx::AssetTracker::Asset->new($cu);
     is(ref($rv), 'ARRAY', "list of asset IDs returned");
     $a->Load($rv->[0]);
 
@@ -331,7 +317,7 @@ sub test_multicf_import :Tests(8) {
                    Status => 'production',
                       Bar => join( "\n", @vals ) };
 
-    ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'add cf value');
 
     @new_vals = map { $_->Content } @{ $a->CustomFieldValues('Bar')->ItemsArrayRef };
@@ -351,7 +337,7 @@ sub test_multicf_import :Tests(8) {
                    Status => 'production',
                       Bar => join( "\n", @vals ) };
 
-    ($rv, $msgs) = $self->Import(NOSCRIPS, NODETAIL, $good_asset);
+    ($rv, $msgs) = Import(NOSCRIPS, NODETAIL, $good_asset);
     ok($rv, 'delete cf values');
 
     @new_vals = map { $_->Content } @{ $a->CustomFieldValues('Bar')->ItemsArrayRef };
@@ -365,20 +351,19 @@ sub test_multicf_import :Tests(8) {
 
 
 sub asset_count {
-    my ($self) = @_;
-    my $assets = RTx::AssetTracker::Assets->new($self->{cu});
+    my $assets = RTx::AssetTracker::Assets->new($cu);
     $assets->UnLimit;
     return $assets->Count;
 }
 
 sub asset2headers {
-    my ($self, $asset) = @_;
+    my ($asset) = @_;
     my $headers = [ 'id', grep { $_ ne 'id' } keys %$asset ]; #id always has to be the first column
     return $headers;
 }
 
 sub asset2row {
-    my ($self, $headers, $asset) = @_;
+    my ($headers, $asset) = @_;
 
     my $row = [ map { $asset->{$_} } @$headers ];
     return $row;
@@ -388,17 +373,14 @@ sub asset_name {
 }
 
 sub Import {
-    my ($self, $runscrips, $detailed, @assets) = @_;
-    
-    my $headers = $self->asset2headers($assets[0]);
+    my ($runscrips, $detailed, @assets) = @_;
+
+    my $headers = asset2headers($assets[0]);
     my @rows;
     for (@assets) {
-        push @rows, $self->asset2row($headers, $_);
+        push @rows, asset2row($headers, $_);
     }
 
-    my $assets = RTx::AssetTracker::Assets->new($self->{cu});
+    my $assets = RTx::AssetTracker::Assets->new($cu);
     return $assets->Import($headers, \@rows, $runscrips, $detailed);
 }
-
-
-Test::Class->runtests;
