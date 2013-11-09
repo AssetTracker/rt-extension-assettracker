@@ -53,9 +53,11 @@ $InTable => 0
 </%ARGS>
 <%INIT>
 unless ( @fields ) {
+    my $name = $defaults{'Name'} || $AssetObj->Name;
+    my $description = $defaults{'Description'} || $AssetObj->Description;
     @fields = (
         {   name => 'Name',
-            html => '<input name="Name" value="'.$m->interp->apply_escapes( $defaults{'Name'} || $AssetObj->Name, 'h' ).'" />',
+            html => '<input name="Name" value="'.(defined($name) ? $m->interp->apply_escapes( $name, 'h' ) : '').'" />',
         },
         {   name => 'Status',
             comp => '/AssetTracker/Elements/SelectStatus',
@@ -76,7 +78,7 @@ unless ( @fields ) {
             }
         },
         {   name => 'Description',
-            html => '<input name="Description" value="'.$m->interp->apply_escapes( $defaults{'Description'} || $AssetObj->Description, 'h' ).'" />',
+            html => '<input name="Description" value="'.(defined($description) ? $m->interp->apply_escapes( $description, 'h' ) : '').'" />',
         },
     );
 }
