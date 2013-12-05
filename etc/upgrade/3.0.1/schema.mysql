@@ -1,0 +1,2 @@
+ALTER TABLE AT_Types
+    MODIFY Lifecycle varchar(32) CHARACTER SET utf8,
