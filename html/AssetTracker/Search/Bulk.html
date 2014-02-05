@@ -353,6 +353,8 @@ while ( my $Asset = $Assets->Next ) {
     @results = ( @results, @tempresults );
 }
 
+$Assets->RedoSearch();
+
 #my $TxnCFs = RT::CustomFields->new( $session{CurrentUser} );
 #$TxnCFs->LimitToLookupType( "RTx::AssetTracker::Type-RTx::AssetTracker::Asset-RT::Transaction" );
 #$TxnCFs->LimitToGlobalOrObjectId( sort keys %seen_types );
