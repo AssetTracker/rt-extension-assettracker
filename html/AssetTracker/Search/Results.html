@@ -111,7 +111,6 @@ if ( !defined($Rows) ) {
 }
 $Page = 1 unless $Page && $Page > 0;
 
-my ($title, $assetcount);
 $session{'i'}++;
 $session{'assets'} = RTx::AssetTracker::Assets->new($session{'CurrentUser'});
 my ($ok, $msg) = $Query ? $session{'assets'}->FromSQL($Query) : (1, "Vacuously OK");
@@ -142,11 +141,10 @@ $session{'CurrentAssetSearchHash'} = {
 };
 
 
+my ($title, $assetcount) = (loc("Found Assets"), 0);
 if ( $session{'assets'}->Query()) {
     $assetcount = $session{assets}->CountAll();
     $title = loc('Found [quant,_1,asset]', $assetcount);
-} else {
-    $title = loc("Find assets");
 }
 
 my $QueryString = "?".$m->comp('/Elements/QueryString',
