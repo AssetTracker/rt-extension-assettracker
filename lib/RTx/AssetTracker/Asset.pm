@@ -236,7 +236,7 @@ Arguments: ARGS is a hash of named parameters.  Valid parameters are:
   Type  - Either a Type object or a Type Name
   Name -- The unique name of the asset
   Description -- A string describing the asset
-  Status -- any valid status (Defined in RTx::AssetTracker::Type)
+  Status -- any valid status for Asset Type's Lifecycle, otherwises uses on_create from Lifecycle default
   Owner -- A reference to a list of  email addresses or Names
   Admin -- A reference to a list of  email addresses or Names
   CustomField-<n> -- a scalar or array of values for the customfield with the id <n>
