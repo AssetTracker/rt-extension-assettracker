@@ -103,8 +103,8 @@
 
 % $m->callback( CallbackName => 'AfterRoles', ARGSRef => \%ARGS );
 
-      <& /AssetTracker/Asset/Elements/EditCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
-%#      <& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
+      <& /AssetTracker/Asset/Elements/EditCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1, KeepValue => 1 &>
+%#      <& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1, KeepValue => 1 &>
     </table>
   </&>
 % $m->callback( CallbackName => 'AfterBasics', TypeObj => $TypeObj, ARGSRef => \%ARGS );
