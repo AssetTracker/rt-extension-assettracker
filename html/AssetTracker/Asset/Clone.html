@@ -1,0 +1,70 @@
+<& /Elements/Header,
+    Title => $AssetObj->Name &>
+<& /Elements/Tabs &>
+
+<& /Elements/ListActions, actions => \@Actions &>
+
+<& /Elements/TitleBoxStart, title => loc('New Asset'), color=> "#333399", contentbg => '#ffffff' &>
+<FORM METHOD=POST ACTION="Clone.html">
+Cloned asset unique name: <input name="Name">
+<BR>
+(IP addresses and Links are not cloned.)
+<INPUT TYPE=HIDDEN NAME=id VALUE="<%$AssetObj->Id%>">
+<INPUT TYPE=HIDDEN NAME=new VALUE="new">
+<& /Elements/Submit, Label => loc('Clone'), color => "#333399" &>
+</FORM>
+
+<& /Elements/TitleBoxEnd &>
+
+<BR>
+<BR>
+<& /Elements/TitleBoxStart, title => loc('Cloning Asset'), contentbg => '#bbbbbb' &>
+<& /AssetTracker/Asset/Elements/ShowBasics,  Asset => $AssetObj &>
+<& /Elements/TitleBoxEnd &>
+
+<%ARGS>
+$id => undef
+$Create => undef
+$AssetObj => undef
+$Actions => undef
+$Name => undef
+</%ARGS>
+
+<%INIT>
+
+$m->comp('/Elements/Callback', _CallbackName => 'Initial', AssetObj => $AssetObj, ARGSRef => \%ARGS);
+
+my ($linkid, $message, @Actions, $tid, $Assets);
+push(@Actions, @$Actions) if $Actions;
+
+unless ($id || $AssetObj) {
+    Abort('No asset specified');
+}
+
+if (!$AssetObj) {
+
+       $AssetObj = RTx::AssetTracker::Asset->new($session{'CurrentUser'});
+
+       $AssetObj = LoadAsset($ARGS{'id'});
+       unless ($AssetObj->CurrentUserHasRight('ShowAsset')) {
+           Abort("No permission to view asset");
+       }
+}
+
+if ($ARGS{'new'} eq 'new') {
+        unless ($AssetObj->CurrentUserHasRight('CreateAsset')) {
+           Abort('You have no permission to create assets of that type.');
+        }
+    my ($rv, $trans, $msg) = $AssetObj->Clone($Name);
+    if ($rv) {
+        $m->redirect("Display.html?id=$rv");
+    }
+    else {
+        push (@Actions, $msg);
+    }
+}
+
+$m->comp('/Elements/Callback', _CallbackName => 'BeforeDisplay',
+        AssetObj => \$AssetObj, Assets => \$Assets, ARGSRef => \%ARGS);
+
+</%INIT>
