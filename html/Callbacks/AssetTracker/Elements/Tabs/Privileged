@@ -67,6 +67,7 @@ if ( $request_path =~ m{^/AssetTracker/} ) {
                 if ( $can->('ModifyAsset') ) {
                     $tabs->child( fields => title => loc('Fields'), path => "/AssetTracker/Asset/ModifyFields.html?id=" . $id, );
                     $tabs->child( links => title => loc('Links'), path => "/AssetTracker/Asset/ModifyLinks.html?id=" . $id, );
+                    $tabs->child( clone => title => loc('Clone'), path => "/AssetTracker/Asset/Clone.html?id=" . $id, );
                 }
 
                 #if ( $can->('ModifyAsset') || $can->('ModifyCustomField') || $can->('_ModifyOwner') ) {
