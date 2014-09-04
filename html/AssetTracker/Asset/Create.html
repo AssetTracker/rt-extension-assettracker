@@ -104,7 +104,6 @@
 % $m->callback( CallbackName => 'AfterRoles', ARGSRef => \%ARGS );
 
       <& /AssetTracker/Asset/Elements/EditCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
-%#      <& /AssetTracker/Asset/Elements/EditTransactionCustomFields, %ARGS, TypeObj => $TypeObj, InTable => 1 &>
     </table>
   </&>
 % $m->callback( CallbackName => 'AfterBasics', TypeObj => $TypeObj, ARGSRef => \%ARGS );
@@ -141,79 +140,6 @@ $session{DefaultType} = $Type;
 
 my %link_types = %{ RTx::AssetTracker::Asset::LINKTYPEMAP() };
 my @link_order =    RTx::AssetTracker::Asset::LINKORDER();
-
-if ($CloneAsset) {
-    my $CloneAssetObj = RTx::AssetTracker::Asset->new( $session{CurrentUser} );
-    $CloneAssetObj->Load($CloneAsset)
-        or Abort( loc("Asset could not be loaded") );
-
-    my $clone = { };
-
-    foreach my $role ( $CloneAssetObj->TypeObj->RoleGroupTypes() ) {
-	my $role_method = $role . 'RoleGroup';
-        $clone->{$role} = join( ',', $CloneAssetObj->$role_method->MemberEmailAddressesAsString );
-    }
-
-    $clone->{$_} = $CloneAssetObj->$_()
-	for qw/Name Description Status/;
-
-    if (0) {    # Temporarily disabled
-        my $members = $CloneAssetObj->Members;
-        my ( @members, @members_of, @refers, @refers_by, @depends, @depends_by );
-        my $refers = $CloneAssetObj->RefersTo;
-        while ( my $refer = $refers->Next ) {
-            push @refers, $refer->LocalTarget;
-        }
-        $clone->{'new-RefersTo'} = join ' ', @refers;
-
-        my $refers_by = $CloneAssetObj->ReferredToBy;
-        while ( my $refer_by = $refers_by->Next ) {
-            push @refers_by, $refer_by->LocalBase;
-        }
-        $clone->{'RefersTo-new'} = join ' ', @refers_by;
-        my $depends = $CloneAssetObj->DependsOn;
-        while ( my $depend = $depends->Next ) {
-            push @depends, $depend->LocalTarget;
-        }
-        $clone->{'new-DependsOn'} = join ' ', @depends;
-
-        my $depends_by = $CloneAssetObj->DependedOnBy;
-        while ( my $depend_by = $depends_by->Next ) {
-            push @depends_by, $depend_by->LocalBase;
-        }
-        $clone->{'DependsOn-new'} = join ' ', @depends_by;
-
-        while ( my $member = $members->Next ) {
-            push @members, $member->LocalBase;
-        }
-        $clone->{'MemberOf-new'} = join ' ', @members;
-
-        my $members_of = $CloneAssetObj->MemberOf;
-        while ( my $member_of = $members_of->Next ) {
-            push @members_of, $member_of->LocalTarget;
-        }
-        $clone->{'new-MemberOf'} = join ' ', @members_of;
-
-    }
-
-    my $cfs = $CloneAssetObj->TypeObj->AssetCustomFields();
-    while ( my $cf = $cfs->Next ) {
-        my $cf_id     = $cf->id;
-        my $cf_values = $CloneAssetObj->CustomFieldValues( $cf->id );
-        my @cf_values;
-        while ( my $cf_value = $cf_values->Next ) {
-            push @cf_values, $cf_value->Content;
-        }
-        $clone->{"Object-RTx::AssetTracker::Asset--CustomField-$cf_id-Value"} = join "\n",
-            @cf_values;
-    }
-
-    $clone->{'ChangeComment'} = "Cloned from asset #$CloneAsset.";
-
-    for ( keys %$clone ) {
-        $ARGS{$_} = $clone->{$_} if not defined $ARGS{$_};
-    }
-}
 
 my @results;
 
@@ -256,5 +182,5 @@ if (defined($ARGS{'id'}) and $ARGS{'id'} eq 'new') { # new asset?
 </%INIT>
 
 <%ARGS>
-$CloneAsset => undef
+
 </%ARGS>
