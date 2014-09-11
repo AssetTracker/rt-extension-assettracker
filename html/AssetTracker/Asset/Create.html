@@ -51,6 +51,7 @@
 <& /Elements/ListActions, actions => \@results &>
 
 <form action="<% RT->Config->Get('WebPath') %>/AssetTracker/Asset/Create.html" method="post" enctype="multipart/form-data" name="AssetCreate">
+  <input type="submit" name="SubmitAsset" value="Create" style="display:none">
   <input type="hidden" class="hidden" name="id" value="new" />
 
 % $m->callback( CallbackName => 'FormStart', TypeObj => $TypeObj, ARGSRef => \%ARGS );

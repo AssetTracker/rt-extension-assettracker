@@ -53,6 +53,7 @@
 
 <form method="post" action="ModifyAll.html" name="AssetModifyAll" enctype="multipart/form-data">
 % $m->callback( CallbackName => 'FormStart', ARGSRef => \%ARGS );
+<input type="submit" name="SubmitAsset" value="Save Changes" style="display:none">
 <input type="hidden" class="hidden" name="id" value="<%$Asset->Id%>" />
 
 <&| /Widgets/TitleBox, title => loc('Basics'), class => 'asset-info-basics' &>

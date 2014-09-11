@@ -52,6 +52,7 @@
 <& /Elements/ListActions, actions => \@results &>
 
 <form method="post" action="ModifyPeople.html">
+<input type="submit" name="SubmitAsset" value="Save Changes" style="display:none">
 <input type="hidden" class="hidden" name="id" value="<%$Asset->Id%>">
 % $m->callback( CallbackName => 'FormStart', ARGSRef => \%ARGS );
 <&| /Widgets/TitleBox, title => loc('Modify people related to asset #[_1]', $Asset->Id), class => 'asset-info-people' &>
