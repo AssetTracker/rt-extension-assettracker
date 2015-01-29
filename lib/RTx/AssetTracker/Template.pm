@@ -740,10 +740,14 @@ sub CompileCheck {
 sub CurrentUserCanRead {
     my $self =shift;
 
-    return 1 if $self->CurrentUserHasAssetTypeRight('ShowTemplate');
-
-    return $self->CurrentUser->HasRight( Right =>'ShowGlobalTemplates', Object => $RT::System )
-        if !$self->AssetTypeObj->Id;
+    if ($self->__Value('AssetType')) {
+        my $assettype = RTx::AssetTracker::Type->new( RT->SystemUser );
+        $assettype->Load( $self->__Value('AssetType'));
+        return 1 if $self->CurrentUser->HasRight( Right => 'ShowTemplate', Object => $assettype );
+    } else {
+        return 1 if $self->CurrentUser->HasRight( Right => 'ShowGlobalTemplates', Object => $RT::System );
+        return 1 if $self->CurrentUser->HasRight( Right => 'ShowTemplate',        Object => $RT::System );
+    }
 
     return;
 }

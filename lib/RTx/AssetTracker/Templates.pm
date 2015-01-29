@@ -139,37 +139,19 @@ sub LimitToAssetType {
 }
 
 
-=head2 Next
+=head2 AddRecord
 
-Returns the next template that this user can see.
+Overrides the collection to ensure that only templates the user can see
+are returned.
 
 =cut
-  
-sub Next {
+
+sub AddRecord {
     my $self = shift;
-    
-    
-    my $templ = $self->SUPER::Next();
-    if ((defined($templ)) and (ref($templ))) {
-        
-        # If it's part of an asset type, and the user can read templates in
-        # that asset type, or the user can globally read templates, show it
-        if ($templ->AssetType && $templ->CurrentUserHasAssetTypeRight('ShowTemplate') or
-            $templ->CurrentUser->HasRight(Object => $RT::System, Right => 'ShowTemplate') or
-            $templ->CurrentUser->HasRight(Object => $RT::System, Right => 'ShowGlobalTemplates')) {
-	    return($templ);
-	}
-	
-	#If the user doesn't have the right to show this template
-	else {	
-	    return($self->Next());
-	}
-    }
-    #if there never was any template
-    else {
-	return(undef);
-    }	
-    
+    my ($record) = @_;
+
+    return unless $record->CurrentUserCanRead;
+    return $self->SUPER::AddRecord( $record );
 }
 
 
