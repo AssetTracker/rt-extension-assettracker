@@ -119,10 +119,17 @@ $r->content_type('application/rss+xml');
     while ( my $Asset = $Assets->Next()) {
         my $creator_str = $m->scomp('/Elements/ShowUser', User => $Asset->CreatorObj);
         $creator_str =~ s/[\r\n]//g;
+
+        # Get the plain-text content; it is interpreted as HTML by RSS
+        # readers, so it must be escaped (and is escaped _again_ when
+        # inserted into the XML).
+        my $content = $Asset->Description;
+        $content = $m->interp->apply_escapes( $content, 'h');
+
         $rss->add_item(
           title       =>  $Asset->Name  || loc('No name'),
           link        => RT->Config->Get('WebURL')."AssetTracker/Asset/Display.html?id=".$Asset->id,
-          description => $Asset->Description,
+          description => $content,
           dc          => { creator => $creator_str,
                            date => $Asset->CreatedObj->RFC2822,
                          },
