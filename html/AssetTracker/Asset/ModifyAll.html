@@ -57,7 +57,7 @@
 <input type="hidden" class="hidden" name="id" value="<%$Asset->Id%>" />
 
 <&| /Widgets/TitleBox, title => loc('Basics'), class => 'asset-info-basics' &>
-<& Elements/EditBasics, AssetObj => $Asset &>
+<& Elements/EditBasics, AssetObj => $Asset, defaults => \%ARGS &>
 </&>
 
 % $m->callback(CallbackName => 'AfterBasics', Asset => $Asset);
