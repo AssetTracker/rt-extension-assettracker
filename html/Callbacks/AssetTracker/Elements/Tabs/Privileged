@@ -24,7 +24,7 @@ $assets->child( new => title => loc('New Search') => path => "/AssetTracker/Sear
 if ( $request_path =~ m{^/AssetTracker/} ) {
     PageWidgets()->delete('simple_search');
     PageWidgets()->delete('create_ticket');
-    PageWidgets()->child( AT_simple_search => raw_html => $m->scomp('/AssetTracker/Elements/SimpleSearch') );
+    PageWidgets()->child( AT_simple_search => raw_html => $m->scomp('/Elements/SimpleSearch', SendTo => '/AssetTracker/index.html', Placeholder => loc('Asset Search')) );
     PageWidgets()->child( create_asset => raw_html => $m->scomp('/AssetTracker/Elements/CreateAsset') );
 }
 
