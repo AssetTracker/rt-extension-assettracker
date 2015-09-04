@@ -821,7 +821,7 @@ sub _ProcessATObjectCustomFieldUpdates {
                 );
                 push ( @results, $msg );
             }
-        } elsif ( $arg eq 'Values' && !$cf->Repeated ) {
+        } elsif ( $arg eq 'Values' ) {
             my $cf_values = $args{'Object'}->CustomFieldValues( $cf->id );
 
             my %values_hash;
@@ -853,30 +853,6 @@ sub _ProcessATObjectCustomFieldUpdates {
                     Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
                 );
                 push ( @results, $msg);
-            }
-        } elsif ( $arg eq 'Values' ) {
-            my $cf_values = $args{'Object'}->CustomFieldValues( $cf->id );
-
-            # keep everything up to the point of difference, delete the rest
-            my $delete_flag;
-            foreach my $old_cf ( @{ $cf_values->ItemsArrayRef } ) {
-                if ( !$delete_flag and @values and $old_cf->Content eq $values[0] ) {
-                    shift @values;
-                    next;
-                }
-
-                $delete_flag ||= 1;
-                $old_cf->Delete;
-            }
-
-            # now add/replace extra things, if any
-            foreach my $value (@values) {
-                my ( $val, $msg ) = $args{'Object'}->AddCustomFieldValue(
-                    Field => $cf,
-                    Value => $value,
-                    Data  => $ARGSRef->{'FieldComment'} || $ARGSRef->{'GlobalComment'},
-                );
-                push ( @results, $msg );
             }
         } else {
             push(
